@@ -15,7 +15,7 @@ export default function LoginPage() {
       <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-xl mx-auto mb-4">W</div>
-          <h1 className="font-['DM_Serif_Display'] text-2xl text-white mb-2">Đăng nhập LuyenViet</h1>
+          <h1 className="font-['DM_Serif_Display'] text-2xl text-white mb-2">Đăng nhập WriteRight</h1>
           <p className="text-navy-400 text-sm">Đăng nhập để lưu lịch sử chấm điểm và theo dõi tiến bộ</p>
         </div>
 
