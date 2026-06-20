@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './writeright-theme.css';
 
 export const metadata: Metadata = {
-  title: 'LuyenViet — Tự Luyện IELTS Writing Hiệu Quả',
+  title: 'WriteRight — Tự Luyện IELTS Writing Hiệu Quả',
   description: 'Tự luyện IELTS Writing hiệu quả với AI chấm điểm chuẩn, sửa lỗi chi tiết và bài mẫu Band 9.',
   openGraph: {
-    title: 'LuyenViet — Tự Luyện IELTS Writing Hiệu Quả',
+    title: 'WriteRight — Tự Luyện IELTS Writing Hiệu Quả',
     description: 'AI chấm điểm Writing chuẩn IELTS. Sửa lỗi, cải thiện, nâng Band ngay.',
     type: 'website',
   },
