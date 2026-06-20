@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase'; // ← adjust path to your client
+import { createClient } from '@/lib/supabase-browser';
 
 /**
  * useEntitlement — single source of truth for "what is this user allowed to see?"
@@ -23,6 +23,7 @@ export function useEntitlement() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setPlan('free'); setUsedThisWeek(0); setLoading(false); return; }
 
