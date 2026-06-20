@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
+import { StreakBar } from '@/components/StreakBar';
+import { DetailGate } from '@/components/DetailGate';
 
 type Evaluation = {
   id: string;
@@ -67,7 +69,7 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-sm">W</div>
-            <span className="font-['DM_Serif_Display'] text-lg text-white">Luyen<span className="text-brand-400">Viet</span></span>
+            <span className="font-['DM_Serif_Display'] text-lg text-white">Write<span className="text-brand-400">Right</span></span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/evaluate" className="text-sm bg-brand-500 text-navy-900 px-4 py-2 rounded-lg font-medium hover:bg-brand-400 transition">+ Chấm bài mới</Link>
@@ -78,6 +80,10 @@ export default function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="font-['DM_Serif_Display'] text-3xl text-white mb-8">Dashboard</h1>
+
+        <div className="mb-8">
+          <StreakBar />
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -148,6 +154,7 @@ export default function DashboardPage() {
 
                 {/* Expanded detail */}
                 {selected?.id === ev.id && ev.feedback && (
+  <DetailGate onUpgrade={() => window.location.href='/pricing'}>
                   <div className="mt-4 pt-4 border-t border-navy-700 grid grid-cols-4 gap-3" onClick={(e) => e.stopPropagation()}>
                     {[
                       { label: 'TA', band: ev.ta_band },
@@ -161,7 +168,8 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                )}
+                </DetailGate>
+)}
               </button>
             ))}
           </div>
