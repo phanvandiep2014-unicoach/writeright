@@ -1,0 +1,116 @@
+/* ============================================================
+   WriteRight × UNICOACH — Royal/Victorian brand theme
+   Single source of truth for color + type. Import once, globally.
+   ------------------------------------------------------------
+   FONT RULE (critical): Cinzel / Cinzel Decorative must NEVER
+   carry Vietnamese diacritics — accents sit too high. Vietnamese
+   body + UI text uses Cormorant Garamond or EB Garamond only.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  /* ---- Core palette ---- */
+  --royal-sapphire: #11183A;   /* primary ground */
+  --royal-oxblood:  #5A1726;   /* ribbons / accents */
+  --imperial-gold:  #C8A14B;   /* ALWAYS as foil gradient, never flat */
+  --champagne:      #E7CE8E;   /* highlights */
+  --forest-emerald: #123F33;   /* tertiary, sparingly */
+  --parchment:      #F4ECD8;   /* page background */
+  --ivory:          #FBF7EE;   /* cards */
+  --sepia-ink:      #241B10;   /* body text */
+
+  /* ---- The one gold treatment. Use this, not a flat gold fill. ---- */
+  --gold-foil: linear-gradient(135deg,
+      #8A6A28 0%, #E7CE8E 26%, #C8A14B 48%,
+      #F4E7BC 66%, #A9863A 86%, #8A6A28 100%);
+
+  /* ---- Type roles ---- */
+  --font-wordmark: 'Cinzel Decorative', serif;  /* wordmark / crest ONLY */
+  --font-display:  'Cinzel', serif;             /* headings, eyebrows, mottos — Latin/EN only */
+  --font-subhead:  'Cormorant Garamond', serif; /* subheads, quotes — Vietnamese-safe */
+  --font-body:     'EB Garamond', serif;        /* body copy — Vietnamese-safe */
+
+  /* ---- Functional roles ---- */
+  --bg:        var(--parchment);
+  --surface:   var(--ivory);
+  --ink:       var(--sepia-ink);
+  --brand:     var(--royal-sapphire);
+  --accent:    var(--royal-oxblood);
+
+  /* ---- Scale ---- */
+  --radius: 10px;
+  --shadow-card: 0 2px 4px rgba(17,24,58,.06), 0 12px 32px rgba(17,24,58,.10);
+  --hairline: 1px solid rgba(90,23,38,.20);
+}
+
+/* Gold-foil text helper — apply to a span, not a whole heading of Vietnamese */
+.gold-foil {
+  background: var(--gold-foil);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Gold-foil surface (badges, rules, buttons borders) */
+.gold-rule { height: 2px; background: var(--gold-foil); border: 0; }
+
+/* Eyebrow label — Cinzel, Latin/English only (e.g. "PER TE, AD ASTRA") */
+.eyebrow {
+  font-family: var(--font-display);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  font-size: .72rem;
+  color: var(--royal-oxblood);
+}
+
+/* Vietnamese-safe heading: subhead serif, never Cinzel */
+.heading-vi {
+  font-family: var(--font-subhead);
+  font-weight: 600;
+  color: var(--royal-sapphire);
+  line-height: 1.15;
+}
+
+/* Primary call-to-action — royal ground, gold foil border */
+.btn-royal {
+  font-family: var(--font-subhead);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--champagne);
+  background: var(--royal-sapphire);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  padding: .85rem 1.6rem;
+  position: relative;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn-royal::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: var(--radius);
+  padding: 1.5px;
+  background: var(--gold-foil);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;
+}
+.btn-royal:hover { transform: translateY(-1px); box-shadow: var(--shadow-card); }
+.btn-royal:focus-visible { outline: 2px solid var(--champagne); outline-offset: 2px; }
+
+/* Secondary — oxblood text on ivory */
+.btn-ghost {
+  font-family: var(--font-subhead);
+  font-weight: 600;
+  color: var(--royal-oxblood);
+  background: transparent;
+  border: var(--hairline);
+  border-radius: var(--radius);
+  padding: .85rem 1.6rem;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-royal { transition: none; }
+}
