@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 
 type EvalResult = {
   overall_band: number;
@@ -97,13 +98,15 @@ export default function EvaluatePage() {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-sm">W</div>
-            <span className="font-['DM_Serif_Display'] text-lg text-white">Luyen<span className="text-brand-400">Viet</span></span>
+            <span className="font-['DM_Serif_Display'] text-lg text-white">Write<span className="text-brand-400">Right</span></span>
           </Link>
           <Link href="/dashboard" className="text-sm text-navy-400 hover:text-white transition font-mono">Dashboard →</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
+
+        <QuotaBanner onUpgrade={() => window.location.href='/pricing'} />
 
         {/* ── RESULTS ── */}
         {result && (
@@ -127,7 +130,8 @@ export default function EvaluatePage() {
               </div>
             </div>
 
-            {/* Criteria grid */}
+            <DetailGate onUpgrade={() => window.location.href='/pricing'}>
+{/* Criteria grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               {criteria.map((c) => {
                 const d = result[c.key];
@@ -185,7 +189,8 @@ export default function EvaluatePage() {
                 <div className="text-xs font-mono text-navy-500 mb-3">Viết riêng cho đề bài này</div>
                 <p className="text-sm text-navy-100 leading-relaxed italic">{result.model_introduction}</p>
               </div>
-            )}
+            )
+</DetailGate>}
 
             <button onClick={reset} className="w-full border border-navy-600 text-navy-300 py-3 rounded-xl font-mono text-sm hover:border-brand-500/50 transition">
               ← Chấm bài mới
