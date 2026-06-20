@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase'; // ← adjust path
+import { createClient } from '@/lib/supabase-browser';
 
 /**
  * <StreakBar> — the frequency engine.
@@ -22,6 +22,7 @@ export function StreakBar() {
 
   useEffect(() => {
     (async () => {
+      const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
       const { data } = await supabase
