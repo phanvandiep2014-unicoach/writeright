@@ -18,7 +18,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-sm">W</div>
-            <span className="font-['DM_Serif_Display'] text-lg text-white">Luyen<span className="text-brand-400">Viet</span></span>
+            <span className="font-['DM_Serif_Display'] text-lg text-white">Write<span className="text-brand-400">Right</span></span>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login" className="text-sm text-navy-300 hover:text-white transition">Đăng nhập</Link>
@@ -143,7 +143,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-navy-700 py-8">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between text-xs text-navy-500 font-mono">
-          <span>© 2026 LuyenViet · UNICOACH</span>
+          <span>© 2026 WriteRight · UNICOACH</span>
           <span>Powered by Claude AI</span>
         </div>
       </footer>
