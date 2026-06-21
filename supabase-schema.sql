@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════
--- LuyenViet Database Schema
+-- WriteRight Database Schema
 -- Run this in Supabase SQL Editor (one time)
 -- ══════════════════════════════════════════════
 
