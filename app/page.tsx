@@ -43,7 +43,7 @@ export default function Home() {
           <Link href="/evaluate" className="bg-brand-500 text-navy-900 px-8 py-3 rounded-xl font-['DM_Serif_Display'] text-lg hover:bg-brand-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-brand-500/25">
             ✦ Chấm bài miễn phí
           </Link>
-          <a href="#pricing" className="border border-navy-600 text-navy-200 px-8 py-3 rounded-xl font-mono text-sm hover:border-brand-500/50 transition">
+          <a href="/pricing" className="border border-navy-600 text-navy-200 px-8 py-3 rounded-xl font-mono text-sm hover:border-brand-500/50 transition">
             Xem bảng giá
           </a>
         </div>
