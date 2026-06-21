@@ -189,8 +189,8 @@ export default function EvaluatePage() {
                 <div className="text-xs font-mono text-navy-500 mb-3">Viết riêng cho đề bài này</div>
                 <p className="text-sm text-navy-100 leading-relaxed italic">{result.model_introduction}</p>
               </div>
-            )
-</DetailGate>}
+            )}
+</DetailGate>
 
             <button onClick={reset} className="w-full border border-navy-600 text-navy-300 py-3 rounded-xl font-mono text-sm hover:border-brand-500/50 transition">
               ← Chấm bài mới
