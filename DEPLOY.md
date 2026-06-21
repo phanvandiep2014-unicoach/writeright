@@ -1,11 +1,11 @@
-# 🚀 LuyenViet — Deployment Guide
+# 🚀 WriteRight — Deployment Guide
 # Hướng dẫn triển khai nền tảng IELTS Writing
 
 ---
 
 ## Tổng quan / Overview
 
-LuyenViet là nền tảng luyện IELTS Writing với AI, gồm:
+WriteRight là nền tảng luyện IELTS Writing với AI, gồm:
 - Landing page với bảng giá
 - Trang chấm bài (text + ảnh)
 - Dashboard theo dõi tiến bộ
@@ -17,7 +17,7 @@ LuyenViet là nền tảng luyện IELTS Writing với AI, gồm:
 ## Bước 1: Tạo Supabase Project (Database + Auth)
 
 1. Truy cập https://supabase.com → Sign up miễn phí
-2. Click "New Project" → đặt tên "luyenviet"
+2. Click "New Project" → đặt tên "writeright"
 3. Chọn region: **Southeast Asia (Singapore)**
 4. Đặt database password → ghi lại
 5. Đợi 2 phút để project khởi tạo
@@ -58,7 +58,7 @@ LuyenViet là nền tảng luyện IELTS Writing với AI, gồm:
 
 ### Cách 1: Deploy bằng GitHub (khuyến nghị)
 1. Tạo GitHub account nếu chưa có
-2. Upload thư mục `luyenviet` lên GitHub repository
+2. Upload thư mục `writeright` lên GitHub repository
 3. Truy cập https://vercel.com → Sign up với GitHub
 4. Click **"Add New Project"** → Import repository
 5. Vercel tự động detect Next.js → Click **Deploy**
@@ -66,7 +66,7 @@ LuyenViet là nền tảng luyện IELTS Writing với AI, gồm:
 ### Cách 2: Deploy bằng Vercel CLI
 ```bash
 npm install -g vercel
-cd luyenviet
+cd writeright
 vercel
 ```
 
@@ -88,10 +88,10 @@ Click **Save** → **Redeploy**
 ## Bước 4: Cấu hình Domain (Tùy chọn)
 
 ### Dùng domain miễn phí của Vercel
-- Site tự động có URL: `https://luyenviet.vercel.app`
+- Site tự động có URL: `https://writeright.vercel.app`
 
 ### Dùng domain riêng
-1. Mua domain (ví dụ: `luyenviet.com`) trên Namecheap (~$10/năm)
+1. Mua domain (ví dụ: `writeright.com`) trên Namecheap (~$10/năm)
 2. Vercel → Settings → Domains → Add domain
 3. Cấu hình DNS theo hướng dẫn của Vercel
 
@@ -101,8 +101,8 @@ Click **Save** → **Redeploy**
 
 Sau khi có URL chính thức:
 1. Supabase → Authentication → URL Configuration
-2. **Site URL**: `https://luyenviet.vercel.app` (hoặc domain riêng)
-3. **Redirect URLs**: Thêm `https://luyenviet.vercel.app/auth/callback`
+2. **Site URL**: `https://writeright.vercel.app` (hoặc domain riêng)
+3. **Redirect URLs**: Thêm `https://writeright.vercel.app/auth/callback`
 
 ---
 
@@ -139,7 +139,7 @@ Sửa `claude-sonnet-4-20250514` trong `app/api/evaluate/route.ts`
 ## Cấu trúc thư mục / Folder Structure
 
 ```
-luyenviet/
+writeright/
 ├── app/
 │   ├── layout.tsx              ← Root layout
 │   ├── page.tsx                ← Landing page
