@@ -60,8 +60,7 @@ function Crest({ size = 40 }: { size?: number }) {
         <path d="M540 352 C572 340 604 343 622 352 L622 422 C604 412 572 410 540 422 Z" />
         <path d="M540 352 V422" fill="none" />
         <g strokeWidth="2.2">
-          <path d="M472 372 q24-7 56 1" /><path d="M472 388 q24-7 56 1" />
-          <path d="M552 373 q24-7 56 1" /><path d="M552 389 q24-7 56 1" />
+          <path d="M472 372 q24-7 56 1" /><path d="M472 388 q24-7 56 1" />          <path d="M552 373 q24-7 56 1" /><path d="M552 389 q24-7 56 1" />
         </g>
       </g>
       <path d="M368 486 L400 478 L400 524 L368 532 L382 509 Z" fill="#3A0E18" stroke="url(#crestGold)" strokeWidth="3" />
@@ -123,7 +122,6 @@ export default function Home() {
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 20, color: '#cdbb8e', maxWidth: 560, margin: '22px auto 0', lineHeight: 1.55 }}>
           Dán bài luận hoặc chụp ảnh bài viết tay. Nhận điểm band, sửa lỗi chi tiết và bài mẫu Band 9 trong vài giây.
         </p>
-
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
           <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
           <a href="/pricing" className="btn-ghost">Xem bảng giá</a>
@@ -186,8 +184,7 @@ export default function Home() {
           </div>
 
           {/* Standard — highlighted */}
-          <div style={{ background: 'linear-gradient(170deg,#1A234E,#0A0E24)', border: '1px solid var(--imperial-gold)', borderRadius: 8, padding: '30px 26px', position: 'relative' }}>
-            <div style={{
+          <div style={{ background: 'linear-gradient(170deg,#1A234E,#0A0E24)', border: '1px solid var(--imperial-gold)', borderRadius: 8, padding: '30px 26px', position: 'relative' }}>            <div style={{
               position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
               fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase',
               background: 'var(--royal-oxblood)', color: 'var(--champagne)', padding: '6px 18px', borderRadius: 3, border: '1px solid #8A6A28', whiteSpace: 'nowrap'
