@@ -1,21 +1,51 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 import { PricingRoyal } from '@/components/PricingRoyal';
 
 /**
  * /pricing — dedicated pricing page.
- * NOTE: Payment integration (PayOS) is not wired up yet. Selecting a paid
- * tier currently routes to /login to start the signup funnel; swap this
- * for a real checkout call once PayOS is integrated.
+ * Paid tiers now call /api/checkout to create a real PayOS payment link.
+ * Free tier still routes straight to /evaluate.
  */
 export default function PricingPage() {
-  const handleChoose = (tierId: string) => {
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleChoose = async (tierId: string) => {
     if (tierId === 'free') {
       window.location.href = '/evaluate';
       return;
     }
-    // TODO: replace with real PayOS checkout once available.
-    window.location.href = '/login';
+
+    setErrorMsg(null);
+    setLoadingTier(tierId);
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: tierId }),
+      });
+      const body = await res.json();
+
+      if (!res.ok) {
+        if (body.code === 'AUTH_REQUIRED') {
+          // Not logged in — send to login, then back to pricing.
+          window.location.href = '/login?next=/pricing';
+          return;
+        }
+        setErrorMsg(body.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
+        setLoadingTier(null);
+        return;
+      }
+
+      // Redirect to PayOS hosted checkout page.
+      window.location.href = body.checkoutUrl;
+    } catch {
+      setErrorMsg('Không thể kết nối tới máy chủ. Vui lòng thử lại.');
+      setLoadingTier(null);
+    }
   };
 
   return (
@@ -32,7 +62,21 @@ export default function PricingPage() {
       </header>
 
       <main>
-        <PricingRoyal onChoose={handleChoose} />
+        {errorMsg && (
+          <div className="max-w-3xl mx-auto px-4 pt-6">
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 text-red-200 text-sm px-4 py-3">
+              {errorMsg}
+            </div>
+          </div>
+        )}
+        <PricingRoyal
+          onChoose={handleChoose}
+        />
+        {loadingTier && (
+          <div className="text-center pb-10 -mt-4 text-sm text-navy-400 font-mono">
+            Đang tạo link thanh toán…
+          </div>
+        )}
       </main>
 
       {/* Footer */}
