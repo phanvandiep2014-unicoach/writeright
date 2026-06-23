@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabase } from '@/lib/supabase-server';
 
 const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner with 20+ years of experience. Evaluate the essay and respond ONLY with valid JSON (no markdown, no code blocks). Use this structure:
 
@@ -19,11 +20,51 @@ const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner with 20+ year
 
 Half bands are acceptable. Be honest and precise.`;
 
+const FREE_EVALS_PER_WEEK = 1;
+
 export async function POST(req: NextRequest) {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
 
   if (!API_KEY) {
     return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not set in environment variables' }, { status: 500 });
+  }
+
+  // ── 1. Require login. Anonymous evaluations are not allowed — this is
+  //    the actual enforcement point; the client-side QuotaBanner/DetailGate
+  //    are UX only and were previously bypassable by calling this route directly.
+  const supabase = createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { error: 'Vui lòng đăng nhập để chấm bài.', code: 'AUTH_REQUIRED' },
+      { status: 401 }
+    );
+  }
+
+  // ── 2. Check plan + rolling 7-day usage against the entitlements view.
+  const { data: entitlement, error: entErr } = await supabase
+    .from('user_entitlements')
+    .select('plan, evals_this_week')
+    .eq('user_id', user.id)
+    .single();
+
+  if (entErr) {
+    return NextResponse.json({ error: 'Không thể kiểm tra hạn mức. Vui lòng thử lại.' }, { status: 500 });
+  }
+
+  const plan = entitlement?.plan ?? 'free';
+  const usedThisWeek = entitlement?.evals_this_week ?? 0;
+  const isPaid = plan === 'standard' || plan === 'premium';
+
+  if (!isPaid && usedThisWeek >= FREE_EVALS_PER_WEEK) {
+    return NextResponse.json(
+      {
+        error: 'Bạn đã dùng hết lượt chấm miễn phí tuần này. Nâng cấp để chấm không giới hạn.',
+        code: 'QUOTA_EXCEEDED',
+      },
+      { status: 403 }
+    );
   }
 
   try {
@@ -69,6 +110,28 @@ export async function POST(req: NextRequest) {
     const rawText = data.content.map((b: any) => b.text || '').join('');
     const clean = rawText.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
+
+    // ── 3. Log this evaluation so the entitlements view can count it.
+    //    Failure to log should not block the response the user already paid
+    //    (in quota terms) to receive — log the error but still return result.
+    const wordCount = essayText ? essayText.trim().split(/\s+/).filter(Boolean).length : null;
+    const { error: insertErr } = await supabase.from('evaluations').insert({
+      user_id: user.id,
+      task_type: taskType || 2,
+      task_prompt: taskPrompt,
+      essay_text: essayText || null,
+      overall_band: result.overall_band ?? null,
+      ta_band: result.task_achievement?.band ?? null,
+      lr_band: result.lexical_resource?.band ?? null,
+      gra_band: result.grammatical_range?.band ?? null,
+      cc_band: result.coherence_cohesion?.band ?? null,
+      feedback: result,
+      model_intro: result.model_introduction ?? null,
+      word_count: wordCount,
+    });
+    if (insertErr) {
+      console.error('Failed to log evaluation for quota tracking:', insertErr.message);
+    }
 
     return NextResponse.json(result);
   } catch (err: any) {
