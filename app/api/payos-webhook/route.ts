@@ -22,8 +22,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Temp debug: log raw payload before any early returns.
-  console.log('PayOS webhook raw payload:', JSON.stringify(payload));
+  // PayOS sends a fixed sample payload (description "VQRIO123",
+  // orderCode 123, paymentLinkId "124c332...") when you register or
+  // re-save the webhook URL in the dashboard. It's signed with PayOS's
+  // own sample checksum key, not ours, so it will never pass
+  // verifyWebhookSignature — acknowledge it before attempting to verify.
+  if (payload?.data?.description === 'VQRIO123') {
+    return NextResponse.json({ success: true });
+  }
 
   // PayOS sends a test ping when you register the webhook URL in the
   // dashboard. It has no real `data.orderCode` — just acknowledge it.
@@ -33,11 +39,8 @@ export async function POST(req: NextRequest) {
 
   const { data, signature } = payload;
 
-  console.log('PayOS webhook data keys (sorted):', Object.keys(data).sort());
-  console.log('PayOS webhook signature received:', signature);
-
   if (!verifyWebhookSignature(data, signature)) {
-    console.log('PayOS webhook: signature verification FAILED');
+    console.error('PayOS webhook: signature verification failed for orderCode', data.orderCode);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
