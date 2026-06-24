@@ -24,6 +24,8 @@ export default function DashboardPage() {
   const [evals, setEvals] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Evaluation | null>(null);
+  const [sharing, setSharing] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +55,39 @@ export default function DashboardPage() {
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = '/';
+  };
+
+  const handleShare = async (evalId: string) => {
+    if (!user) return;
+    setSharing(evalId);
+    const supabase = createClient();
+
+    // Reuse an existing share link for this evaluation if one exists
+    const { data: existing } = await supabase
+      .from('shares')
+      .select('token')
+      .eq('evaluation_id', evalId)
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    let token = existing?.token;
+
+    if (!token) {
+      const { data: created, error } = await supabase
+        .from('shares')
+        .insert({ evaluation_id: evalId, user_id: user.id })
+        .select('token')
+        .single();
+      if (error || !created) { setSharing(null); return; }
+      token = created.token;
+    }
+
+    const url = `${window.location.origin}/share/${token}`;
+    await navigator.clipboard.writeText(url);
+    setCopiedId(evalId);
+    setSharing(null);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   if (loading) {
@@ -145,6 +180,14 @@ export default function DashboardPage() {
                     <p className="text-sm text-navy-200 truncate">{ev.task_prompt}</p>
                   </div>
                   <div className="flex items-center gap-4 ml-4">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShare(ev.id); }}
+                      disabled={sharing === ev.id}
+                      className="text-[11px] font-mono px-2.5 py-1.5 rounded-lg border border-navy-600 text-navy-300 hover:border-brand-500/50 hover:text-brand-400 transition disabled:opacity-50"
+                      title="Tạo link chia sẻ"
+                    >
+                      {copiedId === ev.id ? '✓ Đã copy' : sharing === ev.id ? '...' : '🔗 Chia sẻ'}
+                    </button>
                     <div className="text-center">
                       <div className="font-['DM_Serif_Display'] text-2xl text-brand-400">{ev.overall_band}</div>
                       <div className="text-[9px] font-mono text-navy-500 uppercase">Overall</div>
@@ -171,8 +214,8 @@ export default function DashboardPage() {
                 </DetailGate>
 )}
               </button>
-            ))}
-          </div>
+          ))}
+        </div>
         )}
       </main>
     </div>
