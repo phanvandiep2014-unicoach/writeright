@@ -2,12 +2,12 @@
 import Link from 'next/link';
 
 const features = [
-  { icon: '✦', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
-  { icon: '✏', title: 'Sửa lỗi chi tiết', desc: 'AI phát hiện và giải thích từng lỗi ngữ pháp, từ vựng, collocation.' },
-  { icon: '📝', title: 'Bài mẫu Band 9', desc: 'Tự động tạo mở bài mẫu Band 9 cho mọi đề bài.' },
-  { icon: '📷', title: 'Chụp ảnh bài viết', desc: 'Chụp ảnh bài viết tay — AI đọc và chấm điểm ngay.' },
-  { icon: '📊', title: 'Theo dõi tiến bộ', desc: 'Dashboard cá nhân, xem lịch sử điểm và sự tiến bộ.' },
-  { icon: '🔮', title: 'Forecast đề thi', desc: 'Cập nhật đề dự đoán Writing mới nhất mỗi tháng.' },
+  { icon: 'â¦', title: 'Cháº¥m Äiá»m 4 tiÃªu chÃ­', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence â chuáº©n IELTS.' },
+  { icon: 'â', title: 'Sá»­a lá»i chi tiáº¿t', desc: 'AI phÃ¡t hiá»n vÃ  giáº£i thÃ­ch tá»«ng lá»i ngá»¯ phÃ¡p, tá»« vá»±ng, collocation.' },
+  { icon: 'ð', title: 'BÃ i máº«u Band 9', desc: 'Tá»± Äá»ng táº¡o má» bÃ i máº«u Band 9 cho má»i Äá» bÃ i.' },
+  { icon: 'ð·', title: 'Chá»¥p áº£nh bÃ i viáº¿t', desc: 'Chá»¥p áº£nh bÃ i viáº¿t tay â AI Äá»c vÃ  cháº¥m Äiá»m ngay.' },
+  { icon: 'ð', title: 'Theo dÃµi tiáº¿n bá»', desc: 'Dashboard cÃ¡ nhÃ¢n, xem lá»ch sá»­ Äiá»m vÃ  sá»± tiáº¿n bá».' },
+  { icon: 'ð®', title: 'Forecast Äá» thi', desc: 'Cáº­p nháº­t Äá» dá»± ÄoÃ¡n Writing má»i nháº¥t má»i thÃ¡ng.' },
 ];
 
 function Crest({ size = 40 }: { size?: number }) {
@@ -66,7 +66,7 @@ function Crest({ size = 40 }: { size?: number }) {
       <path d="M368 486 L400 478 L400 524 L368 532 L382 509 Z" fill="#3A0E18" stroke="url(#crestGold)" strokeWidth="3" />
       <path d="M712 486 L680 478 L680 524 L712 532 L698 509 Z" fill="#3A0E18" stroke="url(#crestGold)" strokeWidth="3" />
       <path d="M396 478 L684 478 L684 524 L540 534 L396 524 Z" fill="#5A1726" stroke="url(#crestGold)" strokeWidth="3.5" />
-      <text x="540" y="511" textAnchor="middle" fontFamily="Cinzel, serif" fontWeight="700" fontSize="24" letterSpacing="1.5" fill="url(#crestGold)">PER TE · AD ASTRA</text>
+      <text x="540" y="511" textAnchor="middle" fontFamily="Cinzel, serif" fontWeight="700" fontSize="24" letterSpacing="1.5" fill="url(#crestGold)">PER TE Â· AD ASTRA</text>
     </svg>
   );
 }
@@ -89,22 +89,25 @@ export default function Home() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Link href="/login" style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 600, color: 'var(--champagne)' }}>Đăng nhập</Link>
-            <Link href="/evaluate" className="btn-royal" style={{ fontSize: 14, padding: '9px 18px' }}>Chấm bài ngay</Link>
+            <Link href="/login" style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 600, color: 'var(--champagne)' }}>ÄÄng nháº­p</Link>
+            <Link href="/evaluate" className="btn-royal" style={{ fontSize: 14, padding: '9px 18px' }}>Cháº¥m bÃ i ngay</Link>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero â Royal Sapphire ground (matches header), so the ivory/champagne/
+          gold-foil text actually has contrast. Previously this section had no
+          background of its own and inherited the light Parchment page bg,
+          which made the ivory heading and champagne badge nearly invisible. */}
       <section style={{
-        maxWidth: 880, margin: '0 auto', padding: '90px 20px 70px', textAlign: 'center',
-        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.10), transparent 55%)'
+        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.14), transparent 55%), var(--royal-sapphire)',
       }}>
-        <div className="eyebrow" style={{
+        <div style={{ maxWidth: 880, margin: '0 auto', padding: '90px 20px 70px', textAlign: 'center' }}>
+        <div className="eyebrow-on-dark" style={{
           display: 'inline-flex', border: '1px solid rgba(200,161,75,.35)', borderRadius: 2,
-          padding: '9px 22px', marginBottom: 28, color: 'var(--champagne)'
+          padding: '9px 22px', marginBottom: 28
         }}>
-          AI-Powered · Free · Task 1 &amp; 2
+          AI-Powered Â· Free Â· Task 1 &amp; 2
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 18 }}>
@@ -115,33 +118,34 @@ export default function Home() {
           fontFamily: 'var(--font-subhead)', fontWeight: 700,
           fontSize: 'clamp(32px,5.5vw,50px)', lineHeight: 1.25, color: 'var(--ivory)', margin: 0
         }}>
-          Tự luyện IELTS Writing<br />
-          <em style={{ fontStyle: 'normal' }} className="gold-foil">hiệu quả mỗi ngày</em>
+          Tá»± luyá»n IELTS Writing<br />
+          <em style={{ fontStyle: 'normal' }} className="gold-foil">hiá»u quáº£ má»i ngÃ y</em>
         </h1>
 
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 20, color: '#cdbb8e', maxWidth: 560, margin: '22px auto 0', lineHeight: 1.55 }}>
-          Dán bài luận hoặc chụp ảnh bài viết tay. Nhận điểm band, sửa lỗi chi tiết và bài mẫu Band 9 trong vài giây.
+          DÃ¡n bÃ i luáº­n hoáº·c chá»¥p áº£nh bÃ i viáº¿t tay. Nháº­n Äiá»m band, sá»­a lá»i chi tiáº¿t vÃ  bÃ i máº«u Band 9 trong vÃ i giÃ¢y.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
-          <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
-          <a href="/pricing" className="btn-ghost">Xem bảng giá</a>
+          <Link href="/evaluate" className="btn-royal">â¦ Cháº¥m bÃ i miá»n phÃ­</Link>
+          <a href="/pricing" className="btn-ghost-on-dark">Xem báº£ng giÃ¡</a>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 52, flexWrap: 'wrap' }}>
-          {[['4', 'Tiêu chí chấm'], ['9.0', 'Bài mẫu Band'], ['< 15s', 'Thời gian chấm']].map(([num, label]) => (
+          {[['4', 'TiÃªu chÃ­ cháº¥m'], ['9.0', 'BÃ i máº«u Band'], ['< 15s', 'Thá»i gian cháº¥m']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 36, lineHeight: 1 }} className="gold-foil">{num}</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)', marginTop: 8 }}>{label}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--champagne)', marginTop: 8 }}>{label}</div>
             </div>
           ))}
+        </div>
         </div>
       </section>
 
       {/* Features */}
       <section style={{ maxWidth: 1060, margin: '0 auto', padding: '70px 20px', background: 'var(--parchment)' }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <div className="eyebrow" style={{ marginBottom: 12 }}>Tính năng</div>
-          <h2 className="heading-vi" style={{ fontSize: 'clamp(24px,3.6vw,34px)' }}>Mọi thứ bạn cần để nâng Band Writing</h2>
+          <div className="eyebrow" style={{ marginBottom: 12 }}>TÃ­nh nÄng</div>
+          <h2 className="heading-vi" style={{ fontSize: 'clamp(24px,3.6vw,34px)' }}>Má»i thá»© báº¡n cáº§n Äá» nÃ¢ng Band Writing</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
           {features.map((f) => (
@@ -163,58 +167,58 @@ export default function Home() {
         background: 'radial-gradient(ellipse 120% 80% at 50% 120%, rgba(200,161,75,.06), transparent 50%), var(--royal-sapphire)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--imperial-gold)' }}>Bảng giá</div>
-          <h2 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 'clamp(24px,3.6vw,34px)', color: 'var(--ivory)' }}>Chọn gói phù hợp với bạn</h2>
+          <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--imperial-gold)' }}>Báº£ng giÃ¡</div>
+          <h2 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 'clamp(24px,3.6vw,34px)', color: 'var(--ivory)' }}>Chá»n gÃ³i phÃ¹ há»£p vá»i báº¡n</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 22 }}>
 
           {/* Free */}
           <div style={{ background: '#161E48', border: '1px solid rgba(200,161,75,.18)', borderRadius: 8, padding: '30px 26px' }}>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Miễn phí</div>
-            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Miá»n phÃ­</div>
+            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNÄ</span></div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ thÃ¡ng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 5 lượt chấm điểm / tháng</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi cơ bản</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu mở bài Band 9</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Chấm chi tiết 4 tiêu chí</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Chụp ảnh bài viết</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â 5 lÆ°á»£t cháº¥m Äiá»m / thÃ¡ng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Sá»­a lá»i cÆ¡ báº£n</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â BÃ i máº«u má» bÃ i Band 9</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>â Cháº¥m chi tiáº¿t 4 tiÃªu chÃ­</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>â Chá»¥p áº£nh bÃ i viáº¿t</li>
             </ul>
-            <Link href="/evaluate" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Bắt đầu miễn phí</Link>
+            <Link href="/evaluate" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Báº¯t Äáº§u miá»n phÃ­</Link>
           </div>
 
-          {/* Standard — highlighted */}
+          {/* Standard â highlighted */}
           <div style={{ background: 'linear-gradient(170deg,#1A234E,#0A0E24)', border: '1px solid var(--imperial-gold)', borderRadius: 8, padding: '30px 26px', position: 'relative' }}>            <div style={{
               position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
               fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase',
               background: 'var(--royal-oxblood)', color: 'var(--champagne)', padding: '6px 18px', borderRadius: 3, border: '1px solid #8A6A28', whiteSpace: 'nowrap'
-            }}>Phổ biến</div>
+            }}>Phá» biáº¿n</div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)' }}>Standard</div>
-            <div className="gold-foil" style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
+            <div className="gold-foil" style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNÄ</span></div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ thÃ¡ng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm điểm không giới hạn</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm chi tiết 4 tiêu chí</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi + giải thích</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu Band 9</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Theo dõi tiến bộ</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Cháº¥m Äiá»m khÃ´ng giá»i háº¡n</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Cháº¥m chi tiáº¿t 4 tiÃªu chÃ­</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Sá»­a lá»i + giáº£i thÃ­ch</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â BÃ i máº«u Band 9</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Theo dÃµi tiáº¿n bá»</li>
             </ul>
-            <Link href="/login" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>Đăng ký ngay</Link>
+            <Link href="/login" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>ÄÄng kÃ½ ngay</Link>
           </div>
 
           {/* Premium */}
           <div style={{ background: '#161E48', border: '1px solid rgba(200,161,75,.18)', borderRadius: 8, padding: '30px 26px' }}>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Premium</div>
-            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>150.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
+            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>150.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNÄ</span></div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ thÃ¡ng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mọi tính năng Standard</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chụp ảnh bài viết tay</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Phân tích từ vựng nâng cao</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ So sánh side-by-side</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Forecast đề thi hàng tháng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Má»i tÃ­nh nÄng Standard</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Chá»¥p áº£nh bÃ i viáº¿t tay</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â PhÃ¢n tÃ­ch tá»« vá»±ng nÃ¢ng cao</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â So sÃ¡nh side-by-side</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>â Forecast Äá» thi hÃ ng thÃ¡ng</li>
             </ul>
-            <Link href="/login" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chọn Premium</Link>
+            <Link href="/login" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chá»n Premium</Link>
           </div>
         </div>
       </section>
@@ -222,11 +226,11 @@ export default function Home() {
       {/* CTA */}
       <section style={{ maxWidth: 760, margin: '0 auto', padding: '80px 20px', textAlign: 'center', background: 'var(--parchment)' }}>
         <div className="gold-rule" style={{ width: 80, margin: '0 auto 24px' }} />
-        <h2 className="heading-vi" style={{ fontSize: 'clamp(22px,3.4vw,32px)', marginBottom: 14 }}>Sẵn sàng nâng Band Writing?</h2>
+        <h2 className="heading-vi" style={{ fontSize: 'clamp(22px,3.4vw,32px)', marginBottom: 14 }}>Sáºµn sÃ ng nÃ¢ng Band Writing?</h2>
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 19, color: 'var(--ink)', opacity: .75, marginBottom: 30 }}>
-          Hàng nghìn học sinh đang luyện Writing mỗi ngày cùng UNICOACH.
+          HÃ ng nghÃ¬n há»c sinh Äang luyá»n Writing má»i ngÃ y cÃ¹ng UNICOACH.
         </p>
-        <Link href="/evaluate" className="btn-royal">Chấm bài ngay →</Link>
+        <Link href="/evaluate" className="btn-royal">Cháº¥m bÃ i ngay â</Link>
       </section>
 
       {/* Footer */}
@@ -236,10 +240,10 @@ export default function Home() {
           <span style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 16, color: 'var(--champagne)' }}>UNICOACH</span>
         </div>
         <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 18 }}>
-          &ldquo;Per te, ad astra&rdquo; — through you, to the stars
+          &ldquo;Per te, ad astra&rdquo; â through you, to the stars
         </div>
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#5a4a3a' }}>
-          © 2026 WriteRight · UNICOACH — Powered by Claude AI
+          Â© 2026 WriteRight Â· UNICOACH â Powered by Claude AI
         </div>
       </footer>
     </div>
