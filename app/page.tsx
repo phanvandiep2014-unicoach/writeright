@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import UserMenu from '@/components/UserMenu';
 
 const features = [
   { icon: '✦', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
@@ -89,23 +90,20 @@ export default function Home() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Link href="/login" style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 600, color: 'var(--champagne)' }}>Đăng nhập</Link>
+            <UserMenu />
             <Link href="/evaluate" className="btn-royal" style={{ fontSize: 14, padding: '9px 18px' }}>Chấm bài ngay</Link>
           </div>
         </div>
       </header>
 
-      {/* Hero — Royal Sapphire ground (matches header), so the ivory/champagne/
-          gold-foil text actually has contrast. Previously this section had no
-          background of its own and inherited the light Parchment page bg,
-          which made the ivory heading and champagne badge nearly invisible. */}
+      {/* Hero */}
       <section style={{
-        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.14), transparent 55%), var(--royal-sapphire)',
+        maxWidth: 880, margin: '0 auto', padding: '90px 20px 70px', textAlign: 'center',
+        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.10), transparent 55%)'
       }}>
-        <div style={{ maxWidth: 880, margin: '0 auto', padding: '90px 20px 70px', textAlign: 'center' }}>
-        <div className="eyebrow-on-dark" style={{
+        <div className="eyebrow" style={{
           display: 'inline-flex', border: '1px solid rgba(200,161,75,.35)', borderRadius: 2,
-          padding: '9px 22px', marginBottom: 28
+          padding: '9px 22px', marginBottom: 28, color: 'var(--champagne)'
         }}>
           AI-Powered · Free · Task 1 &amp; 2
         </div>
@@ -127,17 +125,16 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
           <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
-          <a href="/pricing" className="btn-ghost-on-dark">Xem bảng giá</a>
+          <a href="/pricing" className="btn-ghost">Xem bảng giá</a>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 52, flexWrap: 'wrap' }}>
           {[['4', 'Tiêu chí chấm'], ['9.0', 'Bài mẫu Band'], ['< 15s', 'Thời gian chấm']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 36, lineHeight: 1 }} className="gold-foil">{num}</div>
-              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--champagne)', marginTop: 8 }}>{label}</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)', marginTop: 8 }}>{label}</div>
             </div>
           ))}
-        </div>
         </div>
       </section>
 
