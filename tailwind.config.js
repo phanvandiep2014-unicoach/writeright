@@ -4,12 +4,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brand: { 50: '#fdf8eb', 100: '#f9eccc', 200: '#f3d694', 300: '#edc05c', 400: '#e8ad35', 500: '#c9a84c', 600: '#a07a20', 700: '#795b1a', 800: '#654a1c', 900: '#563f1d' },
-        navy: { 50: '#f0f4f8', 100: '#d9e2ec', 200: '#bcccdc', 300: '#9fb3c8', 400: '#7a8fa8', 500: '#627d98', 600: '#486581', 700: '#334e68', 800: '#243850', 900: '#0d1b2a' },
+        /* Imperial Gold ramp â replaces the old pre-rebrand amber/gold scale.
+           500 stays anchored almost exactly on --imperial-gold (#C8A14B). */
+        brand: { 50: '#FDF8EB', 100: '#F7ECD3', 200: '#EFE0B5', 300: '#E7CE8E', 400: '#E7CE8E', 500: '#C8A14B', 600: '#A07A20', 700: '#795B1A', 800: '#654A1C', 900: '#563F1D' },
+        /* Royal Sapphire ramp â replaces the old pre-rebrand blue-grey scale.
+           900 is anchored exactly on --royal-sapphire (#11183A). */
+        navy: { 50: '#F7F8FA', 100: '#EDEFF4', 200: '#DCE0EA', 300: '#C9CEDD', 400: '#9098B5', 500: '#6B7398', 600: '#3C4670', 700: '#232F5E', 800: '#1A234E', 900: '#11183A' },
       },
       fontFamily: {
-        serif: ['Georgia', 'Cambria', 'serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        /* "serif" / "mono" utility names are kept so existing classNames
+           (font-mono, font-serif) don't need to change anywhere â they now
+           resolve to the brand's actual type system instead of Georgia /
+           JetBrains Mono. */
+        serif: ['var(--font-cormorant)', 'Cormorant Garamond', 'Georgia', 'serif'],
+        mono: ['var(--font-eb-garamond)', 'EB Garamond', 'Georgia', 'serif'],
       },
     },
   },
