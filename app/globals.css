@@ -2,25 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* JetBrains Mono for code/mono UI elements */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-
+/* Default ground for authenticated/internal pages (e.g. /evaluate, /dashboard),
+   matching the brand's Royal Sapphire. Public marketing pages (homepage, share)
+   override with their own section backgrounds. */
 :root {
-  --navy: #0d1b2a;
-  --gold: #c9a84c;
+  --legacy-navy: #11183A; /* Royal Sapphire â was #0d1b2a (pre-rebrand) */
+  --legacy-gold: #C8A14B; /* Imperial Gold â was #c9a84c (pre-rebrand) */
+}
+body {
+  background: var(--legacy-navy);
+  color: #cdbb8e; /* Champagne-tan, matches the rest of the dark-ground brand pages */
+  font-family: var(--font-body);
 }
 
-/* Default: navy background for authenticated/internal pages.
-   Public pages (homepage, share) override with their own bg. */
-body { background: #0d1b2a; color: #d4cfc4; }
-
 @layer utilities {
-  .text-gradient { background: linear-gradient(135deg, #c9a84c, #e2c475); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .text-gradient { background: linear-gradient(135deg, #C8A14B, #E7CE8E); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0d1b2a; }
-::-webkit-scrollbar-thumb { background: #243850; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #11183A; }
+::-webkit-scrollbar-thumb { background: #2A3360; border-radius: 3px; }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
