@@ -1,6 +1,11 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Routes that require an authenticated user. Checked here (server-side,
+// using the just-refreshed session cookie) instead of client-side, so there
+// is no race between "cookie just got set" and "client JS asks for it".
+const PROTECTED_PATHS = ['/dashboard'];
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
 
@@ -24,7 +29,15 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const isProtected = PROTECTED_PATHS.some((p) => request.nextUrl.pathname.startsWith(p));
+  if (isProtected && !user) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('next', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   return response;
 }
 
