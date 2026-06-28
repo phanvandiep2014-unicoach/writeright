@@ -23,7 +23,18 @@ export async function GET(request: Request) {
         },
       }
     );
-    await supabase.auth.exchangeCodeForSession(code);
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      // Don't silently pretend this worked — send the user back to login
+      // with a reason so failures are visible instead of looking like a
+      // random "kicked back to login" bug later on.
+      console.error('[auth/callback] exchangeCodeForSession failed:', error.message);
+      const loginUrl = new URL('/login', origin);
+      loginUrl.searchParams.set('error', 'auth_callback_failed');
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return NextResponse.redirect(`${origin}/evaluate`);
