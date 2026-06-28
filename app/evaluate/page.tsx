@@ -20,10 +20,10 @@ type EvalResult = {
 };
 
 const CRITERIA = [
-  { key: 'task_achievement' as const, label: 'Task Achievement', short: 'TA', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)' },
-  { key: 'coherence_cohesion' as const, label: 'Coherence & Cohesion', short: 'CC', color: '#10B981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)' },
-  { key: 'lexical_resource' as const, label: 'Lexical Resource', short: 'LR', color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.3)' },
-  { key: 'grammatical_range' as const, label: 'Grammar & Accuracy', short: 'GR', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
+  { key: 'task_achievement' as const, label: 'Task Achievement', short: 'TA', color: '#4A6FA5', bg: 'rgba(74,111,165,0.12)', border: 'rgba(74,111,165,0.3)' },
+  { key: 'coherence_cohesion' as const, label: 'Coherence & Cohesion', short: 'CC', color: '#3D8567', bg: 'rgba(61,133,103,0.12)', border: 'rgba(61,133,103,0.3)' },
+  { key: 'lexical_resource' as const, label: 'Lexical Resource', short: 'LR', color: '#9173B8', bg: 'rgba(145,115,184,0.12)', border: 'rgba(145,115,184,0.3)' },
+  { key: 'grammatical_range' as const, label: 'Grammar & Accuracy', short: 'GR', color: '#B5495C', bg: 'rgba(181,73,92,0.12)', border: 'rgba(181,73,92,0.3)' },
 ];
 
 function BandRing({ band, size = 96 }: { band: number; size?: number }) {
@@ -82,9 +82,9 @@ export default function EvaluatePage() {
   };
 
   const evaluate = async () => {
-    if (!prompt) { setError('Vui lòng nhập đề bài'); return; }
-    if (tab === 'text' && !essay) { setError('Vui lòng nhập bài luận'); return; }
-    if (tab === 'image' && !imageData) { setError('Vui lòng tải ảnh bài viết'); return; }
+    if (!prompt) { setError('Vui lÃ²ng nháº­p Äá» bÃ i'); return; }
+    if (tab === 'text' && !essay) { setError('Vui lÃ²ng nháº­p bÃ i luáº­n'); return; }
+    if (tab === 'image' && !imageData) { setError('Vui lÃ²ng táº£i áº£nh bÃ i viáº¿t'); return; }
     setLoading(true); setError(''); setResult(null);
     try {
       const res = await fetch('/api/evaluate', {
@@ -114,20 +114,20 @@ export default function EvaluatePage() {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-sm">W</div>
-            <span className="text-lg text-white font-semibold">Write<span className="text-brand-400">Right</span></span>
+            <span className="text-lg text-white font-semibold" style={{ fontFamily: 'var(--font-wordmark)' }}>Write<span className="text-brand-400">Right</span></span>
           </Link>
-          <Link href="/dashboard" className="text-sm text-navy-400 hover:text-white transition font-mono">Dashboard →</Link>
+          <Link href="/dashboard" className="text-sm text-navy-400 hover:text-white transition font-mono">Dashboard â</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <QuotaBanner onUpgrade={() => window.location.href='/pricing'} />
 
-        {/* ════════════ RESULTS ════════════ */}
+        {/* ââââââââââââ RESULTS ââââââââââââ */}
         {result && (
           <div className="animate-fade-up space-y-5">
 
-            {/* ── Overall Score Card ── */}
+            {/* ââ Overall Score Card ââ */}
             <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="flex items-center gap-6 flex-wrap relative">
@@ -162,7 +162,7 @@ export default function EvaluatePage() {
 
             <DetailGate onUpgrade={() => window.location.href='/pricing'}>
 
-            {/* ── Criteria Detail Cards ── */}
+            {/* ââ Criteria Detail Cards ââ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {CRITERIA.map((c) => {
                 const d = result[c.key];
@@ -185,31 +185,31 @@ export default function EvaluatePage() {
                       <div className="mt-3 pt-3 border-t border-navy-700/50 space-y-1.5">
                         {d.improvements.map((tip, i) => (
                           <p key={i} className="text-xs text-navy-400 pl-4 relative">
-                            <span className="absolute left-0" style={{ color: c.color }}>→</span>{tip}
+                            <span className="absolute left-0" style={{ color: c.color }}>â</span>{tip}
                           </p>
                         ))}
                       </div>
                     )}
-                    <div className="text-[10px] font-mono text-navy-600 mt-2">{isOpen ? '▲ Thu gọn' : '▼ Xem chi tiết'}</div>
+                    <div className="text-[10px] font-mono text-navy-600 mt-2">{isOpen ? 'â² Thu gá»n' : 'â¼ Xem chi tiáº¿t'}</div>
                   </button>
                 );
               })}
             </div>
 
-            {/* ── Error Corrections ── */}
+            {/* ââ Error Corrections ââ */}
             {result.error_corrections?.length > 0 && (
               <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
                 <div className="px-5 py-3 border-b border-navy-700 flex items-center gap-2">
-                  <span className="text-red-400">✏</span>
-                  <span className="text-sm font-semibold text-white">Sửa lỗi chi tiết</span>
-                  <span className="ml-auto text-[10px] font-mono text-navy-500 bg-navy-700 px-2 py-0.5 rounded-full">{result.error_corrections.length} lỗi</span>
+                  <span className="text-red-400">â</span>
+                  <span className="text-sm font-semibold text-white">Sá»­a lá»i chi tiáº¿t</span>
+                  <span className="ml-auto text-[10px] font-mono text-navy-500 bg-navy-700 px-2 py-0.5 rounded-full">{result.error_corrections.length} lá»i</span>
                 </div>
                 <div className="divide-y divide-navy-700/50">
                   {result.error_corrections.map((c, i) => (
                     <div key={i} className="px-5 py-3 hover:bg-navy-750/30 transition">
                       <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start mb-1">
                         <span className="font-mono text-xs text-red-400/80 line-through">{c.original}</span>
-                        <span className="text-navy-600 text-xs">→</span>
+                        <span className="text-navy-600 text-xs">â</span>
                         <span className="font-mono text-xs text-green-400">{c.corrected}</span>
                       </div>
                       <p className="text-[11px] text-navy-500 italic">{c.explanation}</p>
@@ -219,12 +219,12 @@ export default function EvaluatePage() {
               </div>
             )}
 
-            {/* ── Strengths + Priority Fixes ── */}
+            {/* ââ Strengths + Priority Fixes ââ */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-navy-800 border border-green-900/40 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs">✓</span>
-                  <span className="text-xs font-mono tracking-wider uppercase text-green-500">Điểm mạnh</span>
+                  <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs">â</span>
+                  <span className="text-xs font-mono tracking-wider uppercase text-green-500">Äiá»m máº¡nh</span>
                 </div>
                 <div className="space-y-2">
                   {result.key_strengths?.map((s, i) => (
@@ -235,7 +235,7 @@ export default function EvaluatePage() {
               <div className="bg-navy-800 border border-amber-900/40 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 text-xs">!</span>
-                  <span className="text-xs font-mono tracking-wider uppercase text-amber-500">Ưu tiên cải thiện</span>
+                  <span className="text-xs font-mono tracking-wider uppercase text-amber-500">Æ¯u tiÃªn cáº£i thiá»n</span>
                 </div>
                 <div className="space-y-2">
                   {result.priority_fixes?.map((f, i) => (
@@ -245,14 +245,14 @@ export default function EvaluatePage() {
               </div>
             </div>
 
-            {/* ── Model Introduction ── */}
+            {/* ââ Model Introduction ââ */}
             {result.model_introduction && (
               <div className="bg-navy-800 border border-brand-500/20 rounded-xl p-5 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-brand-500 to-brand-500/20" />
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-brand-400">✦</span>
-                  <span className="text-sm font-semibold text-white">Mở bài mẫu Band 9</span>
-                  <span className="text-[10px] font-mono text-navy-500 bg-navy-700 px-2 py-0.5 rounded-full ml-auto">Viết riêng cho đề này</span>
+                  <span className="text-brand-400">â¦</span>
+                  <span className="text-sm font-semibold text-white">Má» bÃ i máº«u Band 9</span>
+                  <span className="text-[10px] font-mono text-navy-500 bg-navy-700 px-2 py-0.5 rounded-full ml-auto">Viáº¿t riÃªng cho Äá» nÃ y</span>
                 </div>
                 <p className="text-sm text-navy-100 leading-relaxed italic pl-3">{result.model_introduction}</p>
               </div>
@@ -260,29 +260,29 @@ export default function EvaluatePage() {
 
             </DetailGate>
 
-            {/* ── Action Buttons ── */}
+            {/* ââ Action Buttons ââ */}
             <div className="flex gap-3">
               <button onClick={reset} className="flex-1 border border-navy-600 text-navy-300 py-3 rounded-xl font-mono text-sm hover:border-brand-500/50 transition">
-                ← Chấm bài mới
+                â Cháº¥m bÃ i má»i
               </button>
               <button onClick={() => { navigator.clipboard.writeText(window.location.href); }}
                 className="px-6 bg-brand-500/15 border border-brand-500/30 text-brand-400 py-3 rounded-xl font-mono text-sm hover:bg-brand-500/25 transition">
-                Chia sẻ ↗
+                Chia sáº» â
               </button>
             </div>
           </div>
         )}
 
-        {/* ════════════ FORM ════════════ */}
+        {/* ââââââââââââ FORM ââââââââââââ */}
         {!result && !loading && (
           <div className="animate-fade-up">
             <div className="text-center mb-8">
-              <div className="text-xs font-mono tracking-widest uppercase text-brand-400 mb-3">Chấm bài Writing</div>
-              <h1 className="text-3xl text-white font-semibold">Nộp bài luận để chấm điểm</h1>
+              <div className="text-xs font-mono tracking-widest uppercase text-brand-400 mb-3">Cháº¥m bÃ i Writing</div>
+              <h1 className="text-3xl text-white font-semibold">Ná»p bÃ i luáº­n Äá» cháº¥m Äiá»m</h1>
             </div>
 
             <div className="mb-5">
-              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">Loại bài</label>
+              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">Loáº¡i bÃ i</label>
               <div className="grid grid-cols-2 gap-3">
                 {[{ n: 2, label: 'Task 2', desc: 'Opinion, discussion, problem/solution' }, { n: 1, label: 'Task 1', desc: 'Graphs, charts, diagrams, maps' }].map((t) => (
                   <button key={t.n} onClick={() => setTaskType(t.n)} className={`p-4 rounded-xl border-2 text-left transition ${taskType === t.n ? 'border-brand-500 bg-brand-500/10' : 'border-navy-700 bg-navy-800 hover:border-brand-500/30'}`}>
@@ -294,22 +294,22 @@ export default function EvaluatePage() {
             </div>
 
             <div className="mb-5">
-              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">Đề bài</label>
-              <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Dán đề bài IELTS Writing vào đây..."
+              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">Äá» bÃ i</label>
+              <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="DÃ¡n Äá» bÃ i IELTS Writing vÃ o ÄÃ¢y..."
                 className="w-full bg-navy-800 border border-navy-700 rounded-xl p-4 text-white placeholder-navy-500 focus:border-brand-500 outline-none resize-y min-h-[80px] text-sm leading-relaxed" />
             </div>
 
             <div className="mb-4">
-              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">Bài luận</label>
+              <label className="text-xs font-mono tracking-wider uppercase text-brand-400 mb-2 block">BÃ i luáº­n</label>
               <div className="flex border border-navy-700 rounded-xl overflow-hidden mb-3">
-                <button onClick={() => setTab('text')} className={`flex-1 py-2.5 text-xs font-mono tracking-wider text-center transition ${tab === 'text' ? 'bg-brand-500/15 text-brand-400' : 'bg-navy-800 text-navy-500 hover:text-navy-300'}`}>✏ Nhập / Dán</button>
-                <button onClick={() => setTab('image')} className={`flex-1 py-2.5 text-xs font-mono tracking-wider text-center border-l border-navy-700 transition ${tab === 'image' ? 'bg-brand-500/15 text-brand-400' : 'bg-navy-800 text-navy-500 hover:text-navy-300'}`}>📷 Tải ảnh</button>
+                <button onClick={() => setTab('text')} className={`flex-1 py-2.5 text-xs font-mono tracking-wider text-center transition ${tab === 'text' ? 'bg-brand-500/15 text-brand-400' : 'bg-navy-800 text-navy-500 hover:text-navy-300'}`}>â Nháº­p / DÃ¡n</button>
+                <button onClick={() => setTab('image')} className={`flex-1 py-2.5 text-xs font-mono tracking-wider text-center border-l border-navy-700 transition ${tab === 'image' ? 'bg-brand-500/15 text-brand-400' : 'bg-navy-800 text-navy-500 hover:text-navy-300'}`}>ð· Táº£i áº£nh</button>
               </div>
               {tab === 'text' && (
                 <>
-                  <textarea value={essay} onChange={(e) => setEssay(e.target.value)} placeholder="Dán hoặc nhập bài luận vào đây..."
+                  <textarea value={essay} onChange={(e) => setEssay(e.target.value)} placeholder="DÃ¡n hoáº·c nháº­p bÃ i luáº­n vÃ o ÄÃ¢y..."
                     className="w-full bg-navy-800 border border-navy-700 rounded-xl p-4 text-white placeholder-navy-500 focus:border-brand-500 outline-none resize-y min-h-[200px] leading-relaxed" />
-                  <div className={`text-right text-xs font-mono mt-1 ${wordCount < 250 ? 'text-amber-500' : 'text-green-500'}`}>{wordCount} từ</div>
+                  <div className={`text-right text-xs font-mono mt-1 ${wordCount < 250 ? 'text-amber-500' : 'text-green-500'}`}>{wordCount} tá»«</div>
                 </>
               )}
               {tab === 'image' && (
@@ -317,14 +317,14 @@ export default function EvaluatePage() {
                   {!imageData ? (
                     <label className="block border-2 border-dashed border-navy-600 rounded-xl p-8 text-center cursor-pointer hover:border-brand-500/50 bg-navy-800 transition">
                       <input type="file" accept="image/*" onChange={handleImage} ref={fileRef} className="hidden" />
-                      <div className="text-3xl mb-2">📄</div>
-                      <p className="text-sm text-navy-400"><strong className="text-brand-400">Nhấn để tải ảnh</strong> hoặc kéo thả</p>
-                      <p className="text-xs text-navy-600 mt-1">JPG, PNG — ảnh bài viết tay hoặc in</p>
+                      <div className="text-3xl mb-2">ð</div>
+                      <p className="text-sm text-navy-400"><strong className="text-brand-400">Nháº¥n Äá» táº£i áº£nh</strong> hoáº·c kÃ©o tháº£</p>
+                      <p className="text-xs text-navy-600 mt-1">JPG, PNG â áº£nh bÃ i viáº¿t tay hoáº·c in</p>
                     </label>
                   ) : (
                     <div className="text-center">
                       <img src={`data:${imageType};base64,${imageData}`} alt="Essay" className="max-h-64 rounded-xl border border-navy-700 mx-auto" />
-                      <button onClick={() => { setImageData(null); if (fileRef.current) fileRef.current.value = ''; }} className="mt-3 text-xs text-red-400 border border-red-900 px-3 py-1 rounded-full hover:bg-red-900/20 transition">✕ Xóa ảnh</button>
+                      <button onClick={() => { setImageData(null); if (fileRef.current) fileRef.current.value = ''; }} className="mt-3 text-xs text-red-400 border border-red-900 px-3 py-1 rounded-full hover:bg-red-900/20 transition">â XÃ³a áº£nh</button>
                     </div>
                   )}
                 </div>
@@ -334,20 +334,20 @@ export default function EvaluatePage() {
             {error && <div className="bg-red-900/20 border border-red-800 text-red-300 text-sm px-4 py-3 rounded-xl mb-4">{error}</div>}
 
             <button onClick={evaluate} className="w-full bg-brand-500 text-navy-900 py-3.5 rounded-xl text-lg font-semibold hover:bg-brand-400 hover:-sight-translate-y-0.5 transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 mt-2">
-              <span>✦</span> Chấm bài ngay
+              <span>â¦</span> Cháº¥m bÃ i ngay
             </button>
           </div>
         )}
 
-        {/* ════════════ LOADING ════════════ */}
+        {/* ââââââââââââ LOADING ââââââââââââ */}
         {loading && (
           <div className="text-center py-16 animate-fade-up">
             <div className="w-14 h-14 border-[3px] border-navy-600 border-t-brand-500 rounded-full animate-spin-slow mx-auto mb-6" />
-            <p className="text-navy-300 italic text-lg">Đang chấm bài của bạn...</p>
+            <p className="text-navy-300 italic text-lg">Äang cháº¥m bÃ i cá»§a báº¡n...</p>
             <div className="font-mono text-xs text-navy-600 mt-4 space-y-1.5">
-              <p>Phân tích cấu trúc bài luận...</p>
-              <p>Chấm điểm 4 tiêu chí IELTS...</p>
-              <p>Tạo bài mẫu mở bài Band 9...</p>
+              <p>PhÃ¢n tÃ­ch cáº¥u trÃºc bÃ i luáº­n...</p>
+              <p>Cháº¥m Äiá»m 4 tiÃªu chÃ­ IELTS...</p>
+              <p>Táº¡o bÃ i máº«u má» bÃ i Band 9...</p>
             </div>
           </div>
         )}
