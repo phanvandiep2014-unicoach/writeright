@@ -1,12 +1,19 @@
 'use client';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') || '/profile';
+
   const handleGoogleLogin = async () => {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      },
     });
   };
 
@@ -32,8 +39,16 @@ export default function LoginPage() {
           Đăng nhập với Google
         </button>
 
-        <p className="text-center text-xs text-navy-500 mt-6">
-          Bằng việc đăng nhập, bạn đồng ý với điều khoản sử dụng.
+        <p className="text-center text-xs text-navy-500 mt-6 leading-relaxed">
+          Bằng việc đăng nhập, bạn đồng ý với{' '}
+          <Link href="/terms" className="text-brand-400/70 hover:text-brand-400 transition underline underline-offset-2">
+            Điều khoản dịch vụ
+          </Link>{' '}
+          và{' '}
+          <Link href="/privacy" className="text-brand-400/70 hover:text-brand-400 transition underline underline-offset-2">
+            Chính sách bảo mật
+          </Link>{' '}
+          của WriteRight.
         </p>
       </div>
     </div>
