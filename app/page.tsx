@@ -175,7 +175,7 @@ export default function Home() {
             <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 5 lượt chấm điểm / tháng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 1 lần chấm / tuần</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi cơ bản</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu mở bài Band 9</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Chấm chi tiết 4 tiêu chí</li>
@@ -225,7 +225,7 @@ export default function Home() {
         <div className="gold-rule" style={{ width: 80, margin: '0 auto 24px' }} />
         <h2 className="heading-vi" style={{ fontSize: 'clamp(22px,3.4vw,32px)', marginBottom: 14 }}>Sẵn sàng nâng Band Writing?</h2>
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 19, color: 'var(--ink)', opacity: .75, marginBottom: 30 }}>
-          Hàng nghìn học sinh đang luyện Writing mỗi ngày cùng UNICOACH.
+          Chấm bài theo đúng 4 tiêu chí IELTS — nhận phản hồi chi tiết trong vài giây.
         </p>
         <Link href="/evaluate" className="btn-royal">Chấm bài ngay →</Link>
       </section>
@@ -238,6 +238,10 @@ export default function Home() {
         </div>
         <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 18 }}>
           &ldquo;Per te, ad astra&rdquo; — through you, to the stars
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 14 }}>
+          <Link href="/privacy" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9c8657', textDecoration: 'none' }}>Chính sách bảo mật</Link>
+          <Link href="/terms" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#9c8657', textDecoration: 'none' }}>Điều khoản dịch vụ</Link>
         </div>
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#5a4a3a' }}>
           © 2026 WriteRight · UNICOACH — Powered by Claude AI
