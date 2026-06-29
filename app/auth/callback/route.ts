@@ -5,6 +5,10 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  // Support ?next= redirect after login (e.g. from /login?next=/evaluate)
+  const next = searchParams.get('next') ?? '/profile';
+  // Validate next to prevent open redirect — only allow same-origin paths
+  const safePath = next.startsWith('/') ? next : '/dashboard';
 
   if (code) {
     const cookieStore = cookies();
@@ -27,9 +31,6 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      // Don't silently pretend this worked — send the user back to login
-      // with a reason so failures are visible instead of looking like a
-      // random "kicked back to login" bug later on.
       console.error('[auth/callback] exchangeCodeForSession failed:', error.message);
       const loginUrl = new URL('/login', origin);
       loginUrl.searchParams.set('error', 'auth_callback_failed');
@@ -37,5 +38,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/evaluate`);
+  return NextResponse.redirect(`${origin}${safePath}`);
 }
