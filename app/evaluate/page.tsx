@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 
@@ -25,6 +25,9 @@ const CRITERIA = [
   { key: 'lexical_resource' as const, label: 'Lexical Resource', short: 'LR', color: '#9173B8', bg: 'rgba(145,115,184,0.12)', border: 'rgba(145,115,184,0.3)' },
   { key: 'grammatical_range' as const, label: 'Grammar & Accuracy', short: 'GR', color: '#B5495C', bg: 'rgba(181,73,92,0.12)', border: 'rgba(181,73,92,0.3)' },
 ];
+
+const LS_PROMPT = 'wr_draft_prompt';
+const LS_ESSAY  = 'wr_draft_essay';
 
 function BandRing({ band, size = 96 }: { band: number; size?: number }) {
   const r = (size - 8) / 2;
@@ -64,8 +67,28 @@ export default function EvaluatePage() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EvalResult | null>(null);
   const [error, setError] = useState('');
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [expandedCriterion, setExpandedCriterion] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // ── Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedPrompt = localStorage.getItem(LS_PROMPT);
+      const savedEssay  = localStorage.getItem(LS_ESSAY);
+      if (savedPrompt) setPrompt(savedPrompt);
+      if (savedEssay)  setEssay(savedEssay);
+    } catch {}
+  }, []);
+
+  // ── Autosave draft to localStorage as user types
+  useEffect(() => {
+    try { localStorage.setItem(LS_PROMPT, prompt); } catch {}
+  }, [prompt]);
+
+  useEffect(() => {
+    try { localStorage.setItem(LS_ESSAY, essay); } catch {}
+  }, [essay]);
 
   const wordCount = essay.trim() ? essay.trim().split(/\s+/).filter(Boolean).length : 0;
 
@@ -85,7 +108,7 @@ export default function EvaluatePage() {
     if (!prompt) { setError('Vui lòng nhập đề bài'); return; }
     if (tab === 'text' && !essay) { setError('Vui lòng nhập bài luận'); return; }
     if (tab === 'image' && !imageData) { setError('Vui lòng tải ảnh bài viết'); return; }
-    setLoading(true); setError(''); setResult(null);
+    setLoading(true); setError(''); setResult(null); setNeedsLogin(false);
     try {
       const res = await fetch('/api/evaluate', {
         method: 'POST',
@@ -98,14 +121,27 @@ export default function EvaluatePage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        // Handle auth error specially — show login prompt, preserve form data
+        if (data.code === 'AUTH_REQUIRED') {
+          setNeedsLogin(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       setResult(data);
+      // Clear draft from localStorage after successful submission
+      try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };
 
-  const reset = () => { setResult(null); setEssay(''); setPrompt(''); setImageData(null); setExpandedCriterion(null); };
+  const reset = () => {
+    setResult(null); setEssay(''); setPrompt(''); setImageData(null);
+    setExpandedCriterion(null); setNeedsLogin(false);
+    try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
+  };
 
   return (
     <div className="min-h-screen">
@@ -122,6 +158,31 @@ export default function EvaluatePage() {
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <QuotaBanner onUpgrade={() => window.location.href='/pricing'} />
+
+        {/* ════════════ LOGIN PROMPT (AUTH_REQUIRED) ════════════ */}
+        {needsLogin && (
+          <div className="animate-fade-up bg-navy-800 border border-brand-500/40 rounded-2xl p-8 text-center">
+            <div className="w-14 h-14 rounded-full bg-brand-500/15 border border-brand-500/30 flex items-center justify-center text-3xl mx-auto mb-5">✦</div>
+            <h2 className="text-xl font-semibold text-white mb-2">Đăng nhập để chấm bài</h2>
+            <p className="text-navy-300 text-sm mb-6 max-w-xs mx-auto leading-relaxed">
+              Bài luận của bạn đã được lưu. Đăng nhập để tiếp tục nhận kết quả chấm điểm.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/login?next=/evaluate"
+                className="bg-brand-500 text-navy-900 px-8 py-3 rounded-xl font-semibold text-sm hover:bg-brand-400 transition shadow-lg shadow-brand-500/20"
+              >
+                Đăng nhập với Google
+              </Link>
+              <button
+                onClick={() => setNeedsLogin(false)}
+                className="border border-navy-600 text-navy-300 px-6 py-3 rounded-xl text-sm hover:border-brand-500/40 transition"
+              >
+                ← Quay lại
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ════════════ RESULTS ════════════ */}
         {result && (
@@ -274,7 +335,7 @@ export default function EvaluatePage() {
         )}
 
         {/* ════════════ FORM ════════════ */}
-        {!result && !loading && (
+        {!result && !loading && !needsLogin && (
           <div className="animate-fade-up">
             <div className="text-center mb-8">
               <div className="text-xs font-mono tracking-widest uppercase text-brand-400 mb-3">Chấm bài Writing</div>
