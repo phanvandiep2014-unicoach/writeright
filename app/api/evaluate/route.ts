@@ -30,7 +30,7 @@ function currentWeekStart() {
   return monday.toISOString().split('T')[0];
 }
 
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 });
 
@@ -77,7 +77,7 @@ export async function POST(req) {
     try { claudeData = JSON.parse(responseText); }
     catch { return NextResponse.json({ error: 'Loi ket noi AI. Vui long thu lai.' }, { status: 502 }); }
 
-    const rawText = claudeData.content?.map(b => b.text||'').join('') ?? '';
+    const rawText = claudeData.content?.map((b: any) => b.text||'').join('') ?? '';
     let result;
     try { result = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
     catch { return NextResponse.json({ error: 'AI tra ve dinh dang khong hop le.' }, { status: 502 }); }
@@ -93,7 +93,7 @@ export async function POST(req) {
     if (insertErr) console.error('Failed to log evaluation:', insertErr.message);
 
     return NextResponse.json(result);
-  } catch (err) {
+  } catch (err: any) {
     return NextResponse.json({ error: 'Server error: ' + err.message }, { status: 500 });
   }
 }
