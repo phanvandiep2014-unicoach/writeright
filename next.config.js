@@ -1,14 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ── Security headers applied to every response
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
+          // Prevent clickjacking
           { key: 'X-Frame-Options', value: 'DENY' },
+          // Prevent MIME-type sniffing
           { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Limit referrer info sent to third parties
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // Basic permissions policy
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          // Content Security Policy
           {
             key: 'Content-Security-Policy',
             value: [
@@ -32,15 +41,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        hostname: 'lh3.googleusercontent.com', // Google profile photos
       },
     ],
   },
-};
-
-module.exports = nextConfig;/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {},
 };
 
 module.exports = nextConfig;
