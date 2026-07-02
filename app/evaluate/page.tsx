@@ -3,20 +3,38 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 
-type CriterionResult = { band: number; feedback: string; improvements: string[] };
+type Bi = string | { en: string; vi: string };
+const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
+const tVi = (f: Bi | undefined): string => !f || typeof f === 'string' ? '' : (f.vi || '');
+function BiText({ f, viClass }: { f: Bi | undefined; viClass?: string }) {
+  const en = tEn(f); const vi = tVi(f);
+  if (!en && !vi) return null;
+  return (<span>{en}{vi ? <span className={viClass || 'block text-[11px] italic text-navy-500 mt-0.5 font-normal'}>{vi}</span> : null}</span>);
+}
+const CAT_STYLE: Record<string, { label: string; color: string }> = {
+  grammar: { label: 'Grammar', color: '#f87171' },
+  vocabulary: { label: 'Vocabulary', color: '#c084fc' },
+  register: { label: 'Register', color: '#facc15' },
+  tone: { label: 'Tone', color: '#fb923c' },
+  reference: { label: 'Reference', color: '#38bdf8' },
+  dialect: { label: 'Dialect', color: '#34d399' },
+  spelling: { label: 'Spelling', color: '#f472b6' },
+};
+type CriterionResult = { band: number; feedback: Bi; improvements: Bi[] };
 type EvalResult = {
   overall_band: number;
   band_descriptor: string;
-  headline: string;
-  summary: string;
+  headline: Bi;
+  summary: Bi;
   task_achievement: CriterionResult;
   lexical_resource: CriterionResult;
   grammatical_range: CriterionResult;
   coherence_cohesion: CriterionResult;
-  key_strengths: string[];
-  priority_fixes: string[];
-  error_corrections: { original: string; corrected: string; explanation: string }[];
+  key_strengths: Bi[];
+  priority_fixes: Bi[];
+  error_corrections: { original: string; corrected: string; category?: string; explanation: Bi }[];
   model_introduction: string;
+  language_insights?: any;
 };
 
 const CRITERIA = [
@@ -201,8 +219,8 @@ export default function EvaluatePage() {
                 </div>
                 <div className="flex-1 min-w-[200px]">
                   <div className="text-xs font-mono text-brand-500/70 tracking-wider uppercase mb-1">{result.band_descriptor}</div>
-                  <h2 className="text-xl text-white font-semibold mb-1">{result.headline}</h2>
-                  <p className="text-sm text-navy-300 leading-relaxed">{result.summary}</p>
+                  <h2 className="text-xl text-white font-semibold mb-1"><BiText f={result.headline} viClass="block text-sm text-navy-400 italic mt-1 font-normal" /></h2>
+                  <p className="text-sm text-navy-300 leading-relaxed"><BiText f={result.summary} /></p>
                 </div>
               </div>
 
@@ -241,12 +259,12 @@ export default function EvaluatePage() {
                       <span className="text-2xl font-bold" style={{ color: c.color }}>{d.band}</span>
                     </div>
                     <CriterionBar band={d.band} color={c.color} />
-                    <p className="text-xs text-navy-300 leading-relaxed mt-3">{d.feedback}</p>
+                    <p className="text-xs text-navy-300 leading-relaxed mt-3"><BiText f={d.feedback} /></p>
                     {isOpen && d.improvements.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-navy-700/50 space-y-1.5">
                         {d.improvements.map((tip, i) => (
                           <p key={i} className="text-xs text-navy-400 pl-4 relative">
-                            <span className="absolute left-0" style={{ color: c.color }}>→</span>{tip}
+                            <span className="absolute left-0" style={{ color: c.color }}>→</span><BiText f={tip} />
                           </p>
                         ))}
                       </div>
@@ -268,14 +286,53 @@ export default function EvaluatePage() {
                 <div className="divide-y divide-navy-700/50">
                   {result.error_corrections.map((c, i) => (
                     <div key={i} className="px-5 py-3 hover:bg-navy-750/30 transition">
+                      {c.category && CAT_STYLE[c.category] && (<span className="inline-block text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full mb-1.5" style={{ color: CAT_STYLE[c.category].color, background: CAT_STYLE[c.category].color + '22' }}>{CAT_STYLE[c.category].label}</span>)}
                       <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start mb-1">
                         <span className="font-mono text-xs text-red-400/80 line-through">{c.original}</span>
                         <span className="text-navy-600 text-xs">→</span>
                         <span className="font-mono text-xs text-green-400">{c.corrected}</span>
                       </div>
-                      <p className="text-[11px] text-navy-500 italic">{c.explanation}</p>
+                      <p className="text-[11px] text-navy-500 italic"><BiText f={c.explanation} /></p>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Language Insights ── */}
+            {result.language_insights && (
+              <div className="bg-navy-800 border border-navy-700 rounded-xl overflow-hidden">
+                <div className="px-5 py-3 border-b border-navy-700 flex items-center gap-2">
+                  <span className="text-brand-400">🔬</span>
+                  <span className="text-sm font-semibold text-white">Language Insights</span>
+                  <span className="text-[10px] text-navy-500 italic ml-1">Phân tích ngôn ngữ chuyên sâu</span>
+                </div>
+                <div className="divide-y divide-navy-700/50">
+                  {[
+                    { key: 'register', title: 'Register', sub: 'Văn phong', extra: result.language_insights.register?.rating },
+                    { key: 'tone_nuance', title: 'Tone & Nuance', sub: 'Sắc thái' },
+                    { key: 'reference_cohesion', title: 'Reference & Cohesion', sub: 'Quy chiếu & Liên kết' },
+                    { key: 'dialect', title: 'Dialect', sub: 'Phương ngữ', extra: result.language_insights.dialect?.variety },
+                  ].map(g => {
+                    const grp = (result.language_insights as any)[g.key];
+                    if (!grp || !grp.notes || grp.notes.length === 0) return null;
+                    return (
+                      <div key={g.key} className="px-5 py-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-semibold text-brand-400">{g.title}</span>
+                          <span className="text-[10px] text-navy-500 italic">{g.sub}</span>
+                          {g.extra && <span className="ml-auto text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-navy-700 text-navy-300">{g.extra}</span>}
+                        </div>
+                        <div className="space-y-1.5">
+                          {grp.notes.map((n: any, i: number) => (
+                            <p key={i} className="text-xs text-navy-300 pl-4 relative leading-relaxed">
+                              <span className="absolute left-0 text-brand-500">•</span><BiText f={n} />
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -289,7 +346,7 @@ export default function EvaluatePage() {
                 </div>
                 <div className="space-y-2">
                   {result.key_strengths?.map((s, i) => (
-                    <p key={i} className="text-sm text-navy-200 pl-3 border-l-2 border-green-800">{s}</p>
+                    <p key={i} className="text-sm text-navy-200 pl-3 border-l-2 border-green-800"><BiText f={s} /></p>
                   ))}
                 </div>
               </div>
@@ -300,7 +357,7 @@ export default function EvaluatePage() {
                 </div>
                 <div className="space-y-2">
                   {result.priority_fixes?.map((f, i) => (
-                    <p key={i} className="text-sm text-navy-200 pl-3 border-l-2 border-amber-800">{f}</p>
+                    <p key={i} className="text-sm text-navy-200 pl-3 border-l-2 border-amber-800"><BiText f={f} /></p>
                   ))}
                 </div>
               </div>
