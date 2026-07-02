@@ -21,6 +21,7 @@ type Evaluation = {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [evals, setEvals] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Evaluation | null>(null);
@@ -33,6 +34,13 @@ export default function DashboardPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = '/login'; return; }
       setUser(user);
+
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, tier')
+        .eq('id', user.id)
+        .single();
+      setProfile(prof);
 
       const { data } = await supabase
         .from('evaluations')
@@ -114,7 +122,24 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="font-['DM_Serif_Display'] text-3xl text-white mb-8">Dashboard</h1>
+        <div className="flex items-center gap-4 mb-8">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="" referrerPolicy="no-referrer" className="w-16 h-16 rounded-full border-2 border-brand-500/60 object-cover" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-brand-500/20 border-2 border-brand-500/60 flex items-center justify-center text-brand-400 font-['DM_Serif_Display'] text-2xl">
+              {(profile?.full_name || user?.email || 'W').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h1 className="font-['DM_Serif_Display'] text-3xl text-white leading-tight">{profile?.full_name || 'Dashboard'}</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-navy-400 font-mono">{user?.email}</span>
+              <span className={'text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border ' + (profile?.tier === 'premium' || profile?.tier === 'standard' ? 'bg-brand-500/15 border-brand-500/50 text-brand-400' : 'bg-navy-700 border-navy-600 text-navy-300')}>
+                {profile?.tier === 'premium' ? 'Premium' : profile?.tier === 'standard' ? 'Standard' : 'Free'}
+              </span>
+            </div>
+          </div>
+        </div>
 
         <div className="mb-8">
           <StreakBar />
