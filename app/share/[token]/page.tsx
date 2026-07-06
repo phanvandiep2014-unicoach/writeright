@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+const ScorePanel = dynamic(() => import('@/components/ScorePanel').then(m=>({default:m.ScorePanel})), {ssr:false});
 
 type SharedEval = {
   task_type: number;
@@ -107,6 +109,11 @@ export default async function SharedScorecardPage({ params }: { params: { token:
             <p className="gold-foil" style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', fontWeight: 700, lineHeight: 1 }}>
               {ev.overall_band}
             </p>
+          </div>
+
+          {/* Score Panel */}
+          <div className="my-6">
+            <ScorePanel ta={{band: ev.ta_band??0}} cc={{band: ev.cc_band??0}} lr={{band: ev.lr_band??0}} gr={{band: ev.gra_band??0}} overall={ev.overall_band??0} evalId={""}/>
           </div>
 
           {/* Criteria breakdown */}
