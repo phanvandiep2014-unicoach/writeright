@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
       const { data: prof } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url, tier')
+        .select('full_name, avatar_url, tier, public_token')
         .eq('id', user.id)
         .single();
       setProfile(prof);
@@ -139,6 +139,9 @@ export default function DashboardPage() {
               <span className={'text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border ' + (profile?.tier === 'premium' || profile?.tier === 'standard' ? 'bg-brand-500/15 border-brand-500/50 text-brand-400' : 'bg-navy-700 border-navy-600 text-navy-300')}>
                 {profile?.tier === 'premium' ? 'Premium' : profile?.tier === 'standard' ? 'Standard' : 'Free'}
               </span>
+              {profile?.public_token && (
+                <a href={`/p/${profile.public_token}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-navy-500 hover:text-brand-400 transition">🔗 hồ sơ công khai</a>
+              )}
             </div>
           </div>
         </div>
