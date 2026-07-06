@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   let body;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }); }
 
-  const { taskType, taskPrompt, essayText, imageBase64, imageType } = body;
+  const { taskType, taskPrompt, essayText, imageBase64, imageType, lessonId } = body;
   if (!taskPrompt || (!essayText && !imageBase64)) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
 
   if (imageBase64 && Math.ceil((imageBase64.length * 3) / 4) > MAX_IMAGE_BYTES)
@@ -91,14 +91,23 @@ export async function POST(req: NextRequest) {
     catch { return NextResponse.json({ error: 'AI tra ve dinh dang khong hop le.' }, { status: 502 }); }
 
     const wordCount = essayText ? essayText.trim().split(/\s+/).filter(Boolean).length : null;
-    const { error: insertErr } = await supabase.from('evaluations').insert({
+    const { data: evalData, error: insertErr } = await supabase.from('evaluations').insert({
       user_id: user.id, task_type: taskType||2, task_prompt: taskPrompt, essay_text: essayText||null,
       overall_band: result.overall_band??null, ta_band: result.task_achievement?.band??null,
       lr_band: result.lexical_resource?.band??null, gra_band: result.grammatical_range?.band??null,
       cc_band: result.coherence_cohesion?.band??null, feedback: result,
       model_intro: result.model_introduction??null, word_count: wordCount,
-    });
+    }).select('id').single();
     if (insertErr) console.error('Failed to log evaluation:', insertErr.message);
+
+    // LMS: link evaluation to lesson progress
+    if (lessonId && evalData?.id && user?.id) {
+      await supabase
+        .from('lesson_progress')
+        .update({ evaluation_id: evalData.id, status: 'completed', completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .eq('lesson_id', lessonId);
+    }
 
     return NextResponse.json(result);
   } catch (err: any) {
