@@ -116,6 +116,7 @@ export default function DashboardPage() {
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/courses" className="text-sm text-navy-400 hover:text-white transition font-mono">Khóa học</Link>
+            <Link href="/admin/courses" className="text-xs text-navy-500 hover:text-brand-400 transition font-mono">⚙ Admin</Link>
             <Link href="/evaluate" className="text-sm bg-brand-500 text-navy-900 px-4 py-2 rounded-lg font-medium hover:bg-brand-400 transition">+ Chấm bài mới</Link>
             <button onClick={logout} className="text-xs text-navy-500 hover:text-navy-300 font-mono">Đăng xuất</button>
           </div>
