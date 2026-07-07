@@ -29,7 +29,7 @@ async function getEval(token: string) {
   const { data } = await supabase
     .from('shares')
     .select('token, evaluations(overall_band,ta_band,cc_band,lr_band,gra_band,task_type,task_prompt,essay_text,word_count,created_at,feedback), profiles(full_name,avatar_url,tier)')
-    .eq('token', token)
+    .or(`id.eq.${token},token.eq.${token}`)
     .maybeSingle();
   return data;
 }
