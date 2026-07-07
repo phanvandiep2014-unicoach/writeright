@@ -1,5 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerSupabase } from '@/lib/supabase-server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -20,12 +19,7 @@ const CAT_LABEL: Record<string,string> = {
 };
 
 async function getEval(token: string) {
-  const cookieStore = cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (n:string) => cookieStore.get(n)?.value, set:()=>{}, remove:()=>{} } }
-  );
+  const supabase = createServerSupabase();
   const { data } = await supabase
     .from('shares')
     .select('token, evaluations(overall_band,ta_band,cc_band,lr_band,gra_band,task_type,task_prompt,essay_text,word_count,created_at,feedback), profiles(full_name,avatar_url,tier)')
@@ -81,7 +75,6 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        {/* Profile + meta */}
         <div className="flex items-center gap-4 mb-6">
           {prof?.avatar_url
             ? <img src={prof.avatar_url} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full border border-navy-600 object-cover shrink-0"/>
@@ -91,11 +84,9 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           }
           <div className="flex-1 min-w-0">
             <p className="text-white font-medium text-sm">{prof?.full_name || 'IELTS Writer'}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] font-mono text-navy-500">
-                Task {ev.task_type} · {ev.word_count} từ · {new Date(ev.created_at).toLocaleDateString('vi-VN')}
-              </span>
-            </div>
+            <p className="text-[10px] font-mono text-navy-500 mt-0.5">
+              Task {ev.task_type} · {ev.word_count} từ · {new Date(ev.created_at).toLocaleDateString('vi-VN')}
+            </p>
           </div>
           <div className="text-right shrink-0">
             <p className="text-4xl font-bold text-white font-['DM_Serif_Display'] leading-none">{overall}</p>
@@ -103,7 +94,6 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </div>
         </div>
 
-        {/* Task prompt */}
         {ev.task_prompt && (
           <div className="bg-navy-800 border border-navy-700 rounded-xl px-5 py-4 mb-4">
             <p className="text-[10px] font-mono text-navy-400 uppercase tracking-widest mb-2">Đề bài</p>
@@ -111,7 +101,6 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </div>
         )}
 
-        {/* Headline + summary */}
         {fb?.headline && (
           <div className="bg-navy-800 border border-brand-500/30 rounded-xl px-5 py-4 mb-4">
             <p className="text-sm font-semibold text-white mb-1"><BiText f={fb.headline} viClass="block text-xs text-navy-400 italic mt-0.5 font-normal"/></p>
@@ -119,7 +108,6 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </div>
         )}
 
-        {/* 4 criteria */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           {criteria.map(c => {
             const d = fb?.[c.key];
@@ -142,7 +130,6 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           })}
         </div>
 
-        {/* Error corrections */}
         {fb?.error_corrections?.length > 0 && (
           <Section title="Lỗi cần sửa" sub="Error Corrections">
             <div className="space-y-3">
@@ -163,15 +150,14 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </Section>
         )}
 
-        {/* Language Insights */}
         {fb?.language_insights && (
           <Section title="🔬 Language Insights" sub="Phân tích ngôn ngữ chuyên sâu">
             <div className="space-y-4">
               {[
-                {key:'register', title:'Register', sub:'Văn phong', extra:fb.language_insights.register?.rating},
+                {key:'register', title:'Register', sub:'Văn phong'},
                 {key:'tone_nuance', title:'Tone & Nuance', sub:'Sắc thái'},
-                {key:'reference_cohesion', title:'Reference & Cohesion', sub:'Quy chiếu & Liên kết'},
-                {key:'dialect', title:'Dialect', sub:'Phương ngữ', extra:fb.language_insights.dialect?.variety},
+                {key:'reference_cohesion', title:'Reference & Cohesion', sub:'Quy chiếu'},
+                {key:'dialect', title:'Dialect', sub:'Phương ngữ'},
               ].map(g => {
                 const grp = fb.language_insights[g.key];
                 if (!grp?.notes?.length) return null;
@@ -180,13 +166,11 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-xs font-semibold text-brand-400">{g.title}</span>
                       <span className="text-[10px] text-navy-500 italic">{g.sub}</span>
-                      {g.extra && <span className="ml-auto text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-navy-700 text-navy-300">{g.extra}</span>}
                     </div>
                     <div className="space-y-1">
                       {grp.notes.map((n:Bi, i:number) => (
                         <p key={i} className="text-xs text-navy-300 pl-3 relative leading-relaxed">
-                          <span className="absolute left-0 text-brand-500">•</span>
-                          <BiText f={n}/>
+                          <span className="absolute left-0 text-brand-500">•</span><BiText f={n}/>
                         </p>
                       ))}
                     </div>
@@ -197,40 +181,32 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </Section>
         )}
 
-        {/* Strengths */}
         {fb?.key_strengths?.length > 0 && (
           <Section title="✦ Điểm mạnh" sub="Key Strengths">
             <ul className="space-y-1.5">
               {fb.key_strengths.map((s:Bi, i:number) => (
-                <li key={i} className="text-sm text-green-300 border-l-2 border-green-800 pl-3 py-0.5 leading-relaxed">
-                  <BiText f={s}/>
-                </li>
+                <li key={i} className="text-sm text-green-300 border-l-2 border-green-800 pl-3 py-0.5 leading-relaxed"><BiText f={s}/></li>
               ))}
             </ul>
           </Section>
         )}
 
-        {/* Priority fixes */}
         {fb?.priority_fixes?.length > 0 && (
           <Section title="⚡ Cần sửa ngay" sub="Priority Fixes">
             <ul className="space-y-1.5">
               {fb.priority_fixes.map((f:Bi, i:number) => (
-                <li key={i} className="text-sm text-amber-300 border-l-2 border-amber-800 pl-3 py-0.5 leading-relaxed">
-                  <BiText f={f}/>
-                </li>
+                <li key={i} className="text-sm text-amber-300 border-l-2 border-amber-800 pl-3 py-0.5 leading-relaxed"><BiText f={f}/></li>
               ))}
             </ul>
           </Section>
         )}
 
-        {/* Model introduction */}
         {fb?.model_introduction && (
           <Section title="📝 Mẫu mở bài Band 9" sub="Model Introduction">
             <p className="text-sm text-navy-100 leading-relaxed italic pl-3 border-l-2 border-brand-500/40">{fb.model_introduction}</p>
           </Section>
         )}
 
-        {/* Essay */}
         {ev.essay_text && (
           <Section title="Bài viết gốc" sub="Original Essay">
             <p className="text-sm text-navy-400 leading-relaxed whitespace-pre-wrap font-mono text-[12px]">{ev.essay_text}</p>
