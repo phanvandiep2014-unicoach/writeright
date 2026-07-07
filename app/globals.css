@@ -6,6 +6,69 @@
    matching the brand's Royal Sapphire. Public marketing pages (homepage, share)
    override with their own section backgrounds. */
 :root {
+  --legacy-navy: #11183A; /* Royal Sapphire */
+  --legacy-gold: #C8A14B; /* Imperial Gold */
+}
+html {
+  font-size: 16px;
+}
+body {
+  background: var(--legacy-navy);
+  color: #cdbb8e;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Shared app header ───────────────────────────────────────────────────── */
+.app-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(17,24,58,.97);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(200,161,75,.22);
+}
+.app-header-inner {
+  max-width: 1080px; margin: 0 auto;
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.app-logo-link {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; flex-shrink: 0;
+}
+.app-logo-wordmark {
+  font-family: var(--font-wordmark); font-weight: 900;
+  font-size: 17px; letter-spacing: .03em; color: var(--champagne);
+}
+.app-nav-link {
+  font-family: var(--font-body); font-size: .9rem;
+  color: rgba(231,206,142,.65); text-decoration: none; transition: color .18s;
+}
+.app-nav-link:hover { color: var(--champagne); }
+
+/* ── Utilities ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  .text-gradient { background: linear-gradient(135deg, #C8A14B, #E7CE8E); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #11183A; }
+::-webkit-scrollbar-thumb { background: #2A3360; border-radius: 3px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.5s ease forwards; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Default ground for authenticated/internal pages (e.g. /evaluate, /dashboard),
+   matching the brand's Royal Sapphire. Public marketing pages (homepage, share)
+   override with their own section backgrounds. */
+:root {
   --legacy-navy: #11183A; /* Royal Sapphire â was #0d1b2a (pre-rebrand) */
   --legacy-gold: #C8A14B; /* Imperial Gold â was #c9a84c (pre-rebrand) */
 }
