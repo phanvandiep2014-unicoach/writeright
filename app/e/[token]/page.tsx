@@ -1,9 +1,10 @@
-import { createServerSupabase } from '@/lib/supabase-server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 // /e/[token] — Full evaluation detail page (read-only, shareable)
-// Fetches complete feedback JSON from evaluations table via share token
+// Uses security definer RPC so public can view without auth
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined) => !f ? '' : typeof f === 'string' ? f : f.en || '';
@@ -19,13 +20,32 @@ const CAT_LABEL: Record<string,string> = {
 };
 
 async function getEval(token: string) {
-  const supabase = createServerSupabase();
-  const { data } = await supabase
-    .from('shares')
-    .select('token, evaluations(overall_band,ta_band,cc_band,lr_band,gra_band,task_type,task_prompt,essay_text,word_count,created_at,feedback), profiles(full_name,avatar_url,tier)')
-    .or(`id.eq.${token},token.eq.${token}`)
-    .maybeSingle();
-  return data;
+  const cookieStore = cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) { return cookieStore.get(name)?.value; },
+        set() {},
+        remove() {},
+      },
+    }
+  );
+
+  // Validate UUID format before querying
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(token)) return null;
+
+  // Use security definer RPC — allows public access without auth
+  const { data, error } = await supabase
+    .rpc('get_evaluation_by_share', { p_share_id: token });
+
+  if (error) {
+    console.error('[e/token] RPC error:', error.message);
+    return null;
+  }
+  return data?.[0] ?? null;
 }
 
 function Section({ title, sub, children }: { title:string; sub?:string; children:React.ReactNode }) {
@@ -48,18 +68,16 @@ function BiText({ f, viClass }: { f: Bi | undefined; viClass?: string }) {
 
 export default async function EvalDetailPage({ params }: { params: { token: string } }) {
   const row = await getEval(params.token);
-  if (!row || !row.evaluations) return notFound();
+  if (!row) return notFound();
 
-  const ev = row.evaluations as any;
-  const prof = row.profiles as any;
-  const fb = ev.feedback as any;
-  const overall = ev.overall_band ?? fb?.overall_band ?? 0;
+  const fb = row.feedback as any;
+  const overall = row.overall_band ?? fb?.overall_band ?? 0;
 
   const criteria = [
-    { key:'task_achievement', label:'Task Achievement', short:'TA', band:ev.ta_band },
-    { key:'coherence_cohesion', label:'Coherence & Cohesion', short:'CC', band:ev.cc_band },
-    { key:'lexical_resource', label:'Lexical Resource', short:'LR', band:ev.lr_band },
-    { key:'grammatical_range', label:'Grammar & Accuracy', short:'GR', band:ev.gra_band },
+    { key:'task_achievement', label:'Task Achievement', short:'TA', band:row.ta_band },
+    { key:'coherence_cohesion', label:'Coherence & Cohesion', short:'CC', band:row.cc_band },
+    { key:'lexical_resource', label:'Lexical Resource', short:'LR', band:row.lr_band },
+    { key:'grammatical_range', label:'Grammar & Accuracy', short:'GR', band:row.gra_band },
   ];
 
   return (
@@ -76,28 +94,28 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         <div className="flex items-center gap-4 mb-6">
-          {prof?.avatar_url
-            ? <img src={prof.avatar_url} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full border border-navy-600 object-cover shrink-0"/>
+          {row.sharer_avatar
+            ? <img src={row.sharer_avatar} alt="" referrerPolicy="no-referrer" className="w-12 h-12 rounded-full border border-navy-600 object-cover shrink-0"/>
             : <div className="w-12 h-12 rounded-full bg-brand-500/20 border border-navy-600 flex items-center justify-center text-brand-400 font-bold text-lg shrink-0">
-                {(prof?.full_name||'?').charAt(0).toUpperCase()}
+                {(row.sharer_name||'?').charAt(0).toUpperCase()}
               </div>
           }
           <div className="flex-1 min-w-0">
-            <p className="text-white font-medium text-sm">{prof?.full_name || 'IELTS Writer'}</p>
+            <p className="text-white font-medium text-sm">{row.sharer_name || 'IELTS Writer'}</p>
             <p className="text-[10px] font-mono text-navy-500 mt-0.5">
-              Task {ev.task_type} · {ev.word_count} từ · {new Date(ev.created_at).toLocaleDateString('vi-VN')}
+              Task {row.task_type} · {row.word_count} từ · {new Date(row.created_at).toLocaleDateString('vi-VN')}
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-4xl font-bold text-white font-['DM_Serif_Display'] leading-none">{overall}</p>
+            <p className="text-4xl font-bold text-white leading-none">{overall}</p>
             <p className="text-[9px] font-mono text-navy-500 mt-0.5">OVERALL BAND</p>
           </div>
         </div>
 
-        {ev.task_prompt && (
+        {row.task_prompt && (
           <div className="bg-navy-800 border border-navy-700 rounded-xl px-5 py-4 mb-4">
             <p className="text-[10px] font-mono text-navy-400 uppercase tracking-widest mb-2">Đề bài</p>
-            <p className="text-sm text-navy-200 leading-relaxed">{ev.task_prompt}</p>
+            <p className="text-sm text-navy-200 leading-relaxed">{row.task_prompt}</p>
           </div>
         )}
 
@@ -115,7 +133,7 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
               <div key={c.key} className="bg-navy-800 border border-navy-700 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold text-navy-300">{c.label}</span>
-                  <span className="text-2xl font-['DM_Serif_Display'] text-brand-400">{c.band ?? d?.band ?? '—'}</span>
+                  <span className="text-2xl font-bold text-brand-400">{c.band ?? d?.band ?? '—'}</span>
                 </div>
                 {d?.feedback && <p className="text-xs text-navy-400 leading-relaxed"><BiText f={d.feedback}/></p>}
                 {d?.improvements && d.improvements.length>0 && (
@@ -207,9 +225,9 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
           </Section>
         )}
 
-        {ev.essay_text && (
+        {row.essay_text && (
           <Section title="Bài viết gốc" sub="Original Essay">
-            <p className="text-sm text-navy-400 leading-relaxed whitespace-pre-wrap font-mono text-[12px]">{ev.essay_text}</p>
+            <p className="text-sm text-navy-400 leading-relaxed whitespace-pre-wrap font-mono text-[12px]">{row.essay_text}</p>
           </Section>
         )}
 
