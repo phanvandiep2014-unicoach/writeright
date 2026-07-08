@@ -13,26 +13,30 @@ export async function POST(req: Request) {
 
     // Get JWT from Authorization header (sent by EvalCard component)
     const authHeader = req.headers.get('authorization');
-    const jwt = authHeader?.replace('Bearer ', '');
+    const jwt = authHeader?.replace('Bearer ', '').trim();
     if (!jwt) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // Create Supabase client with user's JWT (respects RLS)
+    // Create Supabase client with user JWT passed via Authorization header
+    // Do NOT pass jwt as argument to getUser() — pass it via global header instead
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { global: { headers: { Authorization: `Bearer ${jwt}` } } }
     );
 
-    // Verify user from JWT
-    const { data: { user } } = await supabase.auth.getUser(jwt);
-    if (!user) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    // Verify user — no argument needed; JWT is in the header above
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) {
+      console.error('[share-token] auth error:', authErr?.message);
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+    }
 
-    // Verify ownership
+    // Verify ownership of the evaluation
     const { data: ev } = await supabase
       .from('evaluations').select('id').eq('id', evaluationId).eq('user_id', user.id).single();
     if (!ev) return NextResponse.json({ error: 'Evaluation not found' }, { status: 404 });
 
-    // Get existing share
+    // Return existing share if already created
     const { data: existing } = await supabase
       .from('shares').select('id').eq('evaluation_id', evaluationId).maybeSingle();
     if (existing?.id) {
@@ -40,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ token: existing.id, url: `${origin}/e/${existing.id}`, scorecard_url: `${origin}/share/${existing.id}` });
     }
 
-    // Create new share
+    // Create new share record
     const { data: created, error: insErr } = await supabase
       .from('shares').insert({ evaluation_id: evaluationId, user_id: user.id }).select('id').single();
     if (insErr || !created?.id) {
