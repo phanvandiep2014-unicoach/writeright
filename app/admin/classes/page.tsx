@@ -16,12 +16,11 @@ function Inner() {
   const [confirmDel, setConfirmDel] = useState<any | null>(null);
 
   async function load() {
-    let query = supabase.from('bms_classes')
+    const { data, error } = await supabase.from('bms_classes')
       .select('*, teacher:profiles!bms_classes_teacher_id_fkey(full_name), assistant:profiles!bms_classes_assistant_id_fkey(full_name), bms_enrollments(count)')
       .order('code');
-    const { data, error } = await query;
     if (!error) setRows(data || []);
-    else { // fallback nếu tên FK khác
+    else {
       const { data: d2 } = await supabase.from('bms_classes').select('*').order('code');
       setRows(d2 || []);
     }
@@ -44,6 +43,8 @@ function Inner() {
       schedule: e.schedule || null, room: e.room || null,
       start_date: e.start_date || null, end_date: e.end_date || null,
       max_students: Number(e.max_students) || 20, status: e.status || 'open',
+      schedule_days: e.schedule_days || null,
+      schedule_start: e.schedule_start || null, schedule_end: e.schedule_end || null,
     };
     const r = e.id
       ? await supabase.from('bms_classes').update(payload).eq('id', e.id)
@@ -62,7 +63,7 @@ function Inner() {
           <thead><tr><Th>Mã</Th><Th>Tên lớp</Th><Th>Giáo viên</Th><Th>Trợ giảng</Th><Th>Lịch học</Th><Th>Sĩ số</Th><Th>Trạng thái</Th><Th>{''}</Th></tr></thead>
           <tbody>
             {visible.map(c => (
-              <tr key={c.id} className="hover:bg-navy-700/30">
+              <tr key={c.id} className="hover:bg-white/[.03]">
                 <Td className="font-mono">{c.code}</Td>
                 <Td><Link href={`/admin/classes/${c.id}`} className="text-white font-semibold hover:text-brand-500">{c.name}</Link></Td>
                 <Td>{c.teacher?.full_name || '—'}</Td>
@@ -106,7 +107,26 @@ function Inner() {
                 {staff.filter(s => s.role === 'assistant').map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
               </select>
             </Field>
-            <Field label="Lịch học"><input className={inputCls} placeholder="T2-T4-T6 18:00-19:30" value={editing.schedule || ''} onChange={e => set('schedule', e.target.value)} /></Field>
+            <Field label="Ngày học trong tuần (hiện trên Lịch tuần)">
+              <div className="flex gap-1.5 flex-wrap">
+                {[1, 2, 3, 4, 5, 6, 7].map(d => {
+                  const days = (editing.schedule_days || '').split(',').filter(Boolean).map(Number);
+                  const on = days.includes(d);
+                  return (
+                    <button key={d} type="button"
+                      onClick={() => set('schedule_days', (on ? days.filter((x: number) => x !== d) : [...days, d]).sort().join(','))}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs transition-all ${on ? 'bg-brand-500 text-navy-900 font-bold' : 'border border-white/10 text-navy-300 hover:bg-white/5'}`}>
+                      {['', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][d]}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Giờ bắt đầu"><input type="time" className={inputCls} value={editing.schedule_start || ''} onChange={e => set('schedule_start', e.target.value)} /></Field>
+              <Field label="Giờ kết thúc"><input type="time" className={inputCls} value={editing.schedule_end || ''} onChange={e => set('schedule_end', e.target.value)} /></Field>
+            </div>
+            <Field label="Ghi chú lịch (hiển thị)"><input className={inputCls} placeholder="T2-T4-T6 18:00-19:30" value={editing.schedule || ''} onChange={e => set('schedule', e.target.value)} /></Field>
             <Field label="Phòng học"><input className={inputCls} value={editing.room || ''} onChange={e => set('room', e.target.value)} /></Field>
             <Field label="Ngày bắt đầu"><input type="date" className={inputCls} value={editing.start_date || ''} onChange={e => set('start_date', e.target.value)} /></Field>
             <Field label="Ngày kết thúc"><input type="date" className={inputCls} value={editing.end_date || ''} onChange={e => set('end_date', e.target.value)} /></Field>
