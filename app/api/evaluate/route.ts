@@ -20,8 +20,11 @@ const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner (20+ years) a
 "reference_cohesion": {"notes": [{"en": "...", "vi": "..."}]},
 "dialect": {"variety": "British|American|Mixed|Neutral", "notes": [{"en": "...", "vi": "..."}]}
 },
-"model_introduction": "A Band 9 introduction paragraph for this prompt (English only)"
+"model_introduction": "A Band 9 introduction paragraph for this prompt (English only)",
+"model_rewrite": "The student's ENTIRE essay rewritten at Band 8.5-9.0 (English only). Preserve the student's own ideas, stance, examples and paragraph structure, but upgrade task response, cohesion, vocabulary and grammar. Keep a similar length to the original (within about 10%). Separate paragraphs with \\n\\n.",
+"transcribed_essay": "ONLY when the essay was submitted as an image: transcribe the student's essay text exactly as written, preserving their errors, with \\n\\n between paragraphs. OMIT this field entirely when essay text was provided directly."
 }
+ERROR CORRECTIONS - CRITICAL FOR HIGHLIGHTING: each "original" MUST be an exact, character-for-character quote copied verbatim from the student's essay (identical spelling, casing and punctuation) so the app can locate and colour-highlight it inside the essay text. Never paraphrase, never merge two separate errors into one item. Keep each quote short (2-8 words around the error). Provide 6-14 items covering the most band-limiting errors, spread across the whole essay.
 LANGUAGE INSIGHTS - analyse beyond surface grammar. REGISTER: flag informal items in academic context (e.g. "a lot of" -> "a considerable number of", "kids" -> "children", contractions). TONE & NUANCE: assess hedging and boosting ("will definitely" vs "is likely to"), connotation ("problem" vs "challenge"), over-generalisation ("everyone knows"). REFERENCE & COHESION: flag ambiguous pronouns (this/it/they with unclear antecedent), repetitive referencing, missing cohesive ties. DIALECT: identify the variety and flag inconsistency (e.g. colour and color in one essay); consistency matters, not the choice itself. Each note is one concise bullet quoting the exact phrase from the essay. Give 2-4 notes per group; use an empty array if nothing meaningful.
 BILINGUAL RULES: English is the primary feedback language - academic but accessible (readable at CEFR B2). Vietnamese "vi" is a concise natural rendering for Vietnamese students - translate meaning, never word-by-word; keep IELTS terminology in English (Task Response, cohesive device, band).
 CALIBRATION: Apply official IELTS band descriptors strictly. Never inflate scores; when between two bands choose the lower unless clear evidence supports the higher. HARD CAPS: under 250 words (Task 2) or 150 words (Task 1) -> Task Achievement max 5.0. Off-topic -> Task Achievement max 4.0. Memorised or template-heavy essays -> Lexical Resource max 6.0. Half bands are acceptable. Be honest and precise.`;
@@ -69,13 +72,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const userContent = imageBase64
-      ? [{ type:'image', source:{ type:'base64', media_type: imageType||'image/jpeg', data: imageBase64 } }, { type:'text', text:`IELTS Task ${taskType||2} Prompt:\n${taskPrompt}\n\nRead the essay in the image and evaluate it.` }]
+      ? [{ type:'image', source:{ type:'base64', media_type: imageType||'image/jpeg', data: imageBase64 } }, { type:'text', text:`IELTS Task ${taskType||2} Prompt:\n${taskPrompt}\n\nRead the essay in the image, transcribe it exactly into the "transcribed_essay" field, then evaluate it.` }]
       : [{ type:'text', text:`IELTS Task ${taskType||2} Prompt:\n${taskPrompt}\n\nStudent Essay:\n${essayText}` }];
 
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:8000, temperature:0.2, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:0.2, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),
     });
 
     const responseText = await apiRes.text();
@@ -92,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     const wordCount = essayText ? essayText.trim().split(/\s+/).filter(Boolean).length : null;
     const { data: evalData, error: insertErr } = await supabase.from('evaluations').insert({
-      user_id: user.id, task_type: taskType||2, task_prompt: taskPrompt, essay_text: essayText||null,
+      user_id: user.id, task_type: taskType||2, task_prompt: taskPrompt, essay_text: essayText || result.transcribed_essay || null,
       overall_band: result.overall_band??null, ta_band: result.task_achievement?.band??null,
       lr_band: result.lexical_resource?.band??null, gra_band: result.grammatical_range?.band??null,
       cc_band: result.coherence_cohesion?.band??null, feedback: result,
