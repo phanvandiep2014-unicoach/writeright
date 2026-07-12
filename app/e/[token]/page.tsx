@@ -138,7 +138,7 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
                 {d?.feedback && <p className="text-xs text-navy-400 leading-relaxed"><BiText f={d.feedback}/></p>}
                 {d?.improvements && d.improvements.length>0 && (
                   <ul className="mt-2 space-y-1">
-                    {d.improvements.slice(0,2).map((tip:Bi,i:number)=>(
+                    {d.improvements.map((tip:Bi,i:number)=>(
                       <li key={i} className="text-xs text-navy-500 flex gap-1.5"><span className="text-brand-500 shrink-0">→</span><BiText f={tip}/></li>
                     ))}
                   </ul>
@@ -222,6 +222,28 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
         {fb?.model_introduction && (
           <Section title="📝 Mẫu mở bài Band 9" sub="Model Introduction">
             <p className="text-sm text-navy-100 leading-relaxed italic pl-3 border-l-2 border-brand-500/40">{fb.model_introduction}</p>
+          </Section>
+        )}
+
+        {criteria.some(c => (fb?.[c.key]?.improvements?.length ?? 0) > 0) && (
+          <Section title="🎯 Kế hoạch nâng band lần sau" sub="Band-up Plan">
+            <div className="space-y-4">
+              {criteria.map(c => {
+                const d = fb?.[c.key];
+                if (!d?.improvements?.length) return null;
+                return (
+                  <div key={'plan-'+c.key}>
+                    <p className="text-xs font-semibold text-brand-400 mb-1.5">{c.label}{(c.band ?? d.band) != null ? ` — hiện tại ${c.band ?? d.band}` : ''}</p>
+                    <ul className="space-y-1">
+                      {d.improvements.map((tip: Bi, i: number) => (
+                        <li key={i} className="text-xs text-navy-300 flex gap-1.5"><span className="text-brand-500 shrink-0">→</span><BiText f={tip}/></li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-navy-500 mt-4 pt-3 border-t border-navy-700/50">Học viên nên áp dụng các gợi ý trên trong bài viết tiếp theo để cải thiện band điểm. Phụ huynh có thể theo dõi tiến bộ qua các phiếu chấm được chia sẻ.</p>
           </Section>
         )}
 
