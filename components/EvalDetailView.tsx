@@ -17,7 +17,7 @@ function BiText({ f, viClass }: { f: Bi | undefined; viClass?: string }) {
 const CAT_STYLE: Record<string, { label: string; vi: string; color: string }> = {
   grammar:    { label: 'Grammar',    vi: 'Ngữ pháp',    color: '#E06C75' },
   vocabulary: { label: 'Vocabulary', vi: 'Từ vựng',     color: '#B18CE8' },
-  register:   { label: 'Register',   vi: 'Văn phone',   color: '#E5C07B' },
+    register:   { label: 'Register',   vi: 'Văn phong',   color: '#E5C07B' },
   tone:       { label: 'Tone',       vi: 'Sắc thái',    color: '#E8975A' },
   reference:  { label: 'Reference',  vi: 'Quy chiếu',   color: '#61AFEF' },
   dialect:    { label: 'Dialect',    vi: 'Phương ngữ',  color: '#56B6A2' },
@@ -168,7 +168,7 @@ export default function EvalDetailView({ row }: { row: any }) {
   const toggleCat = (cat: string) => {
     setActiveCats(prev => {
       const next = new Set(prev);
-      if (next.has(c─cat)) next.delete(cat); else next.add(cat);
+            if (next.has(cat)) next.delete(cat); else next.add(cat);
       return next;
     });
     setActiveErr(null);
@@ -182,7 +182,7 @@ export default function EvalDetailView({ row }: { row: any }) {
   return (
     <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
-      {/* ── Sharer + Overall score + Radar ── *}
+            {/* ── Sharer + Overall score + Radar ── */}
       <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="flex items-center gap-4 mb-5 relative">
@@ -387,7 +387,7 @@ export default function EvalDetailView({ row }: { row: any }) {
           </div>
           <div className="divide-y divide-navy-700/50">
             {[
-              { key: 'register', title: 'Register', sub: 'Văn phone', extra: fb.language_insights.register?.rating },
+                            { key: 'register', title: 'Register', sub: 'Văn phong', extra: fb.language_insights.register?.rating },
               { key: 'tone_nuance', title: 'Tone & Nuance', sub: 'Sắc thái' },
               { key: 'reference_cohesion', title: 'Reference & Cohesion', sub: 'Quy chiếu & Liên kết' },
               { key: 'dialect', title: 'Dialect', sub: 'Phương ngữ', extra: fb.language_insights.dialect?.variety },
