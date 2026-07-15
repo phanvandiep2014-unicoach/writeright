@@ -200,7 +200,7 @@ export default function Home() {
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu Band 9</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Theo dõi tiến bộ</li>
             </ul>
-            <Link href="/login" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>Đăng ký ngay</Link>
+            <Link href="/pricing" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>Đăng ký ngay</Link>
           </div>
 
           {/* Premium */}
@@ -215,7 +215,7 @@ export default function Home() {
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ So sánh side-by-side</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Forecast đề thi hàng tháng</li>
             </ul>
-            <Link href="/login" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chọn Premium</Link>
+            <Link href="/pricing" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chọn Premium</Link>
           </div>
         </div>
       </section>
