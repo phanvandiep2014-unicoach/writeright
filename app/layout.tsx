@@ -39,22 +39,22 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: 'WriteRight â Practice IELTS Writing Effectively',
-  description: 'Practice IELTS Writing effectively with accurate AI scoring, detailed corrections, and Band 9 samples.',
+  title: 'WriteRight by UNICOACH — Luyện IELTS Writing cùng mentor AI',
+  description: 'Chấm bài IELTS Writing chuẩn 4 tiêu chí, sửa lỗi chi tiết song ngữ và bài mẫu Band 9. Bắt đầu từ bạn — cùng nhau vươn tới band mục tiêu.',
   icons: {
     icon: '/favicon.svg',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
-    title: 'WriteRight by UNICOACH â AI IELTS Writing Coach',
-    description: 'AI scores your Writing to official IELTS standards. Fix errors, improve, and raise your Band now.',
+    title: 'WriteRight by UNICOACH — AI IELTS Writing Coach',
+    description: 'AI chấm Writing chuẩn IELTS: điểm 4 tiêu chí, sửa lỗi song ngữ, bài mẫu Band 9. Nâng band ngay.',
     type: 'website',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WriteRight â AI IELTS Writing Coach',
-    description: 'Get examiner-quality feedback on your IELTS essays in seconds.',
+    title: 'WriteRight — AI IELTS Writing Coach',
+    description: 'Nhận phản hồi chuẩn giám khảo cho bài IELTS Writing trong vài giây.',
     images: ['/og-image.png'],
   },
 };
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
-      lang="en"
+      lang="vi"
       className={`${cinzelDecorative.variable} ${cinzel.variable} ${cormorant.variable} ${ebGaramond.variable}`}
     >
       <body className="min-h-screen antialiased">
