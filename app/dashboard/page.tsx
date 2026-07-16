@@ -85,7 +85,7 @@ export default function DashboardPage() {
       if (!user) { window.location.href = '/login?next=/dashboard'; return; }
       setUser(user);
       const { data: prof } = await supabase.from('profiles')
-        .select('full_name,avatar_url,tier,public_token,role').eq('id', user.id).single();
+        .select('full_name,avatar_url,tier,role').eq('id', user.id).single();
       const { data: ent } = await supabase.from('user_entitlements')
         .select('plan').eq('user_id', user.id).maybeSingle();
       setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier) } : prof);
