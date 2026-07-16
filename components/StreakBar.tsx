@@ -43,7 +43,7 @@ export function StreakBar() {
   if (loading) return null;
 
   const pct = weeklyQuota >= 999999 ? Math.min(100, Math.round((weekCount / 5) * 100)) : Math.min(100, Math.round((weekCount / weeklyQuota) * 100));
-  const milestone = streak >= 30 ? '🏛️' : streak >= 7 ? '👑' : streak >= 3 ? '⭐' : '🔥';
+  const milestoneTitle = streak >= 30 ? 'Đại sảnh danh vọng' : streak >= 7 ? 'Vòng nguyệt quế' : streak >= 3 ? 'Tinh tú' : 'Ngọn đèn học đường';
 
   return (
     <div
@@ -60,13 +60,15 @@ export function StreakBar() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
-        <span style={{ fontSize: '2rem' }}>{milestone}</span>
+        <span title={milestoneTitle} style={{ display: 'inline-flex' }} aria-hidden="true">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--imperial-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8" /><path d="M10 21v-7h4v7" /><path d="M12 14v-1.5" /><path d="M12 12.5c-1.1-1.2-1.1-2.4 0-3.6 1.1 1.2 1.1 2.4 0 3.6z" /></svg>
+        </span>
         <div>
           <div style={{ fontFamily: 'var(--font-subhead)', fontSize: '2rem', fontWeight: 700, lineHeight: 1 }}>
             <span className="gold-foil">{streak}</span> ngày
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: '.85rem', opacity: .85 }}>
-            {streak === 0 ? 'Chấm 1 bài hôm nay để bắt đầu chuỗi.' : 'Đừng để đứt chuỗi — viết 1 bài hôm nay.'}
+            {streak === 0 ? 'Thắp ngọn đèn đầu tiên — viết 1 bài hôm nay.' : 'Ngọn đèn đã sáng ' + streak + ' ngày liên tục. Hôm nay viết tiếp nhé?'}
           </div>
         </div>
       </div>
