@@ -86,7 +86,9 @@ export default function DashboardPage() {
       setUser(user);
       const { data: prof } = await supabase.from('profiles')
         .select('full_name,avatar_url,tier,public_token,role').eq('id', user.id).single();
-      setProfile(prof);
+      const { data: ent } = await supabase.from('user_entitlements')
+        .select('plan').eq('user_id', user.id).maybeSingle();
+      setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier) } : prof);
       const { data: evs } = await supabase.from('evaluations')
         .select('id,task_type,task_prompt,word_count,overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
@@ -125,7 +127,7 @@ export default function DashboardPage() {
               Write<span className="gold-foil">Right</span>
             </span>
           </Link>
-          <Link href="/courses" className="app-nav-link">Khóa hỏc</Link>
+          <Link href="/courses" className="app-nav-link">Khóa học</Link>
           {(profile?.role === 'admin' || profile?.role === 'teacher') && (
             <Link href="/admin/courses" className="app-nav-link" style={{ fontSize: '.8rem', opacity: .7 }}>⚙ Admin</Link>
           )}
@@ -163,7 +165,7 @@ export default function DashboardPage() {
               {profile?.public_token && (
                 <a href={`/p/${profile.public_token}`} target="_blank" rel="noopener noreferrer"
                   style={{ fontFamily: 'var(--font-body)', fontSize: '.8rem', color: 'rgba(200,161,75,.6)', textDecoration: 'none' }}>
-                  🔗 hồ sơ công khai
+                  Hồ sơ công khai ↗
                 </a>
               )}
             </div>
