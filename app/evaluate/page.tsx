@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
+import { RoyalIcon } from '@/components/RoyalIcons';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -403,6 +404,12 @@ className="border border-navy-600 text-navy-300 px-6 py-3 rounded-xl text-base h
 {/* ════════════ RESULTS ════════════ */}
 {result && (
 <div className="animate-fade-up space-y-6">
+{/* Nghi thức mở phiếu chấm — con dấu sáp */}
+<div className="seal-overlay" onClick={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}>
+  <div className="seal-stamp"><span className="gold-foil seal-w">W</span></div>
+  <div className="seal-motto">Per te, ad astra</div>
+</div>
+
 
 {/* ── Overall Score Card + Radar ── */}
 <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 relative overflow-hidden">
@@ -447,7 +454,7 @@ return d ? (
 {essayForReview && (
 <div ref={essayCardRef} className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden scroll-mt-20">
 <div className="px-6 py-4 border-b border-navy-700 flex items-center gap-3 flex-wrap">
-<span className="text-brand-400 text-lg">📝</span>
+<span className="text-brand-400 text-lg"><RoyalIcon name="scroll" size={20} /></span>
 <div>
 <div className="text-lg font-semibold text-white">Bài viết của bạn</div>
 <div className="text-sm text-navy-500 italic">Nhấn vào phần được tô màu để xem cách sửa</div>
@@ -560,7 +567,7 @@ style={{ color: c.color, background: c.bg }}>{c.label}</span>
 {result.error_corrections?.length > 0 && (
 <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
 <div className="px-6 py-4 border-b border-navy-700 flex items-center gap-2">
-<span className="text-red-400 text-lg">✏</span>
+<span className="text-red-400 text-lg"><RoyalIcon name="quill" size={20} color="#E06C75" /></span>
 <span className="text-lg font-semibold text-white">Sửa lỗi chi tiết</span>
 <span className="ml-auto text-sm font-mono text-navy-400 bg-navy-700 px-3 py-1 rounded-full">{result.error_corrections.length} lỗi</span>
 </div>
@@ -595,7 +602,7 @@ className={`px-6 py-4 transition ${foundIdx.has(i) ? 'cursor-pointer hover:bg-wh
 {result.language_insights && (
 <div className="bg-navy-800 border border-navy-700 rounded-2xl overflow-hidden">
 <div className="px-6 py-4 border-b border-navy-700 flex items-center gap-2">
-<span className="text-brand-400 text-lg">🔬</span>
+<span className="text-brand-400 text-lg"><RoyalIcon name="lens" size={20} /></span>
 <span className="text-lg font-semibold text-white">Language Insights</span>
 <span className="text-sm text-navy-500 italic ml-1">Phân tích ngôn ngữ chuyên sâu</span>
 </div>
@@ -736,7 +743,7 @@ Chia sẻ ↗
 <div className="text-center mb-8">
 <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Chấm bài Writing</div>
 <h1 className="text-3xl text-white font-semibold">Nộp bài luận để chấm điểm</h1>
-<p className="text-sm text-navy-400 mt-2">📋 Có thể dán (Ctrl+V) cả ảnh đề bài và bài viết cùng một lúc — ảnh sẽ tự hiện bên dưới</p>
+<p className="text-sm text-navy-400 mt-2">Có thể dán (Ctrl+V) cả ảnh đề bài và bài viết cùng một lúc — ảnh sẽ tự hiện bên dưới</p>
 </div>
 
 <div className="mb-5">
@@ -783,7 +790,7 @@ onDragOver={(e) => e.preventDefault()}
 onDrop={(e) => { e.preventDefault(); addImageFiles(Array.from(e.dataTransfer.files)); }}
 className="block border-2 border-dashed border-navy-600 rounded-xl p-5 text-center cursor-pointer hover:border-brand-500/50 bg-navy-800 transition">
 <input type="file" accept="image/*" multiple onChange={handleImage} ref={fileRef} className="hidden" />
-<p className="text-base text-navy-400">📷 <strong className="text-brand-400">Dán ảnh (Ctrl+V)</strong>, nhấn để tải ảnh, hoặc kéo thả</p>
+<p className="text-base text-navy-400"><strong className="text-brand-400">Dán ảnh (Ctrl+V)</strong>, nhấn để tải ảnh, hoặc kéo thả</p>
 <p className="text-sm text-navy-600 mt-1">JPG, PNG — tối đa {MAX_IMAGES} ảnh. Ảnh chụp đề bài, biểu đồ Task 1 hoặc bài viết tay</p>
 </label>
 )}
