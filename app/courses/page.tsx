@@ -57,7 +57,7 @@ export default function CoursesPage() {
           <p className="text-navy-400 text-sm">Đang tải lộ trình...</p>
         ) : courses.length === 0 ? (
           <div className="bg-navy-800 border border-navy-700 rounded-xl p-10 text-center">
-            <p className="text-2xl mb-3">📚</p>
+            <p className="mb-3 flex justify-center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--imperial-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7.5 4.5 4 4.5v13c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2v-13c-3.5 0-6 .5-8 2z" /><path d="M12 6.5v13" /></svg></p>
             <p className="text-navy-200 font-medium">Khóa học đang được biên soạn</p>
             <p className="text-sm text-navy-400 mt-1">Lộ trình band 5.0 → 8.0 sẽ ra mắt sớm. Quay lại nhé!</p>
           </div>
