@@ -1,14 +1,15 @@
 'use client';
 import Link from 'next/link';
 import UserMenu from '@/components/UserMenu';
+import { RoyalIcon } from '@/components/RoyalIcons';
 
 const features = [
-  { icon: '✦', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
-  { icon: '✏', title: 'Sửa lỗi chi tiết', desc: 'AI phát hiện và giải thích từng lỗi ngữ pháp, từ vựng, collocation.' },
-  { icon: '📝', title: 'Bài mẫu Band 9', desc: 'Tự động tạo mở bài mẫu Band 9 cho mọi đề bài.' },
-  { icon: '📷', title: 'Chụp ảnh bài viết', desc: 'Chụp ảnh bài viết tay — AI đọc và chấm điểm ngay.' },
-  { icon: '📊', title: 'Theo dõi tiến bộ', desc: 'Dashboard cá nhân, xem lịch sử điểm và sự tiến bộ.' },
-  { icon: '🔮', title: 'Forecast đề thi', desc: 'Cập nhật đề dự đoán Writing mới nhất mỗi tháng.' },
+  { icon: 'star', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
+  { icon: 'quill', title: 'Sửa lỗi chi tiết', desc: 'AI phát hiện và giải thích từng lỗi ngữ pháp, từ vựng, collocation.' },
+  { icon: 'scroll', title: 'Bài mẫu Band 9', desc: 'Tự động tạo mở bài mẫu Band 9 cho mọi đề bài.' },
+  { icon: 'camera', title: 'Chụp ảnh bài viết', desc: 'Chụp ảnh bài viết tay — AI đọc và chấm điểm ngay.' },
+  { icon: 'progress', title: 'Theo dõi tiến bộ', desc: 'Dashboard cá nhân, xem lịch sử điểm và sự tiến bộ.' },
+  { icon: 'telescope', title: 'Forecast đề thi', desc: 'Cập nhật đề dự đoán Writing mới nhất mỗi tháng.' },
 ];
 
 function Crest({ size = 40 }: { size?: number }) {
@@ -98,9 +99,10 @@ export default function Home() {
 
       {/* Hero */}
       <section style={{
-        maxWidth: 880, margin: '0 auto', padding: '90px 20px 70px', textAlign: 'center',
-        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.10), transparent 55%)'
+        padding: '90px 20px 70px', textAlign: 'center',
+        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.16), transparent 55%), var(--royal-sapphire)'
       }}>
+      <div style={{ maxWidth: 880, margin: '0 auto' }}>
         <div className="eyebrow" style={{
           display: 'inline-flex', border: '1px solid rgba(200,161,75,.35)', borderRadius: 2,
           padding: '9px 22px', marginBottom: 28, color: 'var(--champagne)'
@@ -136,6 +138,7 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </div>
       </section>
 
       {/* Features */}
@@ -150,7 +153,7 @@ export default function Home() {
               background: 'var(--surface)', border: 'var(--hairline)', borderRadius: 'var(--radius)',
               padding: '26px 22px', boxShadow: 'var(--shadow-card)'
             }}>
-              <div style={{ fontSize: 26, marginBottom: 12 }}>{f.icon}</div>
+              <div style={{ marginBottom: 12 }}><RoyalIcon name={f.icon} size={30} /></div>
               <h3 className="heading-vi" style={{ fontSize: 17, marginBottom: 8 }}>{f.title}</h3>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'var(--ink)', opacity: .8, lineHeight: 1.55 }}>{f.desc}</p>
             </div>
