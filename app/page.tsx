@@ -127,7 +127,7 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
           <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
-          <a href="/pricing" className="btn-ghost">Xem bảng giá</a>
+          <a href="/pricing" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>Xem bảng giá</a>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 52, flexWrap: 'wrap' }}>
