@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 import { RoyalIcon } from '@/components/RoyalIcons';
+import { BandUpCelebration } from '@/components/BandUp';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -411,7 +412,10 @@ className="border border-navy-600 text-navy-300 px-6 py-3 rounded-xl text-base h
 </div>
 
 
-{/* ── Overall Score Card + Radar ── */}
+{/* Lễ thăng band — hiện khi phá kỷ lục */}
+        <BandUpCelebration band={result.overall_band} />
+
+        {/* ── Overall Score Card + Radar ── */}
 <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 relative overflow-hidden">
 <div className="absolute top-0 right-0 w-48 h-48 bg-brand-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
 <div className="flex items-center gap-8 flex-wrap relative">
