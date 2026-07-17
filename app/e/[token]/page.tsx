@@ -42,13 +42,13 @@ export default async function EvalDetailPage({ params }: { params: { token: stri
 
   return (
     <div className="min-h-screen bg-navy-900">
-      <header className="sticky top-0 z-50 bg-navy-900/95 backdrop-blur border-b border-navy-700">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/50 flex items-center justify-center text-brand-400 font-bold text-sm">W</div>
-            <span className="text-white text-lg font-semibold" style={{ fontFamily: 'var(--font-wordmark)' }}>Write<span className="text-brand-400">Right</span></span>
+      <header className="app-header">
+        <div className="app-header-inner">
+          <Link href="/" className="app-logo-link" aria-label="WriteRight home">
+            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
-          <span className="text-sm text-navy-400 font-mono">Phiếu chấm điểm</span>
+          <span style={{ flex: 1 }} /><span className="app-nav-link" style={{ cursor: 'default', opacity: .7 }}>Phiếu chấm điểm</span><Link href="/dashboard" className="app-nav-link">Dashboard →</Link>
         </div>
       </header>
       <EvalDetailView row={row} />
