@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
 import { StreakBar } from '@/components/StreakBar';
 import { EvalCard } from '@/components/EvalCard';
+import { GoalRitual } from '@/components/GoalRitual';
 
 type Evaluation = {
   id: string; task_type: number; task_prompt: string | null;
@@ -171,6 +172,9 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Lộ trình cá nhân + Khai bút */}
+        <GoalRitual />
 
         {/* Streak */}
         <div style={{ marginBottom: 32 }}><StreakBar /></div>
