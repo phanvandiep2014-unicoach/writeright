@@ -157,3 +157,10 @@
 @keyframes sealIn{from{opacity:0}to{opacity:1}}
 @keyframes sealVeil{to{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion: reduce){.seal-overlay{display:none}}
+
+/* ── Gold foil button (solid) — gold luôn là foil, không bao giờ bệt ── */
+.btn-foil{background:linear-gradient(135deg,#8A6A28,#E7CE8E 26%,#C8A14B 48%,#F4E7BC 66%,#A9863A 86%,#8A6A28);color:#11183A;border:1px solid rgba(138,106,40,.55);box-shadow:0 6px 20px rgba(200,161,75,.22)}
+.btn-foil:hover{filter:brightness(1.07);box-shadow:0 8px 26px rgba(200,161,75,.32)}
+/* ── Loading kể chuyện: từng dòng hiện dần ── */
+.loading-line{opacity:0;animation:lineIn .6s ease forwards}
+@keyframes lineIn{to{opacity:1}}
