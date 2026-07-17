@@ -48,6 +48,8 @@ function LoginContent() {
             {loadingProvider === 'google' ? 'Đang chuyển hướng...' : 'Đăng nhập với Google'}
           </button>
 
+          {/* Facebook OAuth chưa cấu hình xong trong Supabase — bật lại khi sẵn sàng */}
+          {false && (
           <button
             onClick={() => handleLogin('facebook')}
             disabled={loadingProvider !== null}
@@ -58,6 +60,7 @@ function LoginContent() {
             </svg>
             {loadingProvider === 'facebook' ? 'Đang chuyển hướng...' : 'Đăng nhập với Facebook'}
           </button>
+          )}
         </div>
 
         <p className="text-center text-xs text-navy-500 mt-6 leading-relaxed">
