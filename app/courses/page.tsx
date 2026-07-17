@@ -48,9 +48,20 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-navy-900">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <Link href="/" className="app-logo-link" aria-label="WriteRight home">
+            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
+          </Link>
+          <span style={{ flex: 1 }} />
+          <Link href="/evaluate" className="app-nav-link">Chấm bài</Link>
+          <Link href="/dashboard" className="app-nav-link">Dashboard</Link>
+        </div>
+      </header>
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-xs font-mono tracking-[0.3em] text-brand-400 uppercase mb-2">UNICOACH Learning Path</p>
-        <h1 className="font-['DM_Serif_Display'] text-3xl text-white mb-2">Lộ trình IELTS Writing</h1>
+        <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700 }}>Lộ trình IELTS Writing</h1>
         <p className="text-sm text-navy-400 mb-10">Band ladder 5.0 → 8.0 — học kỹ thuật, viết bài, được AI chấm ngay trong từng bài học.</p>
 
         {loading ? (
