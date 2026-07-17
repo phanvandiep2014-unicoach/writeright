@@ -92,7 +92,7 @@ export default function Home() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <UserMenu />
-            <Link href="/evaluate" className="btn-royal" style={{ fontSize: 14, padding: '9px 18px' }}>Chấm bài ngay</Link>
+            <Link href="/evaluate" className="btn-royal hidden sm:inline-block" style={{ fontSize: 14, padding: '9px 18px' }}>Chấm bài ngay</Link>
           </div>
         </div>
       </header>
