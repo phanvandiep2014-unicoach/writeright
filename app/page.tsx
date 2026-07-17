@@ -178,11 +178,11 @@ export default function Home() {
             <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 1 lần chấm / tuần</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi cơ bản</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu mở bài Band 9</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Chấm chi tiết 4 tiêu chí</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Chụp ảnh bài viết</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 1 bài chấm / tuần</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Xem band tổng ngay lập tức</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Gợi ý chung để cải thiện</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Điểm 4 tiêu chí chi tiết</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#5a4a3a', textDecoration: 'line-through' }}>✗ Sửa lỗi inline + vòng viết lại</li>
             </ul>
             <Link href="/evaluate" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Bắt đầu miễn phí</Link>
           </div>
@@ -197,11 +197,11 @@ export default function Home() {
             <div className="gold-foil" style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm điểm không giới hạn</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm chi tiết 4 tiêu chí</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi + giải thích</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Bài mẫu Band 9</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Theo dõi tiến bộ</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm không giới hạn</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Điểm 4 tiêu chí chi tiết</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi inline + giải thích</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Vòng viết lại có so sánh điểm</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Biểu đồ tiến bộ theo thời gian</li>
             </ul>
             <Link href="/pricing" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>Đăng ký ngay</Link>
           </div>
@@ -213,9 +213,9 @@ export default function Home() {
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mọi tính năng Standard</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chụp ảnh bài viết tay</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Phân tích từ vựng nâng cao</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ So sánh side-by-side</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mẫu bài band 8.0–9.0 theo từng đề</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Ưu tiên chấm nhanh</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Báo cáo gửi giáo viên/lớp</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Forecast đề thi hàng tháng</li>
             </ul>
             <Link href="/pricing" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chọn Premium</Link>
