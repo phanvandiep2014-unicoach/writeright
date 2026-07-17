@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
+import { HonorBoard } from '@/components/HonorBoard';
 
 type Evaluation = {
   id: string;
@@ -325,6 +326,9 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* ── Bảng danh dự ── */}
+        <HonorBoard />
 
         {/* ── Evaluation History ── */}
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9c8657', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
