@@ -6,6 +6,7 @@ import { StreakBar } from '@/components/StreakBar';
 import { EvalCard } from '@/components/EvalCard';
 import { GoalRitual } from '@/components/GoalRitual';
 import { WeeklyReport } from '@/components/WeeklyReport';
+import { MentorNote } from '@/components/MentorNote';
 
 type Evaluation = {
   id: string; task_type: number; task_prompt: string | null;
@@ -182,6 +183,9 @@ export default function DashboardPage() {
 
         {/* Học bạ tuần */}
         <WeeklyReport />
+
+        {/* Thư mentor khi chững band */}
+        <MentorNote />
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 36 }}>
