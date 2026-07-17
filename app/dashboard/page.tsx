@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { StreakBar } from '@/components/StreakBar';
 import { EvalCard } from '@/components/EvalCard';
 import { GoalRitual } from '@/components/GoalRitual';
+import { WeeklyReport } from '@/components/WeeklyReport';
 
 type Evaluation = {
   id: string; task_type: number; task_prompt: string | null;
@@ -177,7 +178,10 @@ export default function DashboardPage() {
         <GoalRitual />
 
         {/* Streak */}
-        <div style={{ marginBottom: 32 }}><StreakBar /></div>
+        <div style={{ marginBottom: 16 }}><StreakBar /></div>
+
+        {/* Học bạ tuần */}
+        <WeeklyReport />
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 36 }}>
