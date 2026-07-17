@@ -83,10 +83,10 @@ export function EvalCard({ id, taskType, taskPrompt, wordCount, overallBand, taB
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-navy-700 border border-navy-600 text-navy-300">Task {taskType}</span>
             <span className="text-xs text-navy-500">{date}</span>
-            <span className="text-xs text-navy-600">·</span>
-            <span className="text-xs text-navy-500">{wordCount} từ</span>
+            {wordCount ? <span className="text-xs text-navy-600">·</span> : null}
+            {wordCount ? <span className="text-xs text-navy-500">{wordCount} từ</span> : null}
           </div>
-          {taskPrompt && <p className="text-sm text-navy-300 line-clamp-2 leading-snug group-hover:text-navy-200 transition">{taskPrompt}</p>}
+          <p className="text-sm text-navy-300 line-clamp-2 leading-snug group-hover:text-navy-200 transition">{taskPrompt || (taskType === 1 ? 'Bài Task 1 (đề không được lưu)' : 'Bài Task 2 (đề không được lưu)')}</p>
           <div className="grid grid-cols-4 gap-2 mt-3">
             {[['TA',taBand],['CC',ccBand],['LR',lrBand],['GR',graBand]].map(([k,v])=>(
               <div key={k as string}>
