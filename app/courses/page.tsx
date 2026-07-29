@@ -61,7 +61,7 @@ export default function CoursesPage() {
       </header>
       <main className="max-w-4xl mx-auto px-6 py-12">
         <p className="text-xs font-mono tracking-[0.3em] text-brand-400 uppercase mb-2">UNICOACH Learning Path</p>
-        <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700 }}>Lộ trình IELTS Writing</h1>
+        <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'var(--font-heading)', fontWeight: 400 }}>Lộ trình IELTS Writing</h1>
         <p className="text-sm text-navy-400 mb-10">Band ladder 5.0 → 8.0 — học kỹ thuật, viết bài, được AI chấm ngay trong từng bài học.</p>
 
         {loading ? (

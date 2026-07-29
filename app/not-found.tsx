@@ -5,7 +5,7 @@ export default function NotFound() {
     <div style={{ minHeight: '100vh', background: 'var(--royal-sapphire)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 20px' }}>
       <img src="/favicon.svg" alt="" width={72} height={72} style={{ marginBottom: 24 }} />
       <div className="gold-foil" style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 64, lineHeight: 1 }}>404</div>
-      <h1 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 24, color: 'var(--ivory)', margin: '18px 0 8px' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 24, color: 'var(--ivory)', margin: '18px 0 8px' }}>
         Trang này chưa được chép vào thư viện
       </h1>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: 'rgba(231,206,142,.75)', maxWidth: 460, margin: '0 auto 28px', lineHeight: 1.6 }}>

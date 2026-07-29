@@ -232,7 +232,7 @@ export default function ProfilePage() {
             {/* Info */}
             <div style={{ flex: 1, minWidth: 200 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-                <h1 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 22, color: 'var(--ivory)', margin: 0 }}>
+                <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 22, color: 'var(--ivory)', margin: 0 }}>
                   {user?.user_metadata?.full_name || 'Writer'}
                 </h1>
                 {/* plan badge */}

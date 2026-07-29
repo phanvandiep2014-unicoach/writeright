@@ -2,9 +2,12 @@
    WriteRight Ã UNICOACH â Royal/Victorian brand theme
    Single source of truth for color + type. Import once, globally.
    ------------------------------------------------------------
-   FONT RULE (critical): Cinzel / Cinzel Decorative must NEVER
+   FONT RULE (critical): Cinzel must NEVER
    carry Vietnamese diacritics â accents sit too high. Vietnamese
-   body + UI text uses Cormorant Garamond or EB Garamond only.
+   body + UI text uses EB Garamond; Vietnamese headings use Prata.
+   Cinzel now falls back to Prata (not Times) so a stray accent
+   degrades gracefully. BA font, không thêm font thứ tư —
+   xem unicoach-bms/brand/BRAND-FONTS.md.
 
    Font files are loaded in app/layout.tsx via next/font/google
    (NOT a CSS @import â an @import here gets bundled mid-file by
@@ -30,9 +33,17 @@
       #F4E7BC 66%, #A9863A 86%, #8A6A28 100%);
 
   /* ---- Type roles (aliased to next/font variables from layout.tsx) ---- */
-  --font-wordmark: var(--font-cinzel-decorative), 'Cinzel Decorative', serif;  /* wordmark / crest ONLY */
-  --font-display:  var(--font-cinzel), 'Cinzel', serif;                       /* headings, eyebrows, mottos â Latin/EN only */
-  --font-subhead:  var(--font-cormorant), 'Cormorant Garamond', serif;        /* subheads, quotes â Vietnamese-safe */
+  /* CHUẨN CHUNG UNICOACH — xem unicoach-bms/brand/BRAND-FONTS.md
+     Đúng BA font: Cinzel · Prata · EB Garamond. Không thêm font thứ tư.
+     Đã bỏ Cinzel Decorative (không thuộc bộ nhận diện) và Cormorant Garamond
+     (trùng vai trò EB Garamond). Hai token cũ giữ làm bí danh để khỏi phải
+     sửa hàng trăm điểm gọi inline. */
+  --font-heading:  var(--font-prata), 'Prata', Georgia, serif;  /* mọi tiêu đề — CÓ tiếng Việt */
+  --font-wordmark: var(--font-display);  /* wordmark / crest ONLY */
+  /* Cinzel không có bộ tiếng Việt → ký tự có dấu rơi sang Prata (không phải Times).
+     Giống hệt cách LMS khai báo. */
+  --font-display:  var(--font-cinzel), 'Cinzel', var(--font-prata), 'Prata', Georgia, serif;                       /* headings, eyebrows, mottos â Latin/EN only */
+  --font-subhead:  var(--font-body);        /* subheads, quotes â Vietnamese-safe */
   --font-body:     var(--font-eb-garamond), 'EB Garamond', serif;             /* body copy â Vietnamese-safe */
 
   /* ---- Functional roles ---- */
@@ -79,16 +90,16 @@
 
 /* Vietnamese-safe heading: subhead serif, never Cinzel */
 .heading-vi {
-  font-family: var(--font-subhead);
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-weight: 400;
   color: var(--royal-sapphire);
   line-height: 1.15;
 }
 
 /* Vietnamese-safe heading for use on dark (Royal Sapphire) grounds */
 .heading-vi-on-dark {
-  font-family: var(--font-subhead);
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-weight: 400;
   color: var(--ivory);
   line-height: 1.15;
 }
@@ -151,7 +162,7 @@
 /* ── Wax-seal reveal (nghi thức mở phiếu chấm) ─────────────── */
 .seal-overlay{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(17,24,58,.93);cursor:pointer;animation:sealVeil .5s ease 1.45s forwards}
 .seal-stamp{width:128px;height:128px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 35% 30%,#7a2436,#5A1726 60%,#43101c);box-shadow:0 10px 40px rgba(0,0,0,.55),inset 0 0 0 6px rgba(200,161,75,.35);animation:sealStamp .55s cubic-bezier(.2,1.4,.4,1) both}
-.seal-w{font-family:var(--font-wordmark);font-size:44px;font-weight:900}
+.seal-w{font-family:var(--font-display);font-size:44px;font-weight:700}
 .seal-motto{margin-top:18px;color:var(--champagne);font-family:var(--font-subhead);font-style:italic;font-size:16px;letter-spacing:.08em;animation:sealIn .5s ease .45s both}
 @keyframes sealStamp{0%{transform:scale(2.2) rotate(-14deg);opacity:0}60%{transform:scale(.94) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 @keyframes sealIn{from{opacity:0}to{opacity:1}}
@@ -168,7 +179,7 @@
 /* ── Lễ thăng band ─────────────────────────── */
 .bandup-overlay{position:fixed;inset:0;z-index:110;display:flex;align-items:center;justify-content:center;background:rgba(10,14,36,.9);padding:20px;animation:lineIn .4s ease}
 .bandup-card{max-width:380px;width:100%;text-align:center;background:linear-gradient(170deg,#1A234E,#0E1434);border:1px solid rgba(200,161,75,.5);border-radius:14px;padding:34px 28px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:bandupIn .6s cubic-bezier(.2,1.3,.4,1) both}
-.bandup-band{font-family:var(--font-wordmark);font-weight:900;font-size:64px;line-height:1;margin-top:6px}
+.bandup-band{font-family:var(--font-display);font-weight:700;font-size:64px;line-height:1;margin-top:6px}
 .bandup-motto{font-family:var(--font-subhead);font-style:italic;font-size:20px;color:var(--champagne);margin-top:6px}
 .bandup-note{font-family:var(--font-body);font-size:14.5px;color:rgba(231,206,142,.75);line-height:1.55;margin:12px 0 20px}
 .bandup-btn{padding:11px 22px;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer}

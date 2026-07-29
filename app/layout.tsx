@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cinzel_Decorative, Cinzel, Cormorant_Garamond, EB_Garamond } from 'next/font/google';
+import { Cinzel, Prata, EB_Garamond } from 'next/font/google';
 import './globals.css';
 import './writeright-theme.css';
 
@@ -11,23 +11,17 @@ import './writeright-theme.css';
    the font files, so there's no external Google Fonts request
    at all on page load.
    ============================================================ */
-const cinzelDecorative = Cinzel_Decorative({
-  subsets: ['latin'],
-  weight: ['400', '700', '900'],
-  variable: '--font-cinzel-decorative',
-  display: 'swap',
-});
 const cinzel = Cinzel({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '500', '600', '700', '800', '900'],
   variable: '--font-cinzel',
   display: 'swap',
 });
-const cormorant = Cormorant_Garamond({
+// Prata — font tiêu đề chung của hệ thống UNICOACH. CÓ tiếng Việt, chỉ một độ đậm 400.
+const prata = Prata({
   subsets: ['latin', 'vietnamese'],
-  weight: ['400', '500', '600', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
+  weight: ['400'],
+  variable: '--font-prata',
   display: 'swap',
 });
 const ebGaramond = EB_Garamond({
@@ -63,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="vi"
-      className={`${cinzelDecorative.variable} ${cinzel.variable} ${cormorant.variable} ${ebGaramond.variable}`}
+      className={`${cinzel.variable} ${prata.variable} ${ebGaramond.variable}`}
     >
       <body className="min-h-screen antialiased">
         {children}

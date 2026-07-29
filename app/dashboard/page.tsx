@@ -159,7 +159,7 @@ export default function DashboardPage() {
               </div>
           }
           <div>
-            <h1 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 'clamp(24px,4vw,34px)', color: '#fff', margin: '0 0 6px', lineHeight: 1.2 }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'clamp(24px,4vw,34px)', color: '#fff', margin: '0 0 6px', lineHeight: 1.2 }}>
               {profile?.full_name || 'Dashboard'}
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

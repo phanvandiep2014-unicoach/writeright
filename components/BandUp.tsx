@@ -59,15 +59,15 @@ export function BandUpCelebration({ band }: { band: number }) {
       const gold = x.createLinearGradient(0, 380, 0, 640);
       gold.addColorStop(0, '#F4E7BC'); gold.addColorStop(.45, '#C8A14B'); gold.addColorStop(1, '#8A6A28');
       x.fillStyle = gold;
-      x.font = '900 270px "Cinzel", "Cormorant Garamond", serif';
+      x.font = '900 270px "Cinzel", "Prata", serif';
       x.fillText(band.toFixed(1), 540, 620);
       x.fillStyle = '#E7CE8E';
-      x.font = 'italic 50px "Cormorant Garamond", serif';
+      x.font = 'italic 50px "EB Garamond", serif';
       x.fillText('“Per te, ad astra” — through you, to the stars', 540, 726);
       x.strokeStyle = 'rgba(200,161,75,.5)'; x.lineWidth = 2;
       x.beginPath(); x.moveTo(340, 790); x.lineTo(740, 790); x.stroke();
       x.fillStyle = 'rgba(231,206,142,.95)';
-      x.font = '700 44px "Cormorant Garamond", serif';
+      x.font = '600 44px "EB Garamond", serif';
       x.fillText('WriteRight by UNICOACH', 540, 866);
       x.fillStyle = 'rgba(231,206,142,.55)';
       x.font = '28px "EB Garamond", serif';

@@ -16,7 +16,9 @@ module.exports = {
            (font-mono, font-serif) don't need to change anywhere â they now
            resolve to the brand's actual type system instead of Georgia /
            JetBrains Mono. */
-        serif: ['var(--font-cormorant)', 'Cormorant Garamond', 'Georgia', 'serif'],
+        serif: ['var(--font-eb-garamond)', 'EB Garamond', 'Georgia', 'serif'],
+        display: ['var(--font-cinzel)', 'Cinzel', 'var(--font-prata)', 'Prata', 'serif'],
+        heading: ['var(--font-prata)', 'Prata', 'Georgia', 'serif'],
         mono: ['var(--font-eb-garamond)', 'EB Garamond', 'Georgia', 'serif'],
       },
     },

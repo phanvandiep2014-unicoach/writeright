@@ -115,7 +115,7 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
                 </>
               )}
 
-              <h3 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: '1.4rem', margin: 0 }}>
+              <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: '1.4rem', margin: 0 }}>
                 {t.name}
               </h3>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '.95rem', opacity: .85, margin: '4px 0 16px' }}>

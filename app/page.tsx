@@ -133,7 +133,7 @@ export default function Home() {
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 52, flexWrap: 'wrap' }}>
           {[['4', 'Tiêu chí chấm'], ['9.0', 'Bài mẫu Band'], ['< 15s', 'Thời gian chấm']].map(([num, label]) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 36, lineHeight: 1 }} className="gold-foil">{num}</div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 38, lineHeight: 1 }} className="gold-foil">{num}</div>
               <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 500, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)', marginTop: 8 }}>{label}</div>
             </div>
           ))}
@@ -168,14 +168,14 @@ export default function Home() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--imperial-gold)' }}>Bảng giá</div>
-          <h2 style={{ fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 'clamp(24px,3.6vw,34px)', color: 'var(--ivory)' }}>Chọn gói phù hợp với bạn</h2>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'clamp(24px,3.6vw,34px)', color: 'var(--ivory)' }}>Chọn gói phù hợp với bạn</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 22 }}>
 
           {/* Free */}
           <div style={{ background: '#161E48', border: '1px solid rgba(200,161,75,.18)', borderRadius: 8, padding: '30px 26px' }}>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Miễn phí</div>
-            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, color: 'var(--ivory)', margin: '12px 0 2px' }}>0 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 1 bài chấm / tuần</li>
@@ -194,7 +194,7 @@ export default function Home() {
               background: 'var(--royal-oxblood)', color: 'var(--champagne)', padding: '6px 18px', borderRadius: 3, border: '1px solid #8A6A28', whiteSpace: 'nowrap'
             }}>Phổ biến</div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)' }}>Standard</div>
-            <div className="gold-foil" style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
+            <div className="gold-foil" style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm không giới hạn</li>
@@ -209,7 +209,7 @@ export default function Home() {
           {/* Premium */}
           <div style={{ background: '#161E48', border: '1px solid rgba(200,161,75,.18)', borderRadius: 8, padding: '30px 26px' }}>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Premium</div>
-            <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 30, color: 'var(--ivory)', margin: '12px 0 2px' }}>150.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, color: 'var(--ivory)', margin: '12px 0 2px' }}>150.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mọi tính năng Standard</li>
