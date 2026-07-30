@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
+import { pushResultToLms } from '@/lib/unicoach';
 
 const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner (20+ years) and an applied linguist. Evaluate the essay and respond ONLY with valid JSON (no markdown, no code blocks). Every field marked {en, vi} is an object with an English string ("en") and a Vietnamese string ("vi"). Use this structure:
 {
@@ -128,6 +129,26 @@ cc_band: result.coherence_cohesion?.band??null, feedback: result,
 model_intro: result.model_introduction??null, word_count: wordCount,
 }).select('id').single();
 if (insertErr) console.error('Failed to log evaluation:', insertErr.message);
+
+// UNICOACH LMS: học viên vào qua SSO thì đẩy điểm về hồ sơ học tập bên LMS.
+// Chạy "bắn và quên" — LMS lỗi hay chưa cấu hình cũng không ảnh hưởng việc chấm bài.
+const lmsCode = (user.user_metadata as any)?.lms_student_code;
+if (lmsCode && evalData?.id) {
+  const fb = result?.headline?.vi || result?.summary?.vi || result?.headline?.en || '';
+  void pushResultToLms({
+    studentCode: String(lmsCode),
+    externalId: String(evalData.id),
+    band: result.overall_band ?? null,
+    title: `Writing Task ${taskType || 2} — ${String(taskPrompt || 'Đề trong ảnh').slice(0, 90)}`,
+    feedback: String(fb).slice(0, 4000),
+    detail: {
+      task_achievement: result.task_achievement?.band ?? null,
+      coherence: result.coherence_cohesion?.band ?? null,
+      lexical: result.lexical_resource?.band ?? null,
+      grammar: result.grammatical_range?.band ?? null,
+    },
+  });
+}
 
 // LMS: link evaluation to lesson progress
 if (lessonId && evalData?.id && user?.id) {
