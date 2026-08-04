@@ -75,7 +75,9 @@ type PushArgs = {
  * kể cả khi LMS sập hoặc chưa cấu hình. Trả về true nếu đẩy thành công.
  */
 export async function pushResultToLms(a: PushArgs): Promise<boolean> {
-  const base = (process.env.UNICOACH_LMS_URL || '').replace(/\/+$/, '');
+  // Mặc định trỏ về LMS đang chạy trên Railway; đặt env UNICOACH_LMS_URL để đổi
+  // (vd sang https://lms.unicoach.vn khi DNS đã trỏ xong).
+  const base = (process.env.UNICOACH_LMS_URL || 'https://unicoach-bms-production.up.railway.app').replace(/\/+$/, '');
   const apiKey = process.env.UNICOACH_API_KEY;
   if (!base || !apiKey || !a.studentCode || a.band == null) return false;
 
