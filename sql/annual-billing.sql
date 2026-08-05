@@ -60,10 +60,25 @@ comment on column public.orders.billing_cycle is
 
 
 -- ── 3. View quyền lợi: hết hạn thì rơi về free ──────────────────
--- Giữ nguyên tên cột (user_id, plan, evals_this_week) để không phải
+-- Giữ nguyên tên cột cũ (user_id, plan, evals_this_week) để không phải
 -- sửa hooks/useEntitlement.ts, app/api/evaluate/route.ts, dashboard...
--- Thêm hai cột mới, các nơi cũ không select thì không ảnh hưởng.
-create or replace view public.user_entitlements
+--
+-- `weekly_quota` được thêm vào đây vì code ĐANG select nó mà view cũ
+-- KHÔNG có: app/api/evaluate/route.ts và components/StreakBar.tsx đều
+-- gọi `.select('... weekly_quota ...')`. Ở evaluate route, select lỗi
+-- rơi vào nhánh `if (entErr)` đếm lại evaluations bằng tay — nên hạn
+-- mức vẫn chạy đúng, nhưng chạy đúng do may chứ không do thiết kế.
+-- Giá trị khớp với FREE_EVALS_PER_WEEK = 1 trong hooks/useEntitlement.ts;
+-- người trả phí không bị chặn nên đặt số lớn cho rõ ý.
+--
+-- ⚠️ PHẢI DROP TRƯỚC. `create or replace view` chỉ cho phép THÊM cột vào
+-- CUỐI danh sách; view cũ là (user_id, plan, evals_this_week) còn view
+-- mới chèn tier_expires_at vào vị trí thứ 3, nên replace sẽ báo
+-- "cannot change name of view column evals_this_week to tier_expires_at".
+-- View không chứa dữ liệu nên drop rồi tạo lại là an toàn.
+drop view if exists public.user_entitlements;
+
+create view public.user_entitlements
 with (security_invoker = true) as
 select
   p.id as user_id,
@@ -73,6 +88,11 @@ select
   end as plan,
   p.tier_expires_at,
   (p.tier_expires_at is not null and p.tier_expires_at < now()) as is_expired,
+  case
+    when p.tier in ('standard', 'premium')
+     and (p.tier_expires_at is null or p.tier_expires_at >= now()) then 999999
+    else 1
+  end as weekly_quota,
   coalesce(e.evals_this_week, 0) as evals_this_week
 from public.profiles p
 left join (
