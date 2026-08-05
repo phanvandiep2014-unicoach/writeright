@@ -89,9 +89,21 @@ export default function DashboardPage() {
       setUser(user);
       const { data: prof } = await supabase.from('profiles')
         .select('full_name,avatar_url,tier,public_token,role').eq('id', user.id).single();
-      const { data: ent } = await supabase.from('user_entitlements')
-        .select('plan').eq('user_id', user.id).maybeSingle();
-      setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier) } : prof);
+      // `tier_expires_at` chỉ có sau khi chạy sql/annual-billing.sql —
+      // thiếu cột thì select lỗi, nên thử bộ đầy đủ trước rồi lùi về 'plan'.
+      let ent: any = null;
+      {
+        const full = await supabase.from('user_entitlements')
+          .select('plan, tier_expires_at').eq('user_id', user.id).maybeSingle();
+        if (full.error && /tier_expires_at/i.test(full.error.message)) {
+          const basic = await supabase.from('user_entitlements')
+            .select('plan').eq('user_id', user.id).maybeSingle();
+          ent = basic.data;
+        } else {
+          ent = full.data;
+        }
+      }
+      setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier), tier_expires_at: ent?.tier_expires_at ?? null } : prof);
       const { data: evs } = await supabase.from('evaluations')
         .select('id,task_type,task_prompt,word_count,overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
@@ -116,6 +128,21 @@ export default function DashboardPage() {
   }
 
   const tierLabel = profile?.tier === 'premium' ? 'Premium' : profile?.tier === 'standard' ? 'Standard' : 'Free';
+
+  // Hạn dùng. Không có auto-renew nên người dùng PHẢI thấy ngày này —
+  // nếu không họ sẽ mất quyền mà không hiểu vì sao.
+  const expiresAt: Date | null = profile?.tier_expires_at ? new Date(profile.tier_expires_at) : null;
+  const daysLeft = expiresAt
+    ? Math.ceil((expiresAt.getTime() - Date.now()) / 86400000)
+    : null;
+  // Hiện bất cứ khi nào có ngày hết hạn, KHÔNG lọc theo tier hiện tại:
+  // view `user_entitlements` đã hạ tier hết hạn xuống 'free', nên lọc theo
+  // tier thì đúng người cần thấy lời nhắc gia hạn lại là người không thấy.
+  const showExpiry = daysLeft !== null;
+  const expiryUrgent = daysLeft !== null && daysLeft <= 7;
+  const expiryText = expiresAt
+    ? expiresAt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : '';
   const tierStyle: React.CSSProperties = (profile?.tier === 'premium' || profile?.tier === 'standard')
     ? { background: 'rgba(200,161,75,.15)', border: '1px solid rgba(200,161,75,.45)', color: '#E7CE8E' }
     : { background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.12)', color: 'rgba(231,206,142,.55)' };
@@ -165,6 +192,22 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '.88rem', color: 'rgba(231,206,142,.6)' }}>{user?.email}</span>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '.75rem', fontWeight: 600, padding: '2px 10px', borderRadius: 20, letterSpacing: '.04em', ...tierStyle }}>{tierLabel}</span>
+              {showExpiry && (
+                <span
+                  style={{
+                    fontFamily: 'var(--font-body)', fontSize: '.78rem',
+                    color: expiryUrgent ? '#F0B4B4' : 'rgba(231,206,142,.6)',
+                  }}
+                >
+                  {daysLeft! > 0
+                    ? `Hết hạn ${expiryText} · còn ${daysLeft} ngày`
+                    : `Đã hết hạn ${expiryText}`}
+                  {' · '}
+                  <Link href="/pricing" style={{ color: '#E7CE8E', textDecoration: 'underline' }}>
+                    Gia hạn
+                  </Link>
+                </span>
+              )}
               {profile?.public_token && (
                 <a href={`/p/${profile.public_token}`} target="_blank" rel="noopener noreferrer"
                   style={{ fontFamily: 'var(--font-body)', fontSize: '.8rem', color: 'rgba(200,161,75,.6)', textDecoration: 'none' }}>

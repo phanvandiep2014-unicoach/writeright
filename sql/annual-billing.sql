@@ -19,13 +19,16 @@
 --   2. orders.billing_cycle      — 'monthly' | 'yearly'
 --   3. user_entitlements         — tier hết hạn thì đọc thành 'free'
 --
--- AN TOÀN VỚI KHÁCH CŨ
--- --------------------
--- `tier_expires_at` NULL nghĩa là KHÔNG hết hạn. Toàn bộ khách đã mua
--- trước hôm nay đều có giá trị NULL, nên họ giữ nguyên quyền trọn đời
--- đúng như những gì đã bán cho họ. Chỉ đơn hàng MỚI mới có ngày hết hạn.
--- Nếu sau này muốn áp hạn cho cả khách cũ thì phải thông báo trước, và
--- chạy một câu UPDATE riêng — file này cố ý không làm việc đó.
+-- KHÁCH CŨ
+-- --------
+-- `tier_expires_at` NULL nghĩa là KHÔNG hết hạn. File này chỉ tạo cột,
+-- nên ngay sau khi chạy, toàn bộ khách cũ vẫn ở trạng thái NULL và giữ
+-- nguyên quyền — không ai bị cắt.
+--
+-- Phan đã chốt (05/08/2026) là khách cũ CŨNG phải trả theo tháng. Việc
+-- đó nằm ở file riêng: **sql/backfill-tier-expiry.sql**. File đó cắt
+-- quyền của người dùng thật, nên được tách ra để chạy có chủ đích, sau
+-- khi đã xem trước danh sách ai bị ảnh hưởng.
 
 
 -- ── 1. Ngày hết hạn quyền ───────────────────────────────────────
