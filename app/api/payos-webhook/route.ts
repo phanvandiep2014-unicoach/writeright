@@ -54,11 +54,22 @@ export async function POST(req: NextRequest) {
   const admin = createAdminSupabase();
 
   // ── 1. Look up the order by orderCode.
-  const { data: order, error: findErr } = await admin
+  //    `billing_cycle` chỉ có sau khi chạy sql/annual-billing.sql — nếu
+  //    cột chưa tồn tại thì Supabase trả lỗi, ta select lại bộ cột cũ.
+  let { data: order, error: findErr } = await admin
     .from('orders')
-    .select('id, user_id, tier, status')
+    .select('id, user_id, tier, status, billing_cycle')
     .eq('order_code', data.orderCode)
     .single();
+
+  if (findErr && /billing_cycle/i.test(findErr.message)) {
+    console.warn('payos-webhook: cot orders.billing_cycle chua ton tai — chay sql/annual-billing.sql');
+    ({ data: order, error: findErr } = await admin
+      .from('orders')
+      .select('id, user_id, tier, status')
+      .eq('order_code', data.orderCode)
+      .single());
+  }
 
   if (findErr || !order) {
     console.error('PayOS webhook: order not found for orderCode', data.orderCode);
@@ -84,16 +95,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
   }
 
-  // ── 4. Upgrade the user's profile tier.
-  const { error: updateProfileErr } = await admin
+  // ── 4. Tính ngày hết hạn mới.
+  //    Gói tháng cộng 30 ngày, gói năm cộng 365 ngày. Nếu người dùng gia
+  //    hạn khi quyền còn hiệu lực thì CỘNG DỒN từ ngày hết hạn cũ chứ
+  //    không tính lại từ hôm nay — trả tiền sớm không được phạt.
+  const now = new Date();
+  const days = (order as any).billing_cycle === 'yearly' ? 365 : 30;
+
+  const { data: current } = await admin
     .from('profiles')
-    .update({ tier: order.tier, updated_at: new Date().toISOString() })
+    .select('tier_expires_at')
+    .eq('id', order.user_id)
+    .maybeSingle();
+
+  const currentExpiry = (current as any)?.tier_expires_at
+    ? new Date((current as any).tier_expires_at)
+    : null;
+  const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
+  const expiresAt = new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
+
+  // ── 5. Upgrade the user's profile tier.
+  //    `tier_expires_at` chỉ có sau khi chạy sql/annual-billing.sql. Nếu
+  //    chưa có cột, vẫn phải nâng tier — thà cấp quyền không hạn còn hơn
+  //    để khách trả tiền rồi mà không được gì.
+  const patch = { tier: order.tier, updated_at: now.toISOString() };
+
+  let { error: updateProfileErr } = await admin
+    .from('profiles')
+    .update({ ...patch, tier_expires_at: expiresAt.toISOString() })
     .eq('id', order.user_id);
+
+  if (updateProfileErr && /tier_expires_at/i.test(updateProfileErr.message)) {
+    console.warn(
+      'payos-webhook: cot profiles.tier_expires_at chua ton tai — chay sql/annual-billing.sql. ' +
+      'Da nang tier nhung KHONG dat duoc han dung.'
+    );
+    ({ error: updateProfileErr } = await admin
+      .from('profiles')
+      .update(patch)
+      .eq('id', order.user_id));
+  }
 
   if (updateProfileErr) {
     console.error('PayOS webhook: failed to upgrade profile tier:', updateProfileErr.message);
     return NextResponse.json({ error: 'Failed to upgrade tier' }, { status: 500 });
   }
+
+  console.log(
+    `payos-webhook: ${order.user_id} -> ${order.tier} (+${days} ngay, het han ${expiresAt.toISOString()})`
+  );
 
   return NextResponse.json({ success: true });
 }

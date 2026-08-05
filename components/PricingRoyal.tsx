@@ -34,6 +34,8 @@ type Tier = {
   soft?: boolean;
   badge?: string;
   note?: string;
+  /** Nút phụ trên cùng thẻ — dùng cho gói năm. `id` phải có trong PLANS ở app/api/checkout/route.ts. */
+  secondary?: { id: string; label: string };
   features: string[];
   locked: string[];
 };
@@ -81,7 +83,8 @@ const tiers: Tier[] = [
     outcome: 'Luyện như có gia sư UNICOACH kèm riêng',
     cta: 'Chọn Premium',
     featured: false,
-    badge: 'Trả năm 790.000đ',
+    badge: 'Trả năm 790.000đ — tiết kiệm 56%',
+    secondary: { id: 'premium_yearly', label: 'Mua gói năm 790.000đ' },
     note: `Giá khai trương gói năm, áp dụng đến ${LAUNCH_PRICE_UNTIL}. Đăng ký trong thời gian này được giữ nguyên mức giá cho các lần gia hạn sau.`,
     features: [
       'Mọi tính năng Standard',
@@ -209,11 +212,21 @@ function TierCard({ t, onChoose }: { t: Tier; onChoose: (id: string) => void }) 
 
       <button
         className={t.featured ? 'btn-royal' : 'btn-ghost'}
-        style={{ width: '100%', marginBottom: t.note ? 10 : 20 }}
+        style={{ width: '100%', marginBottom: t.secondary ? 8 : t.note ? 10 : 20 }}
         onClick={handle}
       >
         {t.cta}
       </button>
+
+      {t.secondary && (
+        <button
+          className="btn-royal"
+          style={{ width: '100%', marginBottom: t.note ? 10 : 20 }}
+          onClick={() => onChoose(t.secondary!.id)}
+        >
+          {t.secondary.label}
+        </button>
+      )}
 
       {t.note && (
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', opacity: .7, margin: '0 0 16px', lineHeight: 1.5 }}>
@@ -307,7 +320,7 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
         </div>
 
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', opacity: .65, marginTop: 24 }}>
-          Cần tư vấn gói năm, gói đôi hoặc gói cho lớp học?{' '}
+          Cần tư vấn gói đôi hoặc gói cho lớp học?{' '}
           <a href={WAITLIST_URL} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>
             Nhắn cho chúng tôi
           </a>.
