@@ -70,8 +70,28 @@ export function DetailGate({
  * evaluations and turns the scarcity into a gentle, recurring upgrade prompt.
  */
 export function QuotaBanner({ onUpgrade }: { onUpgrade: () => void }) {
-  const { isPaid, freeLeft, loading } = useEntitlement();
+  const { isPaid, freeLeft, loading, freeFullCredits, hasFreeFullAccess } = useEntitlement();
   if (loading || isPaid) return null;
+
+  // Học viên mới từ UNICOACH LMS: nói đúng thứ họ đang có, đừng đếm ngược
+  // hạn mức tuần vào mặt họ ngay ở lần đầu.
+  if (freeFullCredits > 0) {
+    return (
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, flexWrap: 'wrap',
+          background: 'var(--ivory)', border: 'var(--hairline)',
+          borderRadius: 10, padding: '10px 16px', marginBottom: 16,
+        }}
+      >
+        <span style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)' }}>
+          Học viên UNICOACH — bạn có <strong>1 lượt chấm đầy đủ miễn phí</strong>, xem được toàn bộ phân tích chi tiết.
+        </span>
+      </div>
+    );
+  }
+  if (hasFreeFullAccess) return null;
 
   const out = freeLeft === 0;
   return (

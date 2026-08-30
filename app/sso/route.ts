@@ -62,6 +62,21 @@ export async function GET(request: Request) {
     }
     if (!userId) return fail(origin, 'Không tạo được tài khoản học viên.');
 
+    // Lượt chấm đầy đủ miễn phí do LMS cấp (C3).
+    // Chỉ cấp MỘT lần: BMS còn giữ cờ true cho tới khi điểm bài thật được đẩy
+    // về, nên học viên mở WriteRight nhiều lần trước đó vẫn mang cờ. Điều kiện
+    // `free_full_granted_at is null` chặn việc cấp lại.
+    // Cột chỉ có sau khi chạy sql/lms-free-credit.sql — chưa chạy thì lỗi này
+    // không được phép chặn đăng nhập, nên chỉ ghi log.
+    if (payload.writing_free === true) {
+      const { error: creditErr } = await admin
+        .from('profiles')
+        .update({ free_full_credits: 1, free_full_granted_at: new Date().toISOString() })
+        .eq('id', userId)
+        .is('free_full_granted_at', null);
+      if (creditErr) console.error('[sso] không cấp được lượt miễn phí:', creditErr.message);
+    }
+
     // Sinh magic link rồi để /auth/confirm đổi lấy phiên (đặt cookie đúng chuẩn @supabase/ssr).
     const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
       type: 'magiclink', email,

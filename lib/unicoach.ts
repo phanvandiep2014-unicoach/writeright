@@ -15,6 +15,14 @@ export type LmsSsoPayload = {
   sub: string;                 // mã học viên phía LMS, vd "HV001"
   lms_student_id?: number;
   name?: string; email?: string; skill?: string;
+  /**
+   * BMS bật cờ này khi học viên CHƯA dùng lượt chấm Writing miễn phí đầu tiên
+   * (server/free-credit.js → freeFlags). BMS không thu phí và không biết giá —
+   * nó chỉ giữ trạng thái "đã dùng chưa", còn áp dụng thế nào là việc của WriteRight.
+   * `speaking_free` cũng có trong token nhưng dành cho Precisely, ở đây bỏ qua.
+   */
+  writing_free?: boolean;
+  speaking_free?: boolean;
   iat?: number; exp?: number;
 };
 

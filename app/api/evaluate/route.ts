@@ -77,9 +77,22 @@ if (Math.ceil((im.data.length * 3) / 4) > MAX_IMAGE_BYTES)
 return NextResponse.json({ error: 'Anh qua lon. Vui long chon anh nho hon 5 MB.' }, { status: 413 });
 
 const weekStart = currentWeekStart();
+
+// C3 — lượt chấm đầy đủ miễn phí do UNICOACH LMS cấp qua cờ writing_free trong
+// token SSO. Còn lượt thì bỏ qua hạn mức tuần: đây đúng là "lần chấm thử" mà
+// BMS đã hứa với học viên mới, không phải lượt free hằng tuần.
+// Cột chỉ có sau khi chạy sql/lms-free-credit.sql — chưa chạy thì coi như 0 lượt.
+let usingFreeCredit = false;
+{
+const { data: p } = await supabase.from('profiles').select('free_full_credits').eq('id', user.id).maybeSingle();
+usingFreeCredit = (p?.free_full_credits ?? 0) > 0;
+}
+
 const { data: entitlement, error: entErr } = await supabase.from('user_entitlements').select('plan, weekly_quota, evals_this_week').eq('user_id', user.id).single();
 
-if (entErr) {
+if (usingFreeCredit) {
+// không kiểm hạn mức
+} else if (entErr) {
 const { count } = await supabase.from('evaluations').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart + 'T00:00:00Z');
 if ((count ?? 0) >= FREE_EVALS_PER_WEEK) return NextResponse.json({ error: 'Het luot mien phi tuan nay.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
 } else {
@@ -129,6 +142,18 @@ cc_band: result.coherence_cohesion?.band??null, feedback: result,
 model_intro: result.model_introduction??null, word_count: wordCount,
 }).select('id').single();
 if (insertErr) console.error('Failed to log evaluation:', insertErr.message);
+
+// C3 — tiêu lượt miễn phí và mở khoá phần chi tiết trong 30 ngày.
+// Mở theo KHOẢNG THỜI GIAN chứ không theo từng bài: nếu khoá lại ngay khi trừ
+// lượt thì học viên tải lại trang là mất luôn bài vừa chấm, đúng lúc họ đang
+// muốn đọc kỹ. Trừ lượt SAU khi chấm xong để lỗi API không ăn mất lượt của họ.
+if (usingFreeCredit) {
+const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+const { error: spendErr } = await supabase.from('profiles')
+.update({ free_full_credits: 0, free_full_until: until })
+.eq('id', user.id);
+if (spendErr) console.error('[evaluate] không trừ được lượt miễn phí:', spendErr.message);
+}
 
 // UNICOACH LMS: học viên vào qua SSO thì đẩy điểm về hồ sơ học tập bên LMS.
 // Chạy "bắn và quên" — LMS lỗi hay chưa cấu hình cũng không ảnh hưởng việc chấm bài.
