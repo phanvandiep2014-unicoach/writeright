@@ -35,6 +35,27 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGES = 4;
 const ALLOWED_MEDIA = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
+// Chuyển lỗi thô từ Anthropic API (JSON tiếng Anh, đôi khi lộ chi tiết billing nội bộ)
+// thành thông báo tiếng Việt phù hợp brand voice, để học viên không thấy raw error.
+// Chi tiết gốc vẫn được console.error ở nơi gọi hàm này để tra Vercel logs.
+function friendlyApiError(status: number, raw: string): string {
+let parsed: any = null;
+try { parsed = JSON.parse(raw); } catch {}
+const errType: string = parsed?.error?.type || '';
+const errMsg: string = parsed?.error?.message || '';
+
+if (status === 400 && /credit balance/i.test(errMsg)) {
+return 'Hệ thống chấm bài đang tạm gián đoạn do sự cố kỹ thuật. Đội ngũ UNICOACH đã được thông báo, vui lòng thử lại sau ít phút.';
+}
+if (status === 429 || errType === 'rate_limit_error' || errType === 'overloaded_error') {
+return 'Hệ thống đang có nhiều bài chấm cùng lúc. Vui lòng thử lại sau ít phút.';
+}
+if (status >= 500) {
+return 'Lỗi kết nối với hệ thống AI. Vui lòng thử lại sau ít phút.';
+}
+return 'Không thể chấm bài lúc này. Vui lòng thử lại hoặc liên hệ UNICOACH nếu lỗi này tiếp diễn.';
+}
+
 function currentWeekStart() {
 const now = new Date();
 const day = now.getUTCDay();
@@ -121,7 +142,10 @@ body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:
 });
 
 const responseText = await apiRes.text();
-if (!apiRes.ok) return NextResponse.json({ error: `API Error (${apiRes.status}): ${responseText}` }, { status: apiRes.status });
+if (!apiRes.ok) {
+console.error(`[evaluate] Anthropic API error ${apiRes.status}:`, responseText);
+return NextResponse.json({ error: friendlyApiError(apiRes.status, responseText), code: 'AI_UNAVAILABLE' }, { status: 503 });
+}
 
 let claudeData;
 try { claudeData = JSON.parse(responseText); }
