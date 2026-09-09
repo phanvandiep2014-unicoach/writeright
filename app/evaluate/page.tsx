@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 import { RoyalIcon } from '@/components/RoyalIcons';
 import { BandUpCelebration } from '@/components/BandUp';
+import { ProgressDelta } from '@/components/ProgressDelta';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -451,6 +452,19 @@ return d ? (
 })}
 </div>
 </div>
+
+{/* ── So với lần trước — không gọi thêm AI, chỉ đối chiếu dữ liệu đã có ── */}
+<ProgressDelta
+  taskType={taskType}
+  current={{
+    overall_band: result.overall_band,
+    ta_band: result.task_achievement?.band,
+    cc_band: result.coherence_cohesion?.band,
+    lr_band: result.lexical_resource?.band,
+    gra_band: result.grammatical_range?.band,
+    error_count: (result.error_corrections || []).length,
+  }}
+/>
 
 <DetailGate onUpgrade={() => window.location.href='/pricing'}>
 
