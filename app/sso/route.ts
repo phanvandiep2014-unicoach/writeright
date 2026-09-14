@@ -86,10 +86,27 @@ export async function GET(request: Request) {
     const tokenHash = link?.properties?.hashed_token;
     if (!tokenHash) return fail(origin, 'Không tạo được phiên đăng nhập.');
 
+    // Chặng Writing của bài thi thử 4 kỹ năng (payload.mock_session có giá trị):
+    // vào thẳng /mock ở chế độ khoá — không cho chọn đề, không cho làm lại.
+    // Khác với luồng luyện tập thường (next=/evaluate).
+    const isMockExam = !!payload.mock_session;
     const confirm = new URL('/auth/confirm', origin);
     confirm.searchParams.set('token_hash', tokenHash);
-    confirm.searchParams.set('next', '/evaluate');
-    return NextResponse.redirect(confirm);
+    confirm.searchParams.set('next', isMockExam ? '/mock' : '/evaluate');
+
+    const res = NextResponse.redirect(confirm);
+    if (isMockExam) {
+      // httpOnly: /mock đọc các cookie này ở server component, không phải JS
+      // trình duyệt — học viên không thấy và không sửa được mock_session.
+      const opts = { httpOnly: true, secure: true, sameSite: 'lax' as const, maxAge: 60 * 60 * 4, path: '/' };
+      res.cookies.set('uc_mock_session', payload.mock_session!, opts);
+      res.cookies.set('uc_callback', payload.callback ?? '', opts);
+      res.cookies.set('uc_student', String(payload.lms_student_id ?? ''), opts);
+      // Không có trong tài liệu bàn giao — thêm riêng cho WriteRight để chia
+      // đúng tỷ lệ 20:40 khi trung tâm đổi thời gian Writing trong cấu hình đề.
+      res.cookies.set('uc_minutes', String(payload.minutes ?? 60), opts);
+    }
+    return res;
   } catch (e: any) {
     console.error('[sso]', e?.message);
     return fail(origin, 'Lỗi khi tạo phiên: ' + (e?.message || 'không rõ'));

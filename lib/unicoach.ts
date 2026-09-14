@@ -23,6 +23,16 @@ export type LmsSsoPayload = {
    */
   writing_free?: boolean;
   speaking_free?: boolean;
+  /**
+   * Có giá trị khi đây là chặng Writing trong bài thi thử 4 kỹ năng điều phối
+   * bởi `ielts-module` (Listening → Reading → Writing → nghỉ → Speaking).
+   * Xem `BAN-GIAO-DOI-TAC.md` phía LMS. Token vẫn cùng khóa, cùng iss/aud,
+   * cùng hạn 5 phút — chỉ thêm ba trường này, nên verifyLmsToken() ở trên
+   * không cần sửa gì để chấp nhận token thi thử.
+   */
+  mock_session?: string;
+  minutes?: number;
+  callback?: string;
   iat?: number; exp?: number;
 };
 
@@ -109,4 +119,56 @@ export async function pushResultToLms(a: PushArgs): Promise<boolean> {
     console.error('[unicoach] đẩy điểm lỗi:', e?.message);
     return false;
   }
+}
+
+/**
+ * Trả band Writing về một PHIÊN THI THỬ 4 KỸ NĂNG (Listening/Reading/Writing/
+ * Speaking điều phối bởi `ielts-module` trong LMS) — khác hẳn pushResultToLms()
+ * ở trên, vốn ghi điểm vào bảng theo dõi khóa học bình thường:
+ *
+ *              pushResultToLms          pushBandToLms
+ *   Định danh   studentCode              mock_session (mã phiên thi thử)
+ *   Endpoint    /api/v1/results          /api/ielts-callback/results
+ *   Xác thực    header X-API-Key         chữ ký HMAC trong body
+ *   Idempotent  không quan trọng         BẮT BUỘC — LMS tự chặn ghi đè,
+ *                                        gọi lại nhiều lần vẫn an toàn
+ *
+ * Xem `BAN-GIAO-DOI-TAC.md` phía LMS, mục 3. KHÔNG đổi cách tính chữ ký nếu
+ * không đồng thời đổi bên `ielts-mock.js#verifyResult` — hai bên phải khớp
+ * TỪNG KÝ TỰ chuỗi được ký.
+ */
+export async function pushBandToLms(
+  mockSession: string,
+  skill: 'writing' | 'speaking',
+  band: number,
+  feedback?: string,
+  detail?: unknown,
+): Promise<{ ok: true; duplicate?: boolean; sessionStatus?: string; overallBand?: number | null }> {
+  const base = (process.env.UNICOACH_LMS_URL || 'https://lms.unicoach.vn').replace(/\/+$/, '');
+  const secret = process.env.UNICOACH_SSO_SECRET;
+  if (!secret) throw new Error('WriteRight chưa cấu hình UNICOACH_SSO_SECRET.');
+
+  // Band phải là bội của 0.5 — LMS cũng tự làm tròn, nhưng làm sẵn cho khớp
+  // chữ ký. QUAN TRỌNG: dùng đúng biến `b` (số, không toFixed) cho CẢ chữ ký
+  // LẪN body — lệch định dạng ("6.50" so với "6.5") là lỗi hay gặp nhất.
+  const b = Math.round(band * 2) / 2;
+  const signature = crypto.createHmac('sha256', secret).update(`${mockSession}.${skill}.${b}`).digest('hex');
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/ielts-callback/results`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app: 'writeright', token: mockSession, skill, band: b, feedback, detail, signature }),
+      signal: ctrl.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `LMS trả về ${res.status}`);
+  return { ok: true, duplicate: data?.duplicate, sessionStatus: data?.session_status, overallBand: data?.overall_band ?? null };
 }
