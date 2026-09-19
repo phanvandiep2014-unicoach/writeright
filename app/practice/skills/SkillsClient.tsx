@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 import {
@@ -34,6 +34,13 @@ export default function SkillsClient() {
     setIdx(0); setChosen(null); setAnswers([]);
     shownAt.current = Date.now();
   };
+
+  // /practice/skills?kind=grammar — đến từ thẻ "Bài tập hôm nay": vào làm luôn, khỏi chọn lại.
+  useEffect(() => {
+    const k = new URLSearchParams(window.location.search).get('kind');
+    if (k && k in KIND_META) start(k as ExerciseKind);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const current = queue[idx];
   const finished = kind !== null && queue.length > 0 && idx >= queue.length;

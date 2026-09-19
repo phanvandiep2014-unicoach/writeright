@@ -1,9 +1,11 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase-browser';
 import { QuotaBanner } from '@/components/DetailGate';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { usePracticeData } from '@/hooks/usePracticeData';
+import { activityDays, computeStreak, ictDay, recommendToday } from '@/lib/practice-insights';
+import { KIND_META } from '@/lib/skill-exercises';
 import {
   PRACTICE_ITEMS, DEFAULT_FILTER, PracticeFilter, PracticeItem, AttemptSummary,
   applyFilter, summariseAttempts, distinct, suggestNext, kindLabel, categoryLabel,
@@ -60,29 +62,18 @@ function PromptCard({ item, summary }: { item: PracticeItem; summary?: AttemptSu
 
 export default function PracticeClient() {
   const { isPaid, loading: entLoading, freeLeft } = useEntitlement();
-  const [attempts, setAttempts] = useState<Record<string, AttemptSummary>>({});
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const data = usePracticeData();
+  const signedIn = data.status === 'loading' ? null : data.status === 'ready';
+  const attempts = useMemo(() => summariseAttempts(data.evals), [data.evals]);
   const [filter, setFilter] = useState<PracticeFilter>(DEFAULT_FILTER);
   const [visible, setVisible] = useState(PAGE_SIZE);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (cancelled) return;
-      setSignedIn(!!user);
-      if (!user) return;
-      // RLS chỉ trả về bài của chính học viên. Lấy đủ để nhận ra đề đã làm.
-      const { data } = await supabase
-        .from('evaluations')
-        .select('task_prompt, overall_band, created_at')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (!cancelled && data) setAttempts(summariseAttempts(data));
-    })();
-    return () => { cancelled = true; };
-  }, []);
+  const today = ictDay(Date.now());
+  const plan = useMemo(() => recommendToday(data.recent, today), [data.recent, today]);
+  const streak = useMemo(
+    () => computeStreak(activityDays(data.evals, data.exercises), today),
+    [data.evals, data.exercises, today],
+  );
 
   const set = (patch: Partial<PracticeFilter>) => {
     setFilter(f => ({ ...f, ...patch }));
@@ -145,13 +136,15 @@ export default function PracticeClient() {
             )}
           </div>
           <div className="bg-navy-800 border border-navy-700 rounded-2xl p-5">
-            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Bài tập kỹ năng · 3–5 phút</div>
-            <p className="text-navy-200 text-sm leading-relaxed mb-3">
-              Sửa lỗi ngữ pháp, paraphrase, liên kết ý, kết hợp từ, viết overview. Đáp án và giải thích hiện ngay.
-            </p>
-            <Link href="/practice/skills" className="inline-block px-5 py-2 rounded-lg text-sm font-semibold border border-brand-500/50 text-brand-400 hover:bg-brand-500/10 transition">
-              Làm bài tập nhanh
-            </Link>
+            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Bài tập hôm nay · 3–5 phút</div>
+            <p className="text-white text-base mb-1" style={{ fontFamily: 'var(--font-subhead)' }}>{KIND_META[plan.kind].label}</p>
+            <p className="text-navy-300 text-sm leading-relaxed mb-3">{plan.reason}</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <Link href={`/practice/skills?kind=${plan.kind}`} className="inline-block px-5 py-2 rounded-lg text-sm font-semibold border border-brand-500/50 text-brand-400 hover:bg-brand-500/10 transition">
+                Làm ngay
+              </Link>
+              <Link href="/practice/skills" className="text-sm text-navy-300 hover:text-brand-400 transition">Tất cả bài tập kỹ năng →</Link>
+            </div>
           </div>
         </div>
 
@@ -160,10 +153,15 @@ export default function PracticeClient() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-navy-300 px-1">
             {signedIn ? (
               <>
+                <span>
+                  Chuỗi ngày: <strong className="text-white">{streak.current}</strong>
+                  {streak.current > 0 && !streak.activeToday ? ' (luyện hôm nay để giữ chuỗi)' : ''}
+                </span>
                 <span>Đã làm <strong className="text-white">{doneCount}</strong>/{PRACTICE_ITEMS.length} đề</span>
                 {!entLoading && (isPaid
                   ? <span>Lượt chấm: <strong className="text-white">không giới hạn</strong></span>
                   : <span>Lượt chấm tuần này còn lại: <strong className="text-white">{freeLeft}</strong></span>)}
+                <Link href="/practice/progress" className="text-brand-400 underline">Xem tiến bộ</Link>
               </>
             ) : (
               <span>
