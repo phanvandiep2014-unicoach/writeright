@@ -144,7 +144,7 @@ const plan = recommendToday(rows, T);
 assert.strictEqual(plan.criterion, 'gra');
 assert.strictEqual(plan.kind, 'grammar');
 assert.strictEqual(plan.basis, 'bands');
-assert.ok(plan.reason.includes('5.5') && /ngữ pháp/i.test(plan.reason), 'lý do phải nêu điểm và loại lỗi hay gặp');
+assert.ok(plan.reason.includes('5.5') && /grammar/i.test(plan.reason), 'lý do phải nêu điểm và loại lỗi hay gặp');
 assert.deepStrictEqual(recommendToday(rows, T), plan, 'cùng ngày, cùng dữ liệu → cùng gợi ý');
 const tie = recommendToday([ev({ ta_band: 6, cc_band: 6, lr_band: 6, gra_band: 6, error_corrections: [{ category: 'reference' }, { category: 'reference' }] })], T);
 assert.strictEqual(tie.criterion, 'cc', 'hoà điểm thì chọn tiêu chí nhiều lỗi hơn');

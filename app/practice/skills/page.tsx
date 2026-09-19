@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import SkillsClient from './SkillsClient';
 
 export const metadata: Metadata = {
-  title: 'Bài tập kỹ năng IELTS Writing — WriteRight by UNICOACH',
-  description: 'Bài tập ngắn 3–5 phút: sửa lỗi ngữ pháp, paraphrase, liên kết ý, kết hợp từ, overview. Chấm tức thì, không tốn lượt chấm.',
+  title: 'IELTS Writing Skill Drills — WriteRight by UNICOACH',
+  description: 'Short 3–5 minute drills: grammar correction, paraphrasing, linking, collocations and overviews. Instant marking, no grading credits used.',
 };
 
 export default function SkillsPage() {

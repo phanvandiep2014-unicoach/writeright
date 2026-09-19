@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import ProgressClient from './ProgressClient';
 
 export const metadata: Metadata = {
-  title: 'Tiến bộ luyện tập — WriteRight by UNICOACH',
-  description: 'Xu hướng band, hồ sơ lỗi, chuỗi ngày luyện và bài tập gợi ý cho hôm nay.',
+  title: 'Practice Progress — WriteRight by UNICOACH',
+  description: 'Band trend, error profile, practice streak and today\'s recommended drill.',
 };
 
 export default function ProgressPage() {

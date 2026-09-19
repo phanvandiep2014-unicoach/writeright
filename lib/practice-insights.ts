@@ -27,13 +27,13 @@ export const CRITERIA: Criterion[] = ['ta', 'cc', 'lr', 'gra'];
 
 /** Nhãn hiển thị cho từng loại lỗi bộ chấm gán (evaluate/route.ts: category). */
 export const ERROR_LABEL: Record<string, string> = {
-  grammar: 'Ngữ pháp',
-  vocabulary: 'Từ vựng',
-  register: 'Văn phong',
-  tone: 'Sắc thái',
-  reference: 'Quy chiếu',
-  dialect: 'Phương ngữ',
-  spelling: 'Chính tả',
+  grammar: 'Grammar',
+  vocabulary: 'Vocabulary',
+  register: 'Register',
+  tone: 'Tone',
+  reference: 'Reference',
+  dialect: 'Dialect',
+  spelling: 'Spelling',
 };
 
 /** Loại lỗi ảnh hưởng chủ yếu tới tiêu chí nào — dùng để chọn bài tập bù. */
@@ -196,7 +196,7 @@ export function recommendToday(rows: EvalRow[], today: string, avgOver = 5): Tod
     return {
       criterion: c,
       kind: pickKind(c, dayIdx),
-      reason: 'Bạn chưa có bài chấm nào, hôm nay hãy khởi động với một dạng bài nền tảng.',
+      reason: 'You have no graded essays yet, so start today with a foundation exercise.',
       basis: 'default',
     };
   }
@@ -208,12 +208,12 @@ export function recommendToday(rows: EvalRow[], today: string, avgOver = 5): Tod
 
   const top = topErrors(errs, 1)[0];
   const errNote = top && ERROR_TO_CRITERION[top.category] === weakest
-    ? ` Lỗi hay gặp nhất: ${ERROR_LABEL[top.category].toLowerCase()} (${top.count} lần).`
+    ? ` Most frequent error: ${ERROR_LABEL[top.category].toLowerCase()} (${top.count}×).`
     : '';
   return {
     criterion: weakest,
     kind: pickKind(weakest, dayIdx),
-    reason: `Trung bình ${Math.min(rows.length, avgOver)} bài gần nhất, ${CRITERION_LABEL[weakest].short} của bạn thấp nhất (${avgs[weakest]!.toFixed(1)}).${errNote}`,
+    reason: `Across your last ${Math.min(rows.length, avgOver)} essays, your ${CRITERION_LABEL[weakest].short} is the lowest (${avgs[weakest]!.toFixed(1)}).${errNote}`,
     basis: 'bands',
   };
 }

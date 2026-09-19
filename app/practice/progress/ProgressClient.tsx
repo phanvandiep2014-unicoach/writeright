@@ -51,7 +51,7 @@ function TrendChart({ points }: { points: { t: string; band: number }[] }) {
   const ticks: number[] = [];
   for (let b = lo; b <= hi; b++) ticks.push(b);
   const first = points[0], last = points[points.length - 1];
-  const desc = `Band tổng ${points.length} bài gần nhất, từ ${first.band.toFixed(1)} đến ${last.band.toFixed(1)}.`;
+  const desc = `Overall band over the last ${points.length} essays, from ${first.band.toFixed(1)} to ${last.band.toFixed(1)}.`;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label={desc}>
@@ -106,52 +106,52 @@ export default function ProgressClient() {
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />
-          <Link href="/practice" className="app-nav-link">← Luyện tập</Link>
+          <Link href="/practice" className="app-nav-link">← Practice</Link>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="text-center">
-          <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Tiến bộ</div>
-          <h1 className="text-3xl text-white font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>Bạn đang đi đến đâu</h1>
+          <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Progress</div>
+          <h1 className="text-3xl text-white font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>Where you stand</h1>
         </div>
 
-        {data.status === 'loading' && <p className="text-center text-navy-400">Đang tải…</p>}
+        {data.status === 'loading' && <p className="text-center text-navy-400">Loading…</p>}
 
         {data.status === 'anon' && (
           <div className="bg-navy-800 border border-brand-500/30 rounded-2xl p-8 text-center">
-            <p className="text-navy-200 mb-4">Đăng nhập để xem chuỗi ngày, xu hướng band và hồ sơ lỗi của bạn.</p>
-            <Link href="/login?next=/practice/progress" className="btn-foil inline-block px-7 py-2.5 rounded-xl font-semibold">Đăng nhập</Link>
+            <p className="text-navy-200 mb-4">Log in to see your streak, band trend and error profile.</p>
+            <Link href="/login?next=/practice/progress" className="btn-foil inline-block px-7 py-2.5 rounded-xl font-semibold">Log in</Link>
           </div>
         )}
 
         {data.status === 'ready' && (
           <>
             <div className="grid grid-cols-3 gap-3">
-              <Stat value={streak.current} label="Chuỗi ngày hiện tại" />
-              <Stat value={streak.longest} label="Chuỗi dài nhất" />
-              <Stat value={data.evals.length} label="Bài đã chấm" />
+              <Stat value={streak.current} label="Current streak" />
+              <Stat value={streak.longest} label="Longest streak" />
+              <Stat value={data.evals.length} label="Essays graded" />
             </div>
             {streak.current > 0 && !streak.activeToday && (
-              <p className="text-center text-sm text-amber-300">Hôm nay bạn chưa luyện — làm một bài để giữ chuỗi {streak.current} ngày.</p>
+              <p className="text-center text-sm text-amber-300">You haven't practised today — do one exercise to keep your {streak.current}-day streak.</p>
             )}
 
-            {/* Bài tập hôm nay */}
-            <Card title="Bài tập hôm nay">
+            {/* Today's drill */}
+            <Card title="Today's drill">
               <p className="text-white text-lg mb-1" style={{ fontFamily: 'var(--font-subhead)' }}>{KIND_META[plan.kind].label}</p>
               <p className="text-navy-300 text-sm leading-relaxed mb-4">{plan.reason}</p>
-              <Link href={`/practice/skills?kind=${plan.kind}`} className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Làm ngay</Link>
+              <Link href={`/practice/skills?kind=${plan.kind}`} className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Start now</Link>
             </Card>
 
             {!hasEvals ? (
-              <Card title="Chưa có dữ liệu">
-                <p className="text-navy-300 text-sm mb-4">Xu hướng band và hồ sơ lỗi sẽ xuất hiện sau bài chấm đầu tiên của bạn.</p>
-                <Link href="/practice" className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Chọn một đề để viết</Link>
+              <Card title="No data yet">
+                <p className="text-navy-300 text-sm mb-4">Your band trend and error profile will appear after your first graded essay.</p>
+                <Link href="/practice" className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Pick a prompt to write</Link>
               </Card>
             ) : (
               <>
-                {/* Xu hướng band — theo quy tắc sẵn có, chỉ người dùng trả phí hoặc đang được mở khoá mới xem */}
-                <Card title="Xu hướng band tổng">
+                {/* Band trend — existing rule: paid or unlocked users only */}
+                <Card title="Overall band trend">
                   {entLoading ? (
                     <div style={{ minHeight: 120 }} />
                   ) : canSeeProgress && trend.length > 0 ? (
@@ -161,35 +161,35 @@ export default function ProgressClient() {
                       <div className="text-4xl text-white mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
                         {trend.length ? trend[trend.length - 1].band.toFixed(1) : '—'}
                       </div>
-                      <p className="text-navy-400 text-sm mb-4">Band bài gần nhất. Nâng cấp để xem đường tiến bộ qua từng bài.</p>
-                      <Link href="/pricing" className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Xem gói nâng cấp</Link>
+                      <p className="text-navy-400 text-sm mb-4">Your latest band. Upgrade to see your progress line across every essay.</p>
+                      <Link href="/pricing" className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">See upgrade plans</Link>
                     </div>
                   )}
                 </Card>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card title="Band từng tiêu chí · 5 bài gần nhất">
+                  <Card title="Band by criterion · last 5 essays">
                     {hasAvgs ? (
                       <div className="space-y-4">
                         {CRITERIA.map(c => avgs[c] !== null && (
                           <Bar key={c} label={CRITERION_LABEL[c].name} value={avgs[c]!} max={9} color={CRITERION_LABEL[c].color} right={avgs[c]!.toFixed(1)} />
                         ))}
                       </div>
-                    ) : <p className="text-navy-400 text-sm">Chưa có điểm từng tiêu chí.</p>}
+                    ) : <p className="text-navy-400 text-sm">No criterion scores yet.</p>}
                   </Card>
 
-                  <Card title="Hồ sơ lỗi · 10 bài gần nhất">
+                  <Card title="Error profile · last 10 essays">
                     {errs.evalsCounted === 0 ? (
-                      <p className="text-navy-400 text-sm">Chưa đọc được danh sách lỗi từ các bài đã chấm.</p>
+                      <p className="text-navy-400 text-sm">Couldn't read the error list from your graded essays.</p>
                     ) : errTop.length === 0 ? (
-                      <p className="text-emerald-300 text-sm">Không có lỗi nào được đánh dấu trong các bài gần đây.</p>
+                      <p className="text-emerald-300 text-sm">No errors were flagged in your recent essays.</p>
                     ) : (
                       <div className="space-y-4">
                         {errTop.map(e => (
                           <Bar key={e.category} label={ERROR_LABEL[e.category]} value={e.count} max={errTop[0].count}
-                            color="#E06C75" right={`${e.count} lỗi`} />
+                            color="#E06C75" right={`${e.count} errors`} />
                         ))}
-                        <p className="text-xs text-navy-500">{errs.total} lỗi trong {errs.evalsCounted} bài.</p>
+                        <p className="text-xs text-navy-500">{errs.total} errors across {errs.evalsCounted} essays.</p>
                       </div>
                     )}
                   </Card>
@@ -197,16 +197,16 @@ export default function ProgressClient() {
               </>
             )}
 
-            <Card title="Độ chính xác bài tập kỹ năng">
+            <Card title="Skill drill accuracy">
               {totalEx === 0 ? (
                 <p className="text-navy-400 text-sm">
-                  Chưa có kết quả bài tập nào được lưu. <Link href="/practice/skills" className="text-brand-400 underline">Làm một lượt</Link> để bắt đầu theo dõi.
+                  No drill results saved yet. <Link href="/practice/skills" className="text-brand-400 underline">Do a round</Link> to start tracking.
                 </p>
               ) : (
                 <div className="space-y-4">
                   {CRITERIA.map(c => acc[c].total > 0 && (
                     <Bar key={c} label={CRITERION_LABEL[c].name} value={acc[c].ok} max={acc[c].total}
-                      color={CRITERION_LABEL[c].color} right={`${Math.round((acc[c].ok / acc[c].total) * 100)}% · ${acc[c].total} câu`} />
+                      color={CRITERION_LABEL[c].color} right={`${Math.round((acc[c].ok / acc[c].total) * 100)}% · ${acc[c].total} questions`} />
                   ))}
                 </div>
               )}

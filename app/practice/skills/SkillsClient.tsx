@@ -56,7 +56,7 @@ export default function SkillsClient() {
         user_id: user.id, exercise_id: ex.id, kind: ex.kind, criterion: ex.criterion,
         chosen: pick, correct, duration_ms: ms,
       });
-    } catch { /* im lặng */ }
+    } catch { /* silent */ }
   };
 
   const choose = (i: number) => {
@@ -95,21 +95,21 @@ export default function SkillsClient() {
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />
-          <Link href="/practice" className="app-nav-link">← Luyện tập</Link>
+          <Link href="/practice" className="app-nav-link">← Practice</Link>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* ── Chọn loại bài ── */}
+        {/* ── Choose a drill ── */}
         {kind === null && (
           <>
             <div className="text-center">
-              <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Bài tập kỹ năng</div>
+              <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Skill drills</div>
               <h1 className="text-3xl text-white font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>
-                Luyện nhanh, sửa đúng chỗ yếu
+                Train fast, fix your weak spots
               </h1>
               <p className="text-sm text-navy-400 mt-2">
-                {SESSION_LEN} câu mỗi lượt · chấm tức thì · không tốn lượt chấm AI
+                {SESSION_LEN} questions per round · instant marking · no AI grading credits used
               </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -125,20 +125,20 @@ export default function SkillsClient() {
                     <div className="text-xs font-mono uppercase tracking-wider mb-2" style={{ color: c.color }}>{c.short}</div>
                     <div className="text-white text-lg font-semibold mb-1">{m.label}</div>
                     <div className="text-sm text-navy-400">{m.hint}</div>
-                    <div className="text-xs text-navy-500 mt-3">{exercisesByKind(k).length} câu</div>
+                    <div className="text-xs text-navy-500 mt-3">{exercisesByKind(k).length} questions</div>
                   </button>
                 );
               })}
             </div>
             <div className="text-center">
               <button onClick={() => start('all')} className="btn-foil px-8 py-3 rounded-xl font-semibold">
-                Trộn tất cả ({SKILL_EXERCISES.length} câu)
+                Mix everything ({SKILL_EXERCISES.length} questions)
               </button>
             </div>
           </>
         )}
 
-        {/* ── Đang làm ── */}
+        {/* ── In progress ── */}
         {kind !== null && current && !finished && (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export default function SkillsClient() {
               )}
               <h2 className="text-white text-lg leading-relaxed" style={{ fontFamily: 'var(--font-subhead)' }}>{current.question}</h2>
 
-              <div className="space-y-2.5" role="radiogroup" aria-label="Các lựa chọn">
+              <div className="space-y-2.5" role="radiogroup" aria-label="Answer choices">
                 {current.options.map((opt, i) => {
                   const isAnswer = i === current.answer;
                   const isChosen = chosen === i;
@@ -187,7 +187,7 @@ export default function SkillsClient() {
               {chosen !== null && (
                 <div className={`rounded-xl px-4 py-3 border ${chosen === current.answer ? 'border-emerald-400/40 bg-emerald-500/5' : 'border-amber-400/40 bg-amber-500/5'}`}>
                   <div className={`text-sm font-semibold mb-1 ${chosen === current.answer ? 'text-emerald-300' : 'text-amber-300'}`}>
-                    {chosen === current.answer ? 'Chính xác' : `Chưa đúng — đáp án là ${LETTERS[current.answer]}`}
+                    {chosen === current.answer ? 'Correct' : `Not quite — the answer is ${LETTERS[current.answer]}`}
                   </div>
                   <p className="text-navy-200 text-sm leading-relaxed">{current.explanation}</p>
                 </div>
@@ -197,25 +197,25 @@ export default function SkillsClient() {
             {chosen !== null && (
               <div className="text-right">
                 <button onClick={next} className="btn-foil px-7 py-2.5 rounded-xl font-semibold">
-                  {idx + 1 < queue.length ? 'Câu tiếp theo →' : 'Xem kết quả'}
+                  {idx + 1 < queue.length ? 'Next question →' : 'See results'}
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* ── Kết quả ── */}
+        {/* ── Results ── */}
         {finished && (
           <div className="space-y-5">
             <div className="bg-navy-800 border border-brand-500/30 rounded-2xl p-8 text-center">
-              <div className="text-xs font-mono uppercase tracking-widest text-brand-400 mb-3">Kết quả lượt này</div>
+              <div className="text-xs font-mono uppercase tracking-widest text-brand-400 mb-3">This round</div>
               <div className="text-5xl text-white font-semibold mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
                 {score}<span className="text-navy-500">/{answers.length}</span>
               </div>
               <p className="text-navy-300 text-sm">
-                {score === answers.length ? 'Trọn điểm — hãy thử viết một đề để áp dụng ngay.'
-                  : score >= answers.length * 0.6 ? 'Khá tốt. Xem lại các câu sai bên dưới rồi làm thêm một lượt.'
-                  : 'Đây chính là chỗ cần luyện thêm. Đọc kỹ phần giải thích rồi thử lại nhé.'}
+                {score === answers.length ? 'Perfect score — now try writing an essay to apply it.'
+                  : score >= answers.length * 0.6 ? 'Good work. Review the mistakes below, then do another round.'
+                  : 'This is where more practice will pay off. Read the explanations carefully, then try again.'}
               </p>
             </div>
 
@@ -230,11 +230,11 @@ export default function SkillsClient() {
 
             {answers.some(a => !a.correct) && (
               <div className="bg-navy-800 border border-navy-700 rounded-2xl p-5 space-y-4">
-                <div className="text-sm font-mono uppercase tracking-wider text-brand-400">Các câu cần xem lại</div>
+                <div className="text-sm font-mono uppercase tracking-wider text-brand-400">Questions to review</div>
                 {answers.filter(a => !a.correct).map(a => (
                   <div key={a.ex.id} className="text-sm leading-relaxed">
                     <p className="text-white mb-1">{a.ex.question}</p>
-                    <p className="text-emerald-300">Đáp án: {a.ex.options[a.ex.answer]}</p>
+                    <p className="text-emerald-300">Answer: {a.ex.options[a.ex.answer]}</p>
                     <p className="text-navy-300 mt-1">{a.ex.explanation}</p>
                   </div>
                 ))}
@@ -242,9 +242,9 @@ export default function SkillsClient() {
             )}
 
             <div className="flex flex-wrap gap-3 justify-center">
-              <button onClick={() => start(kind!)} className="btn-foil px-7 py-2.5 rounded-xl font-semibold">Làm lượt mới</button>
-              <button onClick={() => setKind(null)} className="px-7 py-2.5 rounded-xl border border-navy-600 text-navy-200 hover:border-brand-500/50 transition">Chọn loại khác</button>
-              <Link href="/practice" className="px-7 py-2.5 rounded-xl border border-brand-500/50 text-brand-400 hover:bg-brand-500/10 transition">Viết một đề</Link>
+              <button onClick={() => start(kind!)} className="btn-foil px-7 py-2.5 rounded-xl font-semibold">New round</button>
+              <button onClick={() => setKind(null)} className="px-7 py-2.5 rounded-xl border border-navy-600 text-navy-200 hover:border-brand-500/50 transition">Choose another type</button>
+              <Link href="/practice" className="px-7 py-2.5 rounded-xl border border-brand-500/50 text-brand-400 hover:bg-brand-500/10 transition">Write an essay</Link>
             </div>
           </div>
         )}

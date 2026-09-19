@@ -765,7 +765,7 @@ className="btn-foil px-10 py-3.5 rounded-xl text-lg font-semibold transition sha
 </button>
 {practiceItem && (
 <Link href="/practice" className="px-6 flex items-center bg-brand-500/15 border border-brand-500/30 text-brand-400 rounded-xl font-mono text-base hover:bg-brand-500/25 transition">
-Đề tiếp theo
+Next prompt
 </Link>
 )}
 <button onClick={() => { navigator.clipboard.writeText(window.location.href); }}
@@ -788,8 +788,8 @@ Chia sẻ ↗
 {practiceItem && (
 <div className="mb-6 bg-navy-800 border border-brand-500/30 rounded-2xl p-5">
 <div className="flex items-center gap-3 mb-3">
-<span className="text-xs font-mono uppercase tracking-wider text-brand-400">Luyện tập · Task {practiceItem.task}</span>
-<Link href="/practice" className="ml-auto text-sm text-navy-300 hover:text-brand-400 transition">← Chọn đề khác</Link>
+<span className="text-xs font-mono uppercase tracking-wider text-brand-400">Practice · Task {practiceItem.task}</span>
+<Link href="/practice" className="ml-auto text-sm text-navy-300 hover:text-brand-400 transition">← Choose another prompt</Link>
 </div>
 {practiceItem.task1 ? (
 <>
