@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "check:timing": "sucrase-node scripts/check-mock-timing.ts",
     "check:papers": "sucrase-node scripts/check-papers.ts",
-    "verify": "npm run typecheck && npm run check:timing && npm run check:papers"
+    "check:practice": "sucrase-node scripts/check-practice.ts",
+    "verify": "npm run typecheck && npm run check:timing && npm run check:papers && npm run check:practice"
   },
   "dependencies": {
     "next": "14.2.21",

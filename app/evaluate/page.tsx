@@ -5,6 +5,8 @@ import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 import { RoyalIcon } from '@/components/RoyalIcons';
 import { BandUpCelebration } from '@/components/BandUp';
 import { ProgressDelta } from '@/components/ProgressDelta';
+import TaskVisual from '@/components/mock/TaskChart';
+import { findPracticeItem, PracticeItem } from '@/lib/practice';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -228,16 +230,30 @@ const [activeErr, setActiveErr] = useState<number | null>(null);
 const [activeCats, setActiveCats] = useState<Set<string>>(new Set(Object.keys(CAT_STYLE)));
 const [showRewrite, setShowRewrite] = useState(false);
 const [copied, setCopied] = useState(false);
+const [practiceItem, setPracticeItem] = useState<PracticeItem | null>(null);
 const fileRef = useRef<HTMLInputElement>(null);
 const essayCardRef = useRef<HTMLDivElement>(null);
 
 useEffect(() => {
+let savedPrompt: string | null = null;
+let savedEssay: string | null = null;
 try {
-const savedPrompt = localStorage.getItem(LS_PROMPT);
-const savedEssay = localStorage.getItem(LS_ESSAY);
+savedPrompt = localStorage.getItem(LS_PROMPT);
+savedEssay = localStorage.getItem(LS_ESSAY);
+} catch {}
+
+// /evaluate?practice=<id> — đến từ trang Luyện tập: điền sẵn đề. Nếu bản nháp đang lưu
+// đúng là của đề này thì giữ lại bài đang viết dở; đề khác thì bắt đầu trang trắng.
+const item = findPracticeItem(new URLSearchParams(window.location.search).get('practice'));
+if (item) {
+setPracticeItem(item);
+setTaskType(item.task);
+setPrompt(item.promptText);
+setEssay(savedPrompt === item.promptText && savedEssay ? savedEssay : '');
+return;
+}
 if (savedPrompt) setPrompt(savedPrompt);
 if (savedEssay) setEssay(savedEssay);
-} catch {}
 }, []);
 
 useEffect(() => { try { localStorage.setItem(LS_PROMPT, prompt); } catch {} }, [prompt]);
@@ -323,7 +339,7 @@ finally { setLoading(false); }
 };
 
 const reset = () => {
-setResult(null); setEssay(''); setPrompt(''); setImages([]);
+setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null);
 setExpandedCriterion(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
 try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
 };
@@ -747,6 +763,11 @@ className="btn-foil px-10 py-3.5 rounded-xl text-lg font-semibold transition sha
 <button onClick={reset} className="flex-1 border border-navy-600 text-navy-300 py-3.5 rounded-xl font-mono text-base hover:border-brand-500/50 transition">
 ← Chấm bài mới
 </button>
+{practiceItem && (
+<Link href="/practice" className="px-6 flex items-center bg-brand-500/15 border border-brand-500/30 text-brand-400 rounded-xl font-mono text-base hover:bg-brand-500/25 transition">
+Đề tiếp theo
+</Link>
+)}
 <button onClick={() => { navigator.clipboard.writeText(window.location.href); }}
 className="px-6 bg-brand-500/15 border border-brand-500/30 text-brand-400 py-3.5 rounded-xl font-mono text-base hover:bg-brand-500/25 transition">
 Chia sẻ ↗
@@ -763,6 +784,23 @@ Chia sẻ ↗
 <h1 className="text-3xl text-white font-semibold">Nộp bài luận để chấm điểm</h1>
 <p className="text-sm text-navy-400 mt-2">Có thể dán (Ctrl+V) cả ảnh đề bài và bài viết cùng một lúc — ảnh sẽ tự hiện bên dưới</p>
 </div>
+
+{practiceItem && (
+<div className="mb-6 bg-navy-800 border border-brand-500/30 rounded-2xl p-5">
+<div className="flex items-center gap-3 mb-3">
+<span className="text-xs font-mono uppercase tracking-wider text-brand-400">Luyện tập · Task {practiceItem.task}</span>
+<Link href="/practice" className="ml-auto text-sm text-navy-300 hover:text-brand-400 transition">← Chọn đề khác</Link>
+</div>
+{practiceItem.task1 ? (
+<>
+<p className="text-navy-200 text-sm leading-relaxed mb-3">{practiceItem.task1.instruction}</p>
+<TaskVisual task={practiceItem.task1} />
+</>
+) : (
+<p className="text-white text-base leading-relaxed" style={{ fontFamily: 'var(--font-subhead)' }}>{practiceItem.promptText}</p>
+)}
+</div>
+)}
 
 <div className="mb-5">
 <label className="text-sm font-mono tracking-wider uppercase text-brand-400 mb-2 block">Loại bài</label>

@@ -157,6 +157,7 @@ export default function DashboardPage() {
               Write<span className="gold-foil">Right</span>
             </span>
           </Link>
+          <Link href="/practice" className="app-nav-link">Luyện tập</Link>
           <Link href="/courses" className="app-nav-link">Khóa học</Link>
           {(profile?.role === 'admin' || profile?.role === 'teacher') && (
             <Link href="/admin/courses" className="app-nav-link" style={{ fontSize: '.8rem', opacity: .7 }}>⚙ Admin</Link>
