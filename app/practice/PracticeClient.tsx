@@ -41,7 +41,7 @@ function PromptCard({ item, summary }: { item: PracticeItem; summary?: AttemptSu
         <span className="text-navy-400">{categoryLabel(item.category)}</span>
         {done && (
           <span className="ml-auto px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 normal-case tracking-normal">
-            Đã làm {summary!.count} lần{summary!.best != null ? ` · cao nhất ${summary!.best.toFixed(1)}` : ''}
+            Done {summary!.count}×{summary!.best != null ? ` · best ${summary!.best.toFixed(1)}` : ''}
           </span>
         )}
       </div>
@@ -53,7 +53,7 @@ function PromptCard({ item, summary }: { item: PracticeItem; summary?: AttemptSu
           href={`/evaluate?practice=${encodeURIComponent(item.id)}`}
           className="btn-foil inline-block px-5 py-2 rounded-lg text-sm font-semibold"
         >
-          {done ? 'Viết lại đề này' : 'Bắt đầu viết'}
+          {done ? 'Rewrite this prompt' : 'Start writing'}
         </Link>
       </div>
     </article>
@@ -101,7 +101,7 @@ export default function PracticeClient() {
           </Link>
           <span style={{ flex: 1 }} />
           <Link href="/dashboard" className="app-nav-link mr-4">Dashboard</Link>
-          <Link href="/pricing" className="app-nav-link">Bảng giá</Link>
+          <Link href="/pricing" className="app-nav-link">Pricing</Link>
         </div>
       </header>
 
@@ -109,89 +109,89 @@ export default function PracticeClient() {
         <QuotaBanner onUpgrade={() => { window.location.href = '/pricing'; }} />
 
         <div className="text-center">
-          <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Luyện tập</div>
+          <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Practice</div>
           <h1 className="text-3xl text-white font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>
-            Một bài mỗi ngày, một bậc thang lên cao
+            One essay a day, one step higher
           </h1>
           <p className="text-sm text-navy-400 mt-2 max-w-xl mx-auto">
-            Chọn đề, viết bài và nhận band 4 tiêu chí; hoặc làm nhanh vài bài tập kỹ năng ngay bên dưới — chấm tức thì, không tốn lượt chấm.
+            Pick a prompt, write your essay and get a four-criteria band score, or do a quick skill drill below — instant marking, no grading credits used.
           </p>
         </div>
 
-        {/* Lối vào nhanh */}
+        {/* Quick entry points */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="bg-navy-800 border border-brand-500/30 rounded-2xl p-5">
-            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Đề gợi ý cho bạn</div>
+            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Suggested prompt</div>
             {next ? (
               <>
                 <p className="text-white text-base leading-relaxed mb-3 line-clamp-3" style={{ fontFamily: 'var(--font-subhead)' }}>
                   {next.title}
                 </p>
                 <Link href={`/evaluate?practice=${encodeURIComponent(next.id)}`} className="btn-foil inline-block px-5 py-2 rounded-lg text-sm font-semibold">
-                  Viết đề này
+                  Write this prompt
                 </Link>
               </>
             ) : (
-              <p className="text-navy-300 text-sm">Bạn đã làm hết ngân hàng đề — hãy viết lại đề cũ để phá kỷ lục band của chính mình.</p>
+              <p className="text-navy-300 text-sm">You have completed the whole prompt bank — rewrite an earlier prompt to beat your own best band.</p>
             )}
           </div>
           <div className="bg-navy-800 border border-navy-700 rounded-2xl p-5">
-            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Bài tập hôm nay · 3–5 phút</div>
+            <div className="text-xs font-mono uppercase tracking-wider text-brand-400 mb-2">Today's drill · 3–5 min</div>
             <p className="text-white text-base mb-1" style={{ fontFamily: 'var(--font-subhead)' }}>{KIND_META[plan.kind].label}</p>
             <p className="text-navy-300 text-sm leading-relaxed mb-3">{plan.reason}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <Link href={`/practice/skills?kind=${plan.kind}`} className="inline-block px-5 py-2 rounded-lg text-sm font-semibold border border-brand-500/50 text-brand-400 hover:bg-brand-500/10 transition">
-                Làm ngay
+                Start now
               </Link>
-              <Link href="/practice/skills" className="text-sm text-navy-300 hover:text-brand-400 transition">Tất cả bài tập kỹ năng →</Link>
+              <Link href="/practice/skills" className="text-sm text-navy-300 hover:text-brand-400 transition">All skill drills →</Link>
             </div>
           </div>
         </div>
 
-        {/* Trạng thái lượt chấm */}
+        {/* Grading status */}
         {signedIn !== null && (
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-navy-300 px-1">
             {signedIn ? (
               <>
                 <span>
-                  Chuỗi ngày: <strong className="text-white">{streak.current}</strong>
-                  {streak.current > 0 && !streak.activeToday ? ' (luyện hôm nay để giữ chuỗi)' : ''}
+                  Streak: <strong className="text-white">{streak.current}</strong>
+                  {streak.current > 0 && !streak.activeToday ? ' (practise today to keep it going)' : ''}
                 </span>
-                <span>Đã làm <strong className="text-white">{doneCount}</strong>/{PRACTICE_ITEMS.length} đề</span>
+                <span>Completed <strong className="text-white">{doneCount}</strong>/{PRACTICE_ITEMS.length} prompts</span>
                 {!entLoading && (isPaid
-                  ? <span>Lượt chấm: <strong className="text-white">không giới hạn</strong></span>
-                  : <span>Lượt chấm tuần này còn lại: <strong className="text-white">{freeLeft}</strong></span>)}
-                <Link href="/practice/progress" className="text-brand-400 underline">Xem tiến bộ</Link>
+                  ? <span>Gradings: <strong className="text-white">unlimited</strong></span>
+                  : <span>Gradings left this week: <strong className="text-white">{freeLeft}</strong></span>)}
+                <Link href="/practice/progress" className="text-brand-400 underline">View progress</Link>
               </>
             ) : (
               <span>
-                <Link href="/login?next=/practice" className="text-brand-400 underline">Đăng nhập</Link> để lưu lịch sử luyện tập và nhận điểm.
+                <Link href="/login?next=/practice" className="text-brand-400 underline">Log in</Link> to save your practice history and get scored.
               </span>
             )}
           </div>
         )}
 
-        {/* Bộ lọc */}
-        <section aria-label="Bộ lọc đề" className="space-y-3">
+        {/* Filters */}
+        <section aria-label="Prompt filters" className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {(['all', 2, 1] as const).map(t => (
               <Chip key={String(t)} active={filter.task === t} onClick={() => set({ task: t, kind: 'all', category: 'all' })}>
-                {t === 'all' ? 'Tất cả' : `Task ${t}`}
+                {t === 'all' ? 'All' : `Task ${t}`}
               </Chip>
             ))}
             <span className="mx-1 w-px bg-navy-700" aria-hidden />
-            {([['all', 'Mọi trạng thái'], ['todo', 'Chưa làm'], ['done', 'Đã làm']] as const).map(([v, label]) => (
+            {([['all', 'Any status'], ['todo', 'Not done'], ['done', 'Done']] as const).map(([v, label]) => (
               <Chip key={v} active={filter.status === v} onClick={() => set({ status: v })}>{label}</Chip>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Chip active={filter.kind === 'all'} onClick={() => set({ kind: 'all' })}>Mọi dạng bài</Chip>
+            <Chip active={filter.kind === 'all'} onClick={() => set({ kind: 'all' })}>All types</Chip>
             {kinds.map(k => (
               <Chip key={k} active={filter.kind === k} onClick={() => set({ kind: k })}>{kindLabel(k)}</Chip>
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Chip active={filter.category === 'all'} onClick={() => set({ category: 'all' })}>Mọi chủ đề</Chip>
+            <Chip active={filter.category === 'all'} onClick={() => set({ category: 'all' })}>All topics</Chip>
             {categories.map(c => (
               <Chip key={c} active={filter.category === c} onClick={() => set({ category: c })}>{categoryLabel(c)}</Chip>
             ))}
@@ -199,20 +199,20 @@ export default function PracticeClient() {
           <input
             value={filter.query}
             onChange={e => set({ query: e.target.value })}
-            placeholder="Tìm trong đề bài…"
-            aria-label="Tìm trong đề bài"
+            placeholder="Search prompts…"
+            aria-label="Search prompts"
             className="w-full bg-navy-800 border border-navy-700 rounded-xl px-4 py-2.5 text-white placeholder-navy-500 focus:border-brand-500 outline-none text-base"
           />
         </section>
 
-        {/* Danh sách đề */}
-        <section aria-label="Danh sách đề" className="space-y-4">
-          <div className="text-sm text-navy-400">{list.length} đề phù hợp</div>
+        {/* Prompt list */}
+        <section aria-label="Prompt list" className="space-y-4">
+          <div className="text-sm text-navy-400">{list.length} matching prompts</div>
           {list.length === 0 ? (
             <div className="bg-navy-800 border border-navy-700 rounded-2xl p-8 text-center text-navy-300">
-              Không có đề nào khớp bộ lọc.{' '}
+              No prompts match your filters.{' '}
               <button className="text-brand-400 underline" onClick={() => { setFilter(DEFAULT_FILTER); setVisible(PAGE_SIZE); }}>
-                Xoá bộ lọc
+                Clear filters
               </button>
             </div>
           ) : (
@@ -228,7 +228,7 @@ export default function PracticeClient() {
                 onClick={() => setVisible(v => v + PAGE_SIZE)}
                 className="px-6 py-2.5 rounded-xl border border-navy-600 text-navy-200 hover:border-brand-500/50 transition"
               >
-                Xem thêm ({list.length - visible} đề)
+                Show more ({list.length - visible} prompts)
               </button>
             </div>
           )}
