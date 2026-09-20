@@ -44,9 +44,10 @@ export interface SendMailParams {
   subject: string;
   html: string;
   text: string;
+  headers?: Record<string, string>;
 }
 
-export async function sendMail({ to, subject, html, text }: SendMailParams) {
+export async function sendMail({ to, subject, html, text, headers }: SendMailParams) {
   const from = process.env.MAIL_FROM || `UNICOACH <${env('SMTP_USER')}>`;
-  return getTransport().sendMail({ from, to, subject, html, text });
+  return getTransport().sendMail({ from, to, subject, html, text, headers });
 }

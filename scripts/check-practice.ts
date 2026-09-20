@@ -18,6 +18,8 @@ import {
 import { revisionProgress } from '../lib/revision';
 import { buildMistakeQuestions, explanationText } from '../lib/mistakes';
 import { currentBand, daysUntil, planFor } from '../lib/goal';
+import { unsubscribeToken, verifyUnsubscribeToken } from '../lib/unsubscribe';
+import { streakSubject, streakHtml } from '../lib/emails/streak-reminder';
 
 // ── Bài tập kỹ năng ──
 const exIds = SKILL_EXERCISES.map(e => e.id);
@@ -216,5 +218,17 @@ assert.strictEqual(planFor({ target_band: 7, exam_date: null }, 6, '2026-09-21',
 assert.strictEqual(planFor({ target_band: 7, exam_date: '2026-09-01' }, 6, '2026-09-21', none).pace, 'exam-passed');
 assert.strictEqual(planFor({ target_band: 7, exam_date: '2026-12-01' }, null, '2026-09-21', none).gap, 0, 'chưa có bài chấm: không kết luận khoảng cách');
 console.log('  ok   mục tiêu: khoảng cách, nhịp cần thiết và kế hoạch tuần');
+// ── Email nhắc chuỗi: token huỷ đăng ký và nội dung ──
+const uid = '123e4567-e89b-12d3-a456-426614174000';
+const tok = unsubscribeToken(uid, 's3cret');
+assert.ok(verifyUnsubscribeToken(uid, tok, 's3cret'), 'token đúng phải hợp lệ');
+assert.ok(!verifyUnsubscribeToken(uid, tok, 'other'), 'sai khoá thì không hợp lệ');
+assert.ok(!verifyUnsubscribeToken('123e4567-e89b-12d3-a456-426614174001', tok, 's3cret'), 'token của người khác không dùng được');
+assert.ok(!verifyUnsubscribeToken(uid, 'zz', 's3cret') && !verifyUnsubscribeToken(uid, '', 's3cret'), 'token rác bị từ chối');
+const sIn = { fullName: '<b>An</b>', streak: 5, practiceUrl: 'https://x/practice/skills', unsubscribeUrl: 'https://x/u' };
+assert.ok(streakSubject(sIn).includes('5 ngày'));
+assert.ok(!streakHtml(sIn).includes('<b>An</b>'), 'tên phải được escape HTML');
+assert.ok(streakHtml(sIn).includes('https://x/u'), 'email phải có link huỷ đăng ký');
+console.log('  ok   email nhắc chuỗi: token huỷ đăng ký an toàn, nội dung escape đúng');
 
 console.log('\nPractice: mọi kiểm tra đạt.');
