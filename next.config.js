@@ -3,6 +3,11 @@ const nextConfig = {
   // ── Security headers applied to every response
   async headers() {
     return [
+      // Font tự host (public/fonts): nội dung không đổi → cache dài hạn, khỏi tải lại mỗi lần vào trang.
+      {
+        source: '/fonts/(.*)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
       {
         source: '/(.*)',
         headers: [

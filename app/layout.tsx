@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cinzel, Prata, EB_Garamond } from 'next/font/google';
+import { Cinzel, Prata } from 'next/font/google';
 import './globals.css';
 import './writeright-theme.css';
 
@@ -24,13 +24,9 @@ const prata = Prata({
   variable: '--font-prata',
   display: 'swap',
 });
-const ebGaramond = EB_Garamond({
-  subsets: ['latin', 'vietnamese'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-eb-garamond',
-  display: 'swap',
-});
+// EB Garamond được tự host (public/fonts + @font-face trong globals.css) thay vì next/font/google:
+// next/font phát cả subset latin-ext (113 KB) mà unicode-range của nó trùm lên chữ đ/Đ, nên MỌI trang
+// tiếng Việt đều phải tải thêm file đó chỉ vì một chữ "đ". Tự host chỉ giữ latin + vietnamese (~55 KB).
 
 export const metadata: Metadata = {
   title: 'WriteRight by UNICOACH — Luyện IELTS Writing cùng mentor AI',
@@ -57,8 +53,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="vi"
-      className={`${cinzel.variable} ${prata.variable} ${ebGaramond.variable}`}
+      className={`${cinzel.variable} ${prata.variable}`}
     >
+      <head>
+        <link rel="preload" href="/fonts/ebgaramond-normal-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/ebgaramond-normal-vietnamese.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      </head>
       <body className="min-h-screen antialiased">
         {children}
       </body>
