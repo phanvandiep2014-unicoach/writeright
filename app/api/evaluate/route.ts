@@ -65,13 +65,16 @@ monday.setUTCDate(now.getUTCDate() - daysToMonday);
 return monday.toISOString().split('T')[0];
 }
 
+// Chấm bài gọi AI với max_tokens lớn (bài dài / ảnh chữ viết tay) nên cần chạy lâu hơn mặc định.
+export const maxDuration = 120;
+
 export async function POST(req: NextRequest) {
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 if (!API_KEY) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 });
 
 const supabase = createServerSupabase();
 const { data: { user } } = await supabase.auth.getUser();
-if (!user) return NextResponse.json({ error: 'Vui long dang nhap de cham bai.', code: 'AUTH_REQUIRED' }, { status: 401 });
+if (!user) return NextResponse.json({ error: 'Vui lòng đăng nhập để chấm bài.', code: 'AUTH_REQUIRED' }, { status: 401 });
 
 let body;
 try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }); }
@@ -95,7 +98,7 @@ return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
 
 for (const im of imgList)
 if (Math.ceil((im.data.length * 3) / 4) > MAX_IMAGE_BYTES)
-return NextResponse.json({ error: 'Anh qua lon. Vui long chon anh nho hon 5 MB.' }, { status: 413 });
+return NextResponse.json({ error: 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5 MB.' }, { status: 413 });
 
 const weekStart = currentWeekStart();
 
@@ -115,11 +118,11 @@ if (usingFreeCredit) {
 // không kiểm hạn mức
 } else if (entErr) {
 const { count } = await supabase.from('evaluations').select('*', { count: 'exact', head: true }).eq('user_id', user.id).gte('created_at', weekStart + 'T00:00:00Z');
-if ((count ?? 0) >= FREE_EVALS_PER_WEEK) return NextResponse.json({ error: 'Het luot mien phi tuan nay.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
+if ((count ?? 0) >= FREE_EVALS_PER_WEEK) return NextResponse.json({ error: 'Hết lượt miễn phí tuần này.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
 } else {
 const isPaid = ['standard','premium'].includes(entitlement?.plan);
 if (!isPaid && (entitlement?.evals_this_week ?? 0) >= (entitlement?.weekly_quota ?? FREE_EVALS_PER_WEEK))
-return NextResponse.json({ error: 'Het luot mien phi tuan nay.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
+return NextResponse.json({ error: 'Hết lượt miễn phí tuần này.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
 }
 
 try {
@@ -149,12 +152,12 @@ return NextResponse.json({ error: friendlyApiError(apiRes.status, responseText),
 
 let claudeData;
 try { claudeData = JSON.parse(responseText); }
-catch { return NextResponse.json({ error: 'Loi ket noi AI. Vui long thu lai.' }, { status: 502 }); }
+catch { return NextResponse.json({ error: 'Lỗi kết nối AI. Vui lòng thử lại.' }, { status: 502 }); }
 
 const rawText = claudeData.content?.map((b: any) => b.text||'').join('') ?? '';
 let result;
 try { result = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
-catch { return NextResponse.json({ error: 'AI tra ve dinh dang khong hop le.' }, { status: 502 }); }
+catch { return NextResponse.json({ error: 'AI trả về định dạng không hợp lệ. Vui lòng thử lại.' }, { status: 502 }); }
 
 const essayForCount = essayText || result.transcribed_essay || '';
 const wordCount = essayForCount ? essayForCount.trim().split(/\s+/).filter(Boolean).length : null;
