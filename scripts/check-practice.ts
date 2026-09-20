@@ -17,6 +17,7 @@ import {
 } from '../lib/practice-insights';
 import { revisionProgress } from '../lib/revision';
 import { buildMistakeQuestions, explanationText } from '../lib/mistakes';
+import { currentBand, daysUntil, planFor } from '../lib/goal';
 
 // ── Bài tập kỹ năng ──
 const exIds = SKILL_EXERCISES.map(e => e.id);
@@ -198,5 +199,22 @@ assert.strictEqual(explanationText({ vi: 'b' }), 'b');
 assert.strictEqual(explanationText(undefined), '');
 assert.strictEqual(buildMistakeQuestions(mrows, Math.random, 1).length, 1, 'tôn trọng giới hạn số câu');
 console.log('  ok   drill lỗi của tôi: chỉ dùng lỗi hợp lệ, đáp án luôn là bản đã sửa');
+
+// ── Mục tiêu & kế hoạch tuần ──
+assert.strictEqual(daysUntil('2026-10-01', '2026-09-21'), 10);
+assert.strictEqual(currentBand([{ overall_band: 6 }, { overall_band: 6.5 }, { overall_band: null }, { overall_band: 5.5 }]), 6, 'trung bình 3 bài có điểm gần nhất');
+assert.strictEqual(currentBand([]), null);
+const none = { ta: null, cc: null, lr: null, gra: null };
+const avg4 = { ta: 6, cc: 5.5, lr: 6, gra: 6.5 };
+const gReach = planFor({ target_band: 6, exam_date: '2026-12-01' }, 6.5, '2026-09-21', avg4);
+assert.strictEqual(gReach.pace, 'reached'); assert.strictEqual(gReach.gap, 0);
+const gOk = planFor({ target_band: 7, exam_date: '2027-03-21' }, 6.5, '2026-09-21', avg4);
+assert.strictEqual(gOk.pace, 'on-track'); assert.strictEqual(gOk.focus, 'cc'); assert.strictEqual(gOk.essaysPerWeek, 2);
+const gHard = planFor({ target_band: 8, exam_date: '2026-10-05' }, 6, '2026-09-21', avg4);
+assert.strictEqual(gHard.pace, 'ambitious'); assert.strictEqual(gHard.weeksLeft, 2); assert.strictEqual(gHard.essaysPerWeek, 3);
+assert.strictEqual(planFor({ target_band: 7, exam_date: null }, 6, '2026-09-21', none).pace, 'no-date');
+assert.strictEqual(planFor({ target_band: 7, exam_date: '2026-09-01' }, 6, '2026-09-21', none).pace, 'exam-passed');
+assert.strictEqual(planFor({ target_band: 7, exam_date: '2026-12-01' }, null, '2026-09-21', none).gap, 0, 'chưa có bài chấm: không kết luận khoảng cách');
+console.log('  ok   mục tiêu: khoảng cách, nhịp cần thiết và kế hoạch tuần');
 
 console.log('\nPractice: mọi kiểm tra đạt.');

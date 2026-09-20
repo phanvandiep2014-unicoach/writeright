@@ -8,6 +8,16 @@ import {
   errorProfile, exerciseAccuracy, ictDay, recommendToday, topErrors,
 } from '@/lib/practice-insights';
 import { CRITERION_LABEL, KIND_META } from '@/lib/skill-exercises';
+import { currentBand, planFor, type Pace } from '@/lib/goal';
+
+const PACE_TEXT: Record<Pace, { text: string; cls: string }> = {
+  reached: { text: 'You are at your target band — keep it steady with regular practice.', cls: 'text-emerald-300' },
+  'on-track': { text: 'Realistic: a small, steady gain each week gets you there.', cls: 'text-emerald-300' },
+  stretch: { text: 'Achievable, but you will need to practise consistently every week.', cls: 'text-amber-300' },
+  ambitious: { text: 'Very ambitious for the time left. Consider moving your exam date or lowering the target.', cls: 'text-rose-300' },
+  'no-date': { text: 'Add an exam date on your dashboard to get a pace check.', cls: 'text-navy-400' },
+  'exam-passed': { text: 'Your exam date has passed. Update it on your dashboard.', cls: 'text-navy-400' },
+};
 
 function Card({ title, children, className = '' }: { title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -92,6 +102,8 @@ export default function ProgressClient() {
   const errTop = useMemo(() => topErrors(errs, 7), [errs]);
   const acc = useMemo(() => exerciseAccuracy(data.exercises), [data.exercises]);
   const plan = useMemo(() => recommendToday(data.recent, today), [data.recent, today]);
+  const cur = useMemo(() => currentBand(data.evals), [data.evals]);
+  const gp = useMemo(() => (data.goal ? planFor(data.goal, cur, today, avgs) : null), [data.goal, cur, today, avgs]);
 
   const hasEvals = data.evals.length > 0;
   const hasAvgs = CRITERIA.some(c => avgs[c] !== null);
@@ -141,6 +153,38 @@ export default function ProgressClient() {
               <p className="text-white text-lg mb-1" style={{ fontFamily: 'var(--font-subhead)' }}>{KIND_META[plan.kind].label}</p>
               <p className="text-navy-300 text-sm leading-relaxed mb-4">{plan.reason}</p>
               <Link href={`/practice/skills?kind=${plan.kind}`} className="btn-foil inline-block px-6 py-2 rounded-lg text-sm font-semibold">Start now</Link>
+            </Card>
+
+            {/* Goal & weekly plan */}
+            <Card title="Your goal">
+              {!data.goal || !gp ? (
+                <p className="text-navy-300 text-sm">
+                  Set a target band and exam date to get a weekly plan.{' '}
+                  <Link href="/dashboard" className="text-brand-400 underline">Set my goal</Link>
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div><div className="text-2xl text-white font-semibold">{cur !== null ? cur.toFixed(1) : '—'}</div><div className="text-[11px] font-mono uppercase text-navy-500">Now</div></div>
+                    <div><div className="text-2xl text-brand-400 font-semibold">{data.goal.target_band.toFixed(1)}</div><div className="text-[11px] font-mono uppercase text-navy-500">Target</div></div>
+                    <div><div className="text-2xl text-white font-semibold">{gp.daysLeft !== null && gp.daysLeft >= 0 ? gp.daysLeft : '—'}</div><div className="text-[11px] font-mono uppercase text-navy-500">Days to exam</div></div>
+                  </div>
+                  <p className={`text-sm ${PACE_TEXT[gp.pace].cls}`}>
+                    {cur === null ? 'Get your first essay graded to see how far you are from your target.' : PACE_TEXT[gp.pace].text}
+                    {gp.perWeek !== null && gp.pace !== 'reached' && cur !== null && ` You need about +${gp.perWeek.toFixed(2)} band per week.`}
+                  </p>
+                  {gp.pace !== 'reached' && cur !== null && (
+                    <div className="bg-navy-900/60 border border-navy-700 rounded-xl p-4">
+                      <div className="text-[11px] font-mono uppercase tracking-wider text-brand-400 mb-2">Suggested week</div>
+                      <ul className="text-sm text-navy-200 space-y-1 list-disc pl-5">
+                        <li>{gp.essaysPerWeek} graded {gp.essaysPerWeek === 1 ? 'essay' : 'essays'}, then rewrite each one with the guided panel.</li>
+                        <li>{gp.drillDaysPerWeek} days with a skill drill{gp.focus ? `, focusing on ${CRITERION_LABEL[gp.focus].short}` : ''}.</li>
+                        <li>One round of <Link href="/practice/mistakes" className="text-brand-400 underline">My Mistakes</Link> to lock in your own errors.</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
 
             {!hasEvals ? (
