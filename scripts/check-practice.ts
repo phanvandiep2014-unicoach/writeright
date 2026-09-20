@@ -15,6 +15,7 @@ import {
   ictDay, computeStreak, activityDays, criterionAverages, errorProfile, topErrors,
   bandTrend, exerciseAccuracy, recommendToday, EvalRow,
 } from '../lib/practice-insights';
+import { revisionProgress } from '../lib/revision';
 
 // ── Bài tập kỹ năng ──
 const exIds = SKILL_EXERCISES.map(e => e.id);
@@ -153,5 +154,23 @@ assert.strictEqual(fresh.basis, 'default');
 const seen = new Set(['2026-09-19', '2026-09-20', '2026-09-21', '2026-09-22'].map(d => recommendToday([], d).criterion));
 assert.strictEqual(seen.size, 4, 'học viên mới được xoay vòng đủ 4 tiêu chí');
 console.log('  ok   gợi ý bài tập hôm nay: ổn định, có lý do, xử lý hoà điểm và học viên mới');
+
+// ── Viết lại có hướng dẫn ──
+const errs2 = [
+  { original: 'peoples is', corrected: 'people are', category: 'grammar' },
+  { original: 'very good', corrected: 'highly beneficial', category: 'vocabulary' },
+  { original: '   ', corrected: 'x' },
+];
+const essay0 = 'Many peoples is happy.\nIt is very good.';
+const p0 = revisionProgress(essay0, errs2);
+assert.strictEqual(p0.total, 2, 'lỗi có đoạn trích rỗng bị bỏ qua');
+assert.strictEqual(p0.fixed, 0, 'bài chưa sửa thì chưa lỗi nào được tick');
+const p1 = revisionProgress('Many people are happy. It is very   good.', errs2);
+assert.deepStrictEqual(p1.items.map(i => i.fixed), [true, false], 'thừa dấu cách không làm lệch so khớp; lỗi chưa sửa vẫn còn');
+const p2 = revisionProgress('Many people are happy. It is highly beneficial.', errs2);
+assert.strictEqual(p2.fixed, 2);
+assert.strictEqual(p2.items[1].index, 1, 'giữ chỉ số gốc để gợi ý đúng lỗi');
+assert.strictEqual(revisionProgress('', []).total, 0);
+console.log('  ok   viết lại có hướng dẫn: tự tick lỗi đã sửa, bỏ qua khoảng trắng và đoạn trích rỗng');
 
 console.log('\nPractice: mọi kiểm tra đạt.');
