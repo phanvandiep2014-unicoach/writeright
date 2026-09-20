@@ -7,6 +7,7 @@ import { BandUpCelebration } from '@/components/BandUp';
 import { ProgressDelta } from '@/components/ProgressDelta';
 import TaskVisual from '@/components/mock/TaskChart';
 import { findPracticeItem, PracticeItem } from '@/lib/practice';
+import { revisionProgress } from '@/lib/revision';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -229,6 +230,8 @@ const [expandedCriterion, setExpandedCriterion] = useState<string | null>(null);
 const [activeErr, setActiveErr] = useState<number | null>(null);
 const [activeCats, setActiveCats] = useState<Set<string>>(new Set(Object.keys(CAT_STYLE)));
 const [showRewrite, setShowRewrite] = useState(false);
+const [revision, setRevision] = useState<ErrCorr[] | null>(null);
+const [revealed, setRevealed] = useState<Set<number>>(new Set());
 const [copied, setCopied] = useState(false);
 const [practiceItem, setPracticeItem] = useState<PracticeItem | null>(null);
 const fileRef = useRef<HTMLInputElement>(null);
@@ -339,7 +342,7 @@ finally { setLoading(false); }
 };
 
 const reset = () => {
-setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null);
+setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null); setRevision(null); setRevealed(new Set());
 setExpandedCriterion(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
 try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
 };
@@ -347,6 +350,7 @@ try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } c
 // Keep the same prompt + essay so the student can revise using the feedback and resubmit
 const rewriteNow = () => {
 if (!essay && essayForReview) setEssay(essayForReview);
+if (result?.error_corrections?.length) { setRevision(result.error_corrections); setRevealed(new Set()); }
 setResult(null); setActiveErr(null); setShowRewrite(false);
 window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -819,6 +823,57 @@ Chia sẻ ↗
 <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} onPaste={handlePaste} placeholder="Dán đề bài IELTS Writing — hoặc dán ảnh chụp đề (Ctrl+V), ví dụ biểu đồ Task 1..."
 className="w-full bg-navy-800 border border-navy-700 rounded-xl p-4 text-white placeholder-navy-500 focus:border-brand-500 outline-none resize-y min-h-[80px] text-base leading-relaxed" />
 </div>
+
+{revision && revision.length > 0 && (() => {
+const prog = revisionProgress(essay, revision);
+if (prog.total === 0) return null;
+const done = prog.fixed === prog.total;
+return (
+<div className="mb-5 bg-navy-800 border border-brand-500/30 rounded-2xl overflow-hidden">
+<div className="px-5 py-4 border-b border-navy-700 flex items-center gap-3 flex-wrap">
+<span className="text-sm font-mono tracking-wider uppercase text-brand-400">Viết lại có hướng dẫn</span>
+<span className="text-sm font-mono text-navy-300">{prog.fixed}/{prog.total} lỗi đã sửa</span>
+<button type="button" onClick={() => setRevision(null)} className="ml-auto text-sm text-navy-400 hover:text-white transition">Ẩn bảng</button>
+</div>
+<div className="h-1.5 bg-navy-700" role="progressbar" aria-valuemin={0} aria-valuemax={prog.total} aria-valuenow={prog.fixed}>
+<div className="h-full bg-brand-500 transition-all" style={{ width: `${(prog.fixed / prog.total) * 100}%` }} />
+</div>
+{done && (
+<p className="px-5 py-3 text-sm text-green-400 border-b border-navy-700/50">Bạn đã xử lý hết các lỗi lần chấm trước. Kiểm tra lại toàn bài rồi bấm chấm để xem band có tăng không.</p>
+)}
+<ul className="divide-y divide-navy-700/50 max-h-[22rem] overflow-y-auto">
+{prog.items.map(it => {
+const cat = catOf(it.error.category);
+const open = revealed.has(it.index);
+return (
+<li key={it.index} className="px-5 py-3">
+<div className="flex items-start gap-3">
+<span className={`mt-1 shrink-0 w-5 h-5 rounded-full border flex items-center justify-center text-xs ${it.fixed ? 'bg-green-500/20 border-green-500 text-green-400' : 'border-navy-600 text-transparent'}`} aria-hidden>✓</span>
+<div className="min-w-0 flex-1">
+<div className="flex items-center gap-2 mb-1">
+<span className="text-[11px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ color: CAT_STYLE[cat].color, background: CAT_STYLE[cat].color + '22' }}>{CAT_STYLE[cat].label}</span>
+<span className="sr-only">{it.fixed ? 'Đã sửa' : 'Chưa sửa'}</span>
+</div>
+<div className={`text-base ${it.fixed ? 'text-navy-500 line-through' : 'text-red-400/90'}`}>{it.error.original}</div>
+{!it.fixed && (
+open ? (
+<div className="mt-1.5 text-sm">
+<div className="text-green-400 font-semibold">{it.error.corrected}</div>
+<p className="text-navy-400 italic mt-0.5"><BiText f={it.error.explanation as Bi} /></p>
+</div>
+) : (
+<button type="button" onClick={() => setRevealed(prev => new Set(prev).add(it.index))} className="mt-1 text-sm text-brand-400 hover:underline">Gợi ý cách sửa</button>
+)
+)}
+</div>
+</div>
+</li>
+);
+})}
+</ul>
+</div>
+);
+})()}
 
 <div className="mb-4">
 <label className="text-sm font-mono tracking-wider uppercase text-brand-400 mb-2 block">Bài luận</label>
