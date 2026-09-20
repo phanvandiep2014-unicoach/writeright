@@ -16,6 +16,7 @@ import {
   bandTrend, exerciseAccuracy, recommendToday, EvalRow,
 } from '../lib/practice-insights';
 import { revisionProgress } from '../lib/revision';
+import { buildMistakeQuestions, explanationText } from '../lib/mistakes';
 
 // ── Bài tập kỹ năng ──
 const exIds = SKILL_EXERCISES.map(e => e.id);
@@ -172,5 +173,30 @@ assert.strictEqual(p2.fixed, 2);
 assert.strictEqual(p2.items[1].index, 1, 'giữ chỉ số gốc để gợi ý đúng lỗi');
 assert.strictEqual(revisionProgress('', []).total, 0);
 console.log('  ok   viết lại có hướng dẫn: tự tick lỗi đã sửa, bỏ qua khoảng trắng và đoạn trích rỗng');
+
+// ── Drill lỗi của chính học viên ──
+const mrows: EvalRow[] = [
+  ev({ error_corrections: [
+    { category: 'grammar', original: 'peoples is', corrected: 'people are', explanation: { en: 'Plural agreement.', vi: 'Hoà hợp số nhiều.' } },
+    { category: 'vocabulary', original: 'very good', corrected: 'highly beneficial', explanation: 'Stronger collocation.' },
+    { category: 'grammar', original: 'same', corrected: 'same' },
+    { category: 'grammar', original: '', corrected: 'x' },
+    { category: 'grammar', original: 'x'.repeat(200), corrected: 'y' },
+  ] }),
+  ev({ error_corrections: [{ category: 'grammar', original: 'Peoples  is', corrected: 'People are' }] }),
+  ev({ error_corrections: null }),
+];
+const mq = buildMistakeQuestions(mrows, () => 0.3);
+assert.strictEqual(mq.length, 2, 'bỏ lỗi thiếu dữ liệu, không đổi, quá dài và trùng lặp giữa các bài');
+for (const q of mq) {
+  assert.strictEqual(q.options.length, 2);
+  assert.notStrictEqual(q.options[0], q.options[1]);
+  assert.ok(['people are', 'highly beneficial'].includes(q.options[q.answer]), 'đáp án đúng phải là bản đã sửa');
+}
+assert.strictEqual(explanationText({ en: 'a', vi: 'b' }), 'a');
+assert.strictEqual(explanationText({ vi: 'b' }), 'b');
+assert.strictEqual(explanationText(undefined), '');
+assert.strictEqual(buildMistakeQuestions(mrows, Math.random, 1).length, 1, 'tôn trọng giới hạn số câu');
+console.log('  ok   drill lỗi của tôi: chỉ dùng lỗi hợp lệ, đáp án luôn là bản đã sửa');
 
 console.log('\nPractice: mọi kiểm tra đạt.');
