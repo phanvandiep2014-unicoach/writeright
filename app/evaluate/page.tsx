@@ -8,6 +8,8 @@ import { ProgressDelta } from '@/components/ProgressDelta';
 import TaskVisual from '@/components/mock/TaskChart';
 import { findPracticeItem, PracticeItem } from '@/lib/practice';
 import { revisionProgress } from '@/lib/revision';
+import { PracticeTimer } from '@/components/PracticeTimer';
+import { TASK_MIN_WORDS, taskKey } from '@/lib/practice-timer';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -879,7 +881,10 @@ open ? (
 <label className="text-sm font-mono tracking-wider uppercase text-brand-400 mb-2 block">Bài luận</label>
 <textarea value={essay} onChange={(e) => setEssay(e.target.value)} onPaste={handlePaste} placeholder="Dán hoặc nhập bài luận vào đây... Dán kèm ảnh cũng được (ảnh đề, ảnh bài viết tay)."
 className="w-full bg-navy-800 border border-navy-700 rounded-xl p-4 text-white placeholder-navy-500 focus:border-brand-500 outline-none resize-y min-h-[200px] text-base leading-relaxed" />
-<div className={`text-right text-sm font-mono mt-1 ${wordCount < 250 ? 'text-amber-500' : 'text-green-500'}`}>{wordCount} từ</div>
+<div className="flex items-start justify-between gap-3 flex-wrap">
+<PracticeTimer taskType={taskType} wordCount={wordCount} />
+<div className={`text-right text-sm font-mono mt-1 ${wordCount < TASK_MIN_WORDS[taskKey(taskType)] ? 'text-amber-500' : 'text-green-500'}`}>{wordCount} từ · tối thiểu {TASK_MIN_WORDS[taskKey(taskType)]}</div>
+</div>
 </div>
 
 <div className="mb-4">
