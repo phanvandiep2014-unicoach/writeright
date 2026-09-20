@@ -144,6 +144,7 @@ export default function PracticeClient() {
                 Start now
               </Link>
               <Link href="/practice/skills" className="text-sm text-navy-300 hover:text-brand-400 transition">All skill drills →</Link>
+              {signedIn && <Link href="/practice/mistakes" className="text-sm text-navy-300 hover:text-brand-400 transition">Drill my own mistakes →</Link>}
             </div>
           </div>
         </div>

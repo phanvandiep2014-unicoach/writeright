@@ -190,6 +190,7 @@ export default function ProgressClient() {
                             color="#E06C75" right={`${e.count} errors`} />
                         ))}
                         <p className="text-xs text-navy-500">{errs.total} errors across {errs.evalsCounted} essays.</p>
+                        <Link href="/practice/mistakes" className="inline-block text-sm text-brand-400 underline">Drill these mistakes →</Link>
                       </div>
                     )}
                   </Card>

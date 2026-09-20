@@ -13,7 +13,7 @@ export interface EvalRow {
   lr_band: number | null;
   gra_band: number | null;
   /** feedback.error_corrections của bộ chấm; null nếu không lấy được. */
-  error_corrections?: { category?: string }[] | null;
+  error_corrections?: { category?: string; original?: string; corrected?: string; explanation?: unknown }[] | null;
 }
 
 export interface ExerciseRow {
