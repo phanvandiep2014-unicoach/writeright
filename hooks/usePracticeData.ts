@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import type { EvalRow, ExerciseRow } from '@/lib/practice-insights';
+import type { Goal } from '@/lib/goal';
 
 export interface PracticeEvalRow extends EvalRow {
   task_prompt: string | null;
@@ -16,6 +17,8 @@ export interface PracticeData {
   recent: PracticeEvalRow[];
   /** Kết quả bài tập kỹ năng; rỗng nếu chưa chạy sql/practice.sql. */
   exercises: ExerciseRow[];
+  /** Mục tiêu band + ngày thi (bảng user_goals); null nếu chưa đặt hoặc không đọc được. */
+  goal: Goal | null;
 }
 
 const LIGHT_COLS = 'task_prompt, task_type, overall_band, ta_band, cc_band, lr_band, gra_band, created_at';
@@ -28,7 +31,7 @@ const LIGHT_COLS = 'task_prompt, task_type, overall_band, ta_band, cc_band, lr_b
  * dữ liệu rỗng thay vì làm hỏng cả trang.
  */
 export function usePracticeData(): PracticeData {
-  const [data, setData] = useState<PracticeData>({ status: 'loading', evals: [], recent: [], exercises: [] });
+  const [data, setData] = useState<PracticeData>({ status: 'loading', evals: [], recent: [], exercises: [], goal: null });
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +40,7 @@ export function usePracticeData(): PracticeData {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (cancelled) return;
-        if (!user) { setData({ status: 'anon', evals: [], recent: [], exercises: [] }); return; }
+        if (!user) { setData({ status: 'anon', evals: [], recent: [], exercises: [], goal: null }); return; }
 
         const evalsQ = supabase.from('evaluations').select(LIGHT_COLS)
           .order('created_at', { ascending: false }).limit(500);
@@ -55,16 +58,20 @@ export function usePracticeData(): PracticeData {
         const exQ = supabase.from('exercise_results').select('created_at, kind, criterion, correct')
           .order('created_at', { ascending: false }).limit(1000);
 
-        const [evals, recent, ex] = await Promise.all([evalsQ, recentQ, exQ]);
+        const goalQ = supabase.from('user_goals').select('target_band, exam_date')
+          .eq('user_id', user.id).maybeSingle();
+
+        const [evals, recent, ex, g] = await Promise.all([evalsQ, recentQ, exQ, goalQ]);
         if (cancelled) return;
         setData({
           status: 'ready',
           evals: (evals.data ?? []) as PracticeEvalRow[],
           recent: recent as PracticeEvalRow[],
           exercises: ex.error ? [] : ((ex.data ?? []) as ExerciseRow[]),
+          goal: g.error || !g.data ? null : { target_band: Number(g.data.target_band), exam_date: g.data.exam_date ?? null },
         });
       } catch {
-        if (!cancelled) setData({ status: 'anon', evals: [], recent: [], exercises: [] });
+        if (!cancelled) setData({ status: 'anon', evals: [], recent: [], exercises: [], goal: null });
       }
     })();
     return () => { cancelled = true; };
