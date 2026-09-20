@@ -35,7 +35,9 @@ export const KIND_META: Record<ExerciseKind, { label: string; hint: string; crit
   overview: { label: 'Introductions & overviews', hint: 'Task 1 overview, Task 2 thesis statement', criterion: 'ta' },
 };
 
-export const SKILL_EXERCISES: SkillExercise[] = [
+import { EXTRA_EXERCISES } from './skill-exercises-extra';
+
+const BASE_EXERCISES: SkillExercise[] = [
   // ── Grammar (GRA) ──────────────────────────────────────────
   {
     id: 'gra-01', kind: 'grammar', criterion: 'gra',
@@ -212,6 +214,9 @@ export const SKILL_EXERCISES: SkillExercise[] = [
     explanation: 'The correct option paraphrases the prompt and states a clear position (partly agree) with the two reasons to be developed. The other options give no position or just copy the prompt.',
   },
 ];
+
+/** Ngân hàng đầy đủ: bộ gốc + bộ mở rộng (lib/skill-exercises-extra.ts). */
+export const SKILL_EXERCISES: SkillExercise[] = [...BASE_EXERCISES, ...EXTRA_EXERCISES];
 
 export function exercisesByKind(kind: ExerciseKind | 'all'): SkillExercise[] {
   return kind === 'all' ? SKILL_EXERCISES : SKILL_EXERCISES.filter(e => e.kind === kind);
