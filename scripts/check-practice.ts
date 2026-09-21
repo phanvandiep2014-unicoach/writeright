@@ -17,6 +17,7 @@ import {
 } from '../lib/practice-insights';
 import { revisionProgress } from '../lib/revision';
 import { buildMistakeQuestions, explanationText } from '../lib/mistakes';
+import { formatClock, timerState, wordsPerMinute, taskKey, TASK_MINUTES } from '../lib/practice-timer';
 import { currentBand, daysUntil, planFor } from '../lib/goal';
 import { unsubscribeToken, verifyUnsubscribeToken } from '../lib/unsubscribe';
 import { streakSubject, streakHtml } from '../lib/emails/streak-reminder';
@@ -230,5 +231,13 @@ assert.ok(streakSubject(sIn).includes('5 ngày'));
 assert.ok(!streakHtml(sIn).includes('<b>An</b>'), 'tên phải được escape HTML');
 assert.ok(streakHtml(sIn).includes('https://x/u'), 'email phải có link huỷ đăng ký');
 console.log('  ok   email nhắc chuỗi: token huỷ đăng ký an toàn, nội dung escape đúng');
+
+// ── Đồng hồ luyện viết ──
+assert.strictEqual(formatClock(2400), '40:00'); assert.strictEqual(formatClock(65), '01:05'); assert.strictEqual(formatClock(-5), '00:00');
+assert.strictEqual(timerState(1000), 'ok'); assert.strictEqual(timerState(300), 'warn'); assert.strictEqual(timerState(0), 'over'); assert.strictEqual(timerState(-3), 'over');
+assert.strictEqual(wordsPerMinute(100, 30), null, 'chưa đủ dữ liệu'); assert.strictEqual(wordsPerMinute(120, 600), 12);
+assert.strictEqual(taskKey(1), 1); assert.strictEqual(taskKey(2), 2); assert.strictEqual(taskKey(0), 2);
+assert.strictEqual(TASK_MINUTES[1], 20); assert.strictEqual(TASK_MINUTES[2], 40);
+console.log('  ok   đồng hồ luyện viết: định dạng, ngưỡng cảnh báo, tốc độ viết');
 
 console.log('\nPractice: mọi kiểm tra đạt.');
