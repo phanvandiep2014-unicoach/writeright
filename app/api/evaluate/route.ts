@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 if (!API_KEY) return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 500 });
 
-const supabase = createServerSupabase();
+const supabase = await createServerSupabase();
 const { data: { user } } = await supabase.auth.getUser();
 if (!user) return NextResponse.json({ error: 'Vui lòng đăng nhập để chấm bài.', code: 'AUTH_REQUIRED' }, { status: 401 });
 

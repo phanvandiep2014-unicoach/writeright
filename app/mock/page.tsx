@@ -12,8 +12,8 @@ import MockClient from './MockClient';
 // Kết quả phụ thuộc cookie của từng học viên — không được cache tĩnh.
 export const dynamic = 'force-dynamic';
 
-export default function MockPage() {
-  const jar = cookies();
+export default async function MockPage() {
+  const jar = await cookies();
   const mockSession = jar.get('uc_mock_session')?.value || null;
   const minutesRaw = Number(jar.get('uc_minutes')?.value);
   const examMinutes = mockSession ? (minutesRaw > 0 ? minutesRaw : 60) : null;

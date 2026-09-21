@@ -15,7 +15,8 @@ import nodemailer from 'nodemailer';
  * p=reject nên thư sẽ bị chặn thẳng chứ không vào spam.
  */
 
-let cached: nodemailer.Transporter | null = null;
+type Transporter = ReturnType<typeof nodemailer.createTransport>;
+let cached: Transporter | null = null;
 
 function env(name: string): string {
   const v = process.env[name];
@@ -23,7 +24,7 @@ function env(name: string): string {
   return v;
 }
 
-export function getTransport(): nodemailer.Transporter {
+export function getTransport(): Transporter {
   if (cached) return cached;
 
   const port = Number(process.env.SMTP_PORT || 465);

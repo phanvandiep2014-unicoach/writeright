@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const {
     data: { user },
   } = await supabase.auth.getUser();

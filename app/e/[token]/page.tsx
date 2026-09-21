@@ -8,7 +8,7 @@ import EvalDetailView from '@/components/EvalDetailView';
 // Uses security definer RPC so public can view without auth
 
 async function getEval(token: string) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -36,8 +36,9 @@ async function getEval(token: string) {
   return data?.[0] ?? null;
 }
 
-export default async function EvalDetailPage({ params }: { params: { token: string } }) {
-  const row = await getEval(params.token);
+export default async function EvalDetailPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const row = await getEval(token);
   if (!row) return notFound();
 
   return (

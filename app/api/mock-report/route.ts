@@ -113,7 +113,7 @@ function sanitiseTiming(raw: any): TaskTiming | null {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Vui lòng đăng nhập.', code: 'AUTH_REQUIRED' }, { status: 401 });
 
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
   // khi payload.mock_session có giá trị (xem BAN-GIAO-DOI-TAC.md phía LMS).
   // Đọc ở đây thay vì tin cờ do trình duyệt gửi lên — cookie httpOnly nên
   // JS phía học viên không đọc được, không sửa được.
-  const mockSession = cookies().get('uc_mock_session')?.value || null;
+  const mockSession = (await cookies()).get('uc_mock_session')?.value || null;
   let examSync: { ok: boolean; error?: string } | null = null;
 
   if (mockSession) {
