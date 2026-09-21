@@ -23,7 +23,7 @@ const PLANS: Record<
 
 export async function POST(req: NextRequest) {
   // ── 1. Require login — checkout must be tied to a real user.
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

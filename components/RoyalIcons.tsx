@@ -11,7 +11,7 @@ export function RoyalIcon({
   size?: number;
   color?: string;
 }) {
-  const paths: Record<string, JSX.Element> = {
+  const paths: Record<string, React.JSX.Element> = {
     star: (
       <path d="M12 2.5l1.8 7 7 1.8-7 1.8-1.8 7-1.8-7-7-1.8 7-1.8 1.8-7z" />
     ),

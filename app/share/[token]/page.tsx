@@ -1,8 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-const ScorePanel = dynamic(() => import('@/components/ScorePanel').then(m=>({default:m.ScorePanel})), {ssr:false});
+import { ScorePanel } from '@/components/ScorePanelClient';
 
 type SharedEval = {
   task_type: number;
@@ -18,7 +17,7 @@ type SharedEval = {
   sharer_avatar: string;
 };
 
-async function getSharedEvaluation(token: string): Promise<SharedEval | null> {  const cookieStore = cookies();
+async function getSharedEvaluation(token: string): Promise<SharedEval | null> {  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -43,8 +42,9 @@ const CRITERIA = [
   { key: 'cc_band', label: 'Coherence & Cohesion' },
 ] as const;
 
-export default async function SharedScorecardPage({ params }: { params: { token: string } }) {
-  const ev = await getSharedEvaluation(params.token);
+export default async function SharedScorecardPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  const ev = await getSharedEvaluation(token);
 
   if (!ev) {
     return (
