@@ -65,5 +65,16 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.redirect(`${origin}/evaluate`);
+  // Quay lại nơi khách đang đứng trước khi đăng nhập (cookie do /login đặt).
+  const rawNext = cookieStore.get('wr_next')?.value;
+  let dest = '/evaluate';
+  if (rawNext) {
+    try {
+      const n = decodeURIComponent(rawNext);
+      if (n.startsWith('/') && !n.startsWith('//') && !n.includes('\\')) dest = n;
+    } catch { /* cookie hỏng → về /evaluate */ }
+  }
+  const res = NextResponse.redirect(`${origin}${dest}`);
+  res.cookies.set('wr_next', '', { path: '/', maxAge: 0 });
+  return res;
 }

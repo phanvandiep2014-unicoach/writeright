@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PricingRoyal } from '@/components/PricingRoyal';
 
@@ -32,7 +32,8 @@ export default function PricingPage() {
       if (!res.ok) {
         if (body.code === 'AUTH_REQUIRED') {
           // Not logged in — send to login, then back to pricing.
-          window.location.href = '/login?next=/pricing';
+          // Giữ nguyên gói đã chọn để đăng nhập xong quay lại là thanh toán tiếp.
+          window.location.href = '/login?next=' + encodeURIComponent('/pricing?plan=' + tierId);
           return;
         }
         setErrorMsg(body.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
@@ -47,6 +48,19 @@ export default function PricingPage() {
       setLoadingTier(null);
     }
   };
+
+  // Precisely (precisely.unicoach.vn) dẫn khách sang đây bằng /pricing?plan=duo …
+  // → mở thẳng PayOS, không bắt khách chọn lại lần nữa. Chỉ chạy một lần.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current) return;
+    const plan = new URLSearchParams(window.location.search).get('plan');
+    if (plan && plan !== 'free' && /^[a-z_]{3,20}$/.test(plan)) {
+      autoStarted.current = true;
+      void handleChoose(plan);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen">

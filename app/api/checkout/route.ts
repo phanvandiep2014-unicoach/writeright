@@ -12,13 +12,31 @@ import { createPaymentLink, encodeOrderCode } from '@/lib/payos';
  * nhét vào tier — nhét vào là vỡ constraint và hỏng mọi chỗ so sánh
  * `tier === 'premium'`.
  */
-const PLANS: Record<
-  string,
-  { amount: number; label: string; tier: 'standard' | 'premium'; cycle: 'monthly' | 'yearly' }
-> = {
-  standard:       { amount: 90000,  label: 'WriteRight Standard', tier: 'standard', cycle: 'monthly' },
-  premium:        { amount: 150000, label: 'WriteRight Premium',  tier: 'premium',  cycle: 'monthly' },
-  premium_yearly: { amount: 790000, label: 'WriteRight nam',      tier: 'premium',  cycle: 'yearly'  },
+type SpeakPlan = 'speak' | 'speak_plus';
+type Plan = {
+  amount: number;
+  label: string;
+  /** Quyền viết. NULL = đơn không đổi quyền WriteRight (mua riêng Precisely). */
+  tier: 'standard' | 'premium' | null;
+  /** Quyền nói (Precisely). NULL = đơn không chứa phần nói. */
+  speak: SpeakPlan | null;
+  cycle: 'monthly' | 'yearly';
+};
+
+/**
+ * BẢNG GIÁ DUY NHẤT của cả WriteRight lẫn Precisely — đổi giá ở đây.
+ * Chiến lược: UNICOACH LMS/KE-HOACH-VAN-HANH-PRECISELY.md (23/09/2026).
+ * Số phút nói của từng gói nằm ở gotcha-web/api/_lib/quota-rules.js.
+ */
+const PLANS: Record<string, Plan> = {
+  standard:        { amount: 90000,   label: 'WriteRight Standard', tier: 'standard', speak: null,         cycle: 'monthly' },
+  premium:         { amount: 150000,  label: 'WriteRight Premium',  tier: 'premium',  speak: null,         cycle: 'monthly' },
+  premium_yearly:  { amount: 790000,  label: 'WriteRight nam',      tier: 'premium',  speak: null,         cycle: 'yearly'  },
+  precisely_speak: { amount: 129000,  label: 'Precisely Speak',     tier: null,       speak: 'speak',      cycle: 'monthly' },
+  precisely_plus:  { amount: 219000,  label: 'Precisely Speak Plus',tier: null,       speak: 'speak_plus', cycle: 'monthly' },
+  duo:             { amount: 169000,  label: 'UNICOACH Duo',        tier: 'standard', speak: 'speak',      cycle: 'monthly' },
+  duo_pro:         { amount: 269000,  label: 'UNICOACH Duo Pro',    tier: 'premium',  speak: 'speak_plus', cycle: 'monthly' },
+  duo_yearly:      { amount: 1590000, label: 'UNICOACH Duo nam',    tier: 'standard', speak: 'speak',      cycle: 'yearly'  },
 };
 
 export async function POST(req: NextRequest) {
@@ -54,6 +72,12 @@ export async function POST(req: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
   const admin = createAdminSupabase();
+  const buyerEmail = user.email ?? undefined;
+  // Mua riêng Precisely thì trả khách về Precisely, không bắt đi vòng qua dashboard viết.
+  const preciselyUrl = process.env.PRECISELY_URL || 'https://precisely.unicoach.vn';
+  const returnUrl = plan.speak && !plan.tier
+    ? `${preciselyUrl}/try?upgraded=1`
+    : `${siteUrl}/dashboard?upgraded=1`;
 
   const baseRow = {
     user_id: user.id,
@@ -62,6 +86,23 @@ export async function POST(req: NextRequest) {
     amount: plan.amount,
     status: 'pending',
   };
+
+  // Đơn có phần nói (Precisely / Duo) cần cột orders.speak_plan + plan_code từ
+  // sql/precisely-duo.sql. Thiếu cột thì TỪ CHỐI bán: webhook sẽ không biết cấp
+  // phút nói, khách trả tiền mà không nhận được gì.
+  if (plan.speak) {
+    const { error: speakErr } = await admin
+      .from('orders')
+      .insert({ ...baseRow, billing_cycle: plan.cycle, plan_code: planId, speak_plan: plan.speak });
+    if (speakErr) {
+      console.error('checkout: khong tao duoc don co phan noi (da chay sql/precisely-duo.sql chua?):', speakErr.message);
+      return NextResponse.json(
+        { error: 'Gói có phần luyện nói tạm thời chưa mở. Vui lòng thử lại sau ít phút hoặc nhắn cho chúng tôi.' },
+        { status: 503 }
+      );
+    }
+    return await payLink();
+  }
 
   // `billing_cycle` chỉ tồn tại sau khi chạy sql/annual-billing.sql.
   // Thử ghi kèm trước; nếu Supabase báo không có cột thì ghi lại không
@@ -99,31 +140,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // ── 4. Create the PayOS payment link.
-  try {
-    const link = await createPaymentLink({
-      orderCode,
-      amount: plan.amount,
-      // PayOS giới hạn description 25 ký tự và không ưa dấu tiếng Việt.
-      description: plan.label.slice(0, 25),
-      returnUrl: `${siteUrl}/dashboard?upgraded=1`,
-      cancelUrl: `${siteUrl}/pricing?cancelled=1`,
-      buyerEmail: user.email ?? undefined,
-    });
+  return await payLink();
 
-    // Store the PayOS paymentLinkId for reference/debugging.
-    await admin
-      .from('orders')
-      .update({ payos_payment_link_id: link.paymentLinkId })
-      .eq('order_code', orderCode);
+  async function payLink() {
+    // ── 4. Create the PayOS payment link.
+    try {
+      const link = await createPaymentLink({
+        orderCode,
+        amount: plan.amount,
+        // PayOS giới hạn description 25 ký tự và không ưa dấu tiếng Việt.
+        description: plan.label.slice(0, 25),
+        returnUrl,
+        cancelUrl: `${siteUrl}/pricing?cancelled=1`,
+        buyerEmail,
+      });
 
-    return NextResponse.json({ checkoutUrl: link.checkoutUrl });
-  } catch (err: any) {
-    // Mark the order as cancelled so it doesn't linger as "pending" forever.
-    await admin.from('orders').update({ status: 'cancelled' }).eq('order_code', orderCode);
-    return NextResponse.json(
-      { error: 'Không thể tạo link thanh toán: ' + err.message },
-      { status: 500 }
-    );
+      // Store the PayOS paymentLinkId for reference/debugging.
+      await admin
+        .from('orders')
+        .update({ payos_payment_link_id: link.paymentLinkId })
+        .eq('order_code', orderCode);
+
+      return NextResponse.json({ checkoutUrl: link.checkoutUrl });
+    } catch (err: any) {
+      // Mark the order as cancelled so it doesn't linger as "pending" forever.
+      await admin.from('orders').update({ status: 'cancelled' }).eq('order_code', orderCode);
+      return NextResponse.json(
+        { error: 'Không thể tạo link thanh toán: ' + err.message },
+        { status: 500 }
+      );
+    }
   }
 }

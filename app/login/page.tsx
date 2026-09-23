@@ -13,6 +13,13 @@ function LoginContent() {
     // deployment domain (production, git-branch preview, etc.) instead of
     // being hard-pinned to a single domain.
     const redirectTo = `${window.location.origin}/auth/callback`;
+    // Nhớ nơi cần quay lại (vd. /pricing?plan=duo từ Precisely) bằng cookie ngắn
+    // hạn thay vì gắn ?next= vào redirectTo — redirectTo có query sẽ bị Supabase
+    // từ chối nếu không nằm trong danh sách Redirect URLs.
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (next && next.startsWith('/') && !next.startsWith('//')) {
+      document.cookie = `wr_next=${encodeURIComponent(next)}; Path=/; Max-Age=600; SameSite=Lax; Secure`;
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo },

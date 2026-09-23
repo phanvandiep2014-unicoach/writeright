@@ -9,12 +9,11 @@
  *   - A single gold-foil flourish on the recommended tier (Chanel rule: one accessory).
  *   - Annual is a *dated* launch price, not a permanent discount — it fuels the
  *     "khoá giá vĩnh viễn" mechanic and gives early buyers a reason to advocate.
- *   - Precisely / Duo ship as a waitlist, not a buy button: the speaking product is
- *     still in beta and per-minute cost makes an un-metered sale unsafe.
+ *   - Precisely / Duo are sellable since 24/09/2026: the minute meter is live in
+ *     gotcha-web and entitlements come from /api/entitlement here.
  *
- * IMPORTANT — checkout only knows `standard` and `premium` (see app/api/checkout/route.ts).
- * Any tier whose `id` is not one of those MUST set `soft: true` so it routes to the
- * waitlist link instead of PayOS.
+ * IMPORTANT — every non-soft `id` (and `secondary.id`) MUST exist in PLANS in
+ * app/api/checkout/route.ts. Anything not sellable yet sets `soft: true` → waitlist link.
  */
 
 /** Hạn cuối của giá khai trương gói năm. ĐỔI Ở ĐÂY khi chốt ngày thật. */
@@ -96,24 +95,29 @@ const tiers: Tier[] = [
   },
 ];
 
-/** Sắp ra mắt — chưa bán, chỉ nhận danh sách chờ. */
+/**
+ * Luyện nói — Precisely + gói đôi. MỞ BÁN 24/09/2026.
+ * `id` / `secondary.id` phải có trong PLANS ở app/api/checkout/route.ts.
+ * Số phút phải khớp gotcha-web/api/_lib/quota-rules.js (speak 90, speak_plus 180).
+ * Chỉ ghi tính năng ĐÃ CÓ THẬT trong Precisely — không hứa shadowing, band tổng
+ * hợp hay link chia sẻ chung khi chưa làm.
+ */
 const upcoming: Tier[] = [
   {
-    id: 'precisely',
-    name: 'Precisely',
+    id: 'precisely_speak',
+    name: 'Precisely Speak',
     price: '129.000đ',
     cadence: '/ tháng',
-    outcome: 'Chấm nói — nghe từng âm tiết, không đoán từ bản chữ',
-    cta: 'Nhận thông báo khi mở',
+    outcome: 'Chấm nói — nghe từng âm, không đoán từ bản chữ',
+    cta: 'Mua Precisely Speak',
     featured: false,
-    soft: true,
-    badge: 'Thử nghiệm',
+    secondary: { id: 'precisely_plus', label: 'Speak+ 219.000đ · 180 phút' },
+    note: 'Luyện nói và phản hồi từ vựng, ngữ pháp, nhịp nói vẫn miễn phí không giới hạn. Gói chỉ tính phần chấm phát âm.',
     features: [
-      '60 phút nói mỗi tháng ≈ 12 buổi thi thử đầy đủ',
-      'Chấm phát âm tới từng âm tiết',
-      'Đủ 4 tiêu chí Speaking',
-      'Hai chế độ: mô phỏng phòng thi & trò chuyện không chấm điểm',
-      'Shadowing và luyện đọc — không giới hạn',
+      '90 phút chấm phát âm mỗi tháng',
+      'Chấm tới từng âm, chỉ ra âm yếu nhất',
+      'Thi thử Part 1–3 cùng Duke, ước tính band 4 tiêu chí',
+      'Bản nâng cấp câu trả lời & vòng thử lại',
     ],
     locked: [],
   },
@@ -122,17 +126,31 @@ const upcoming: Tier[] = [
     name: 'UNICOACH Duo',
     price: '169.000đ',
     cadence: '/ tháng',
-    outcome: 'Viết và nói trong cùng một tài khoản',
-    cta: 'Nhận thông báo khi mở',
+    outcome: 'Viết và nói — một lần thanh toán',
+    cta: 'Chọn Duo',
     featured: true,
-    soft: true,
     badge: 'Mua riêng là 219.000đ',
-    note: 'Một hồ sơ, một biểu đồ tiến bộ chung cho cả bốn kỹ năng đang luyện.',
+    secondary: { id: 'duo_yearly', label: 'Duo trả năm 1.590.000đ' },
+    note: 'Đăng nhập Precisely bằng đúng email bạn dùng ở WriteRight để gói tự nhận.',
     features: [
       'Toàn bộ WriteRight Standard',
-      'Toàn bộ Precisely — 60 phút nói mỗi tháng',
-      'Band tổng hợp cả viết lẫn nói',
-      'Chia sẻ một link duy nhất cho thầy cô hoặc phụ huynh',
+      'Toàn bộ Precisely Speak — 90 phút chấm phát âm/tháng',
+      'Gia hạn chủ động, không tự trừ tiền',
+    ],
+    locked: [],
+  },
+  {
+    id: 'duo_pro',
+    name: 'Duo Pro',
+    price: '269.000đ',
+    cadence: '/ tháng',
+    outcome: 'Cường độ cao cho 4–6 tuần trước ngày thi',
+    cta: 'Chọn Duo Pro',
+    featured: false,
+    badge: 'Mua riêng là 369.000đ',
+    features: [
+      'Toàn bộ WriteRight Premium',
+      'Precisely Speak+ — 180 phút chấm phát âm/tháng',
     ],
     locked: [],
   },
@@ -263,7 +281,7 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
       <div style={{ maxWidth: 1080, margin: '0 auto', textAlign: 'center' }}>
         <span className="eyebrow">Per te, ad astra</span>
         <h2 className="heading-vi" style={{ fontSize: '2.2rem', margin: '8px 0 6px' }}>
-          Chọn lộ trình lên <span className="gold-foil">band mục tiêu</span>
+          Chọn lộ trình lên <span className="foil-ink">band mục tiêu</span>
         </h2>
         <p style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)', maxWidth: 560, margin: '0 auto 40px' }}>
           Bản miễn phí cho bạn thấy điểm. Bản nâng cấp cho bạn cách nâng điểm — chi tiết từng tiêu chí,
@@ -278,16 +296,16 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
 
         {/* ── Sắp ra mắt ─────────────────────────────────────────────── */}
         <div style={{ marginTop: 72 }}>
-          <span className="eyebrow">Sắp ra mắt</span>
+          <span className="eyebrow">Precisely · Luyện nói</span>
           <h2 className="heading-vi" style={{ fontSize: '1.8rem', margin: '8px 0 6px' }}>
-            Còn <span className="gold-foil">phần nói</span> thì sao?
+            Còn <span className="foil-ink">phần nói</span> thì sao?
           </h2>
           <p style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)', maxWidth: 620, margin: '0 auto 36px' }}>
-            Precisely đang trong giai đoạn thử nghiệm và mở giới hạn. Chúng tôi không bán thứ chưa sẵn sàng —
-            nhưng nếu bạn muốn là người vào trước, để lại tin nhắn và chúng tôi sẽ báo ngay khi mở.
+            Mỗi tài khoản mới có 15 phút chấm phát âm miễn phí để thử trước. Khi thấy đáng, chọn gói ở dưới —
+            thanh toán một lần qua PayOS, quyền dùng áp cho cả WriteRight lẫn Precisely.
           </p>
 
-          <div style={{ ...grid, maxWidth: 720, margin: '0 auto' }}>
+          <div style={{ ...grid, maxWidth: 1080, margin: '0 auto' }}>
             {upcoming.map((t) => (
               <TierCard key={t.id} t={t} onChoose={onChoose} />
             ))}

@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   //    cột chưa tồn tại thì Supabase trả lỗi, ta select lại bộ cột cũ.
   let { data: order, error: findErr } = await admin
     .from('orders')
-    .select('id, user_id, tier, status, billing_cycle')
+    .select('id, user_id, tier, status, billing_cycle, speak_plan')
     .eq('order_code', data.orderCode)
     .single();
 
@@ -101,6 +101,38 @@ export async function POST(req: NextRequest) {
   //    không tính lại từ hôm nay — trả tiền sớm không được phạt.
   const now = new Date();
   const days = (order as any).billing_cycle === 'yearly' ? 365 : 30;
+
+  // ── 4a. Phần NÓI (Precisely / Duo) — trục quyền riêng, hạn riêng.
+  //    Chạy TRƯỚC phần viết vì đơn chỉ mua Precisely có tier = NULL và
+  //    thoát sớm ở dưới.
+  const speakPlan = (order as any).speak_plan as 'speak' | 'speak_plus' | null | undefined;
+  if (speakPlan) {
+    const { data: sp } = await admin
+      .from('profiles')
+      .select('speak_expires_at')
+      .eq('id', order.user_id)
+      .maybeSingle();
+    const spExp = (sp as any)?.speak_expires_at ? new Date((sp as any).speak_expires_at) : null;
+    const spBase = spExp && spExp > now ? spExp : now;
+    const speakExpiresAt = new Date(spBase.getTime() + days * 24 * 60 * 60 * 1000);
+    const { error: speakErr } = await admin
+      .from('profiles')
+      .update({ speak_plan: speakPlan, speak_expires_at: speakExpiresAt.toISOString(), updated_at: now.toISOString() })
+      .eq('id', order.user_id);
+    if (speakErr) {
+      // 500 để PayOS gửi lại — đơn đã 'paid' nên lần sau sẽ dừng ở bước 2.
+      // Vì vậy phải trả đơn về 'pending' trước, không thì khách mất quyền nói.
+      console.error('PayOS webhook: KHONG cap duoc quyen noi:', speakErr.message);
+      await admin.from('orders').update({ status: 'pending', paid_at: null }).eq('id', order.id);
+      return NextResponse.json({ error: 'Failed to grant speaking plan' }, { status: 500 });
+    }
+    console.log(`payos-webhook: ${order.user_id} -> speak ${speakPlan} (het han ${speakExpiresAt.toISOString()})`);
+  }
+
+  // Đơn chỉ mua Precisely: không đụng quyền viết.
+  if (!order.tier) {
+    return NextResponse.json({ success: true });
+  }
 
   const { data: current } = await admin
     .from('profiles')
