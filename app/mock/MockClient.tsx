@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 import { TASK1_BANK, TASK2_BANK, Task1Item, Task2Item, pickRandom, task1ToText } from '@/lib/writing-tasks';
 import { TEST_PAPERS, TestPaper, LEVEL_LABEL, LEVEL_HINT, resolvePaper, nextPaper } from '@/lib/writing-papers';
+import { ResolvedDailyPaper } from '@/lib/daily-papers';
 import { analyseTiming, weightedWritingBand, TaskTiming, TimingSample } from '@/lib/mock-timing';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import TaskVisual from '@/components/mock/TaskChart';
@@ -89,7 +90,7 @@ function traceToTiming(task: 1 | 2, tr: Trace, allottedSec: number): TaskTiming 
   };
 }
 
-export default function MockClient({ examMinutes }: { examMinutes: number | null }) {
+export default function MockClient({ examMinutes, dailyPaper }: { examMinutes: number | null; dailyPaper: ResolvedDailyPaper | null }) {
   const supabase = createClient();
   const isExam = examMinutes != null;
   // Chia đúng tỷ lệ 1:2 như IELTS thật (20:40 khi minutes=60 — trùng số hiện
@@ -165,13 +166,17 @@ export default function MockClient({ examMinutes }: { examMinutes: number | null
     setTimeLeft(st === 'task1' ? examT1Sec : examT2Sec);
   };
 
-  const startTest = (m: Mode, p: TestPaper | null) => {
+  const startTest = (m: Mode, p: TestPaper | null, explicitParts?: { task1: Task1Item; task2: Task2Item }) => {
     setMode(m); setPaper(p); setResult(null);
     setEssay1(''); setEssay2('');
     essayRef.current = { task1: '', task2: '' };
     task1GradePromise.current = null;
 
-    if (p) {
+    if (explicitParts) {
+      // Đề thi chung theo ngày (lib/daily-papers.ts) — task1/task2 đã có sẵn
+      // nguyên bài, không cần tra theo mã trong ngân hàng đề.
+      setTask1(explicitParts.task1); setTask2(explicitParts.task2);
+    } else if (p) {
       const { task1: t1, task2: t2 } = resolvePaper(p);
       setTask1(t1); setTask2(t2);
     } else {
@@ -191,9 +196,10 @@ export default function MockClient({ examMinutes }: { examMinutes: number | null
   useEffect(() => {
     if (!isExam || authed !== true || examStartedRef.current) return;
     examStartedRef.current = true;
-    startTest('full', nextPaper(donePapers));
+    if (dailyPaper) startTest('full', dailyPaper.paper, { task1: dailyPaper.task1, task2: dailyPaper.task2 });
+    else startTest('full', nextPaper(donePapers));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExam, authed]);
+  }, [isExam, authed, dailyPaper]);
 
   const gradeTask = useCallback(async (taskType: 1 | 2, taskPrompt: string, essayText: string): Promise<Graded> => {
     const words = wordCountOf(essayText);
@@ -396,6 +402,31 @@ export default function MockClient({ examMinutes }: { examMinutes: number | null
               <div className="space-y-6">
                 <QuotaNotice />
 
+                {/* Đề thi chung hôm nay — do giáo viên upload cho buổi thi thử tháng này
+                    tại trung tâm (sql/daily-mock-papers.sql). Đứng trên "đề gợi ý" cá nhân
+                    vì đây là bài thi CHÍNH THỨC của cả lớp, không phải luyện tập tự chọn. */}
+                {dailyPaper && (
+                  <div className="bg-navy-800 border-2 border-amber-400/60 rounded-2xl p-6">
+                    <div className="flex items-baseline justify-between gap-2 mb-3 flex-wrap">
+                      <span className="text-xs font-mono uppercase tracking-widest text-amber-400">
+                        ★ Đề thi chung hôm nay
+                      </span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-400/40 text-amber-300">
+                        Cả lớp cùng đề
+                      </span>
+                    </div>
+                    <PaperSummary paper={dailyPaper.paper} parts={{ task1: dailyPaper.task1, task2: dailyPaper.task2 }} big />
+                    <button
+                      onClick={() => startTest('full', dailyPaper.paper, { task1: dailyPaper.task1, task2: dailyPaper.task2 })}
+                      className="w-full py-3.5 rounded-xl text-lg font-semibold mt-5 bg-amber-400 text-navy-900 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-amber-400/25">
+                      Bắt đầu đề chung — 60 phút →
+                    </button>
+                    <p className="text-[11px] text-navy-500 text-center mt-3">
+                      Đây là đề dùng chung cho buổi thi thử tại trung tâm hôm nay — mọi học viên tham gia đều làm đúng đề này.
+                    </p>
+                  </div>
+                )}
+
                 {/* Đề gợi ý — đường đi mặc định, không bắt học viên phải chọn */}
                 <div className="bg-navy-800 border-2 border-brand-500/40 rounded-2xl p-6">
                   <div className="flex items-baseline justify-between gap-2 mb-3 flex-wrap">
@@ -539,9 +570,9 @@ const T2_LABEL: Record<string, string> = {
 };
 
 /** Tóm tắt một đề: hai phần bên trong và lý do đề tồn tại. */
-function PaperSummary({ paper, big = false }: { paper: TestPaper; big?: boolean }) {
-  let parts: { task1: Task1Item; task2: Task2Item } | null = null;
-  try { parts = resolvePaper(paper); } catch { parts = null; }
+function PaperSummary({ paper, big = false, parts: partsProp }: { paper: TestPaper; big?: boolean; parts?: { task1: Task1Item; task2: Task2Item } }) {
+  let parts: { task1: Task1Item; task2: Task2Item } | null = partsProp ?? null;
+  if (!parts) { try { parts = resolvePaper(paper); } catch { parts = null; } }
   if (!parts) return <p className="text-xs text-red-400">Đề này đang thiếu dữ liệu.</p>;
 
   return (
