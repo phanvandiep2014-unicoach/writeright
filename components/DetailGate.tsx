@@ -48,7 +48,7 @@ export function DetailGate({
           style={{ fontSize: '1.35rem', maxWidth: 420, margin: 0 }}
         >
           Mở khoá điểm từng tiêu chí, lỗi sai inline và vòng viết lại để{' '}
-          <span className="gold-foil">tăng band</span>.
+          <span className="foil-ink">tăng band</span>.
         </p>
         <p style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)', maxWidth: 380, margin: 0 }}>
           Bạn đã thấy band tổng. Bản nâng cấp cho bạn biết <em>tại sao</em> và{' '}

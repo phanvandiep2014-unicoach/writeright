@@ -32,6 +32,16 @@
       #8A6A28 0%, #E7CE8E 26%, #C8A14B 48%,
       #F4E7BC 66%, #A9863A 86%, #8A6A28 100%);
 
+  /* ---- Foil cho CHỮ trên nền sáng ----
+     Gold-foil là dải vàng nhạt: đặt lên nền giấy thì tương phản chỉ 1.05:1,
+     chữ biến mất. Đây là cùng một hiệu ứng kim loại nhưng đánh bằng Royal
+     Sapphire — "thép xanh đánh bóng". Điểm sáng nhất (#4A5EA8) vẫn đạt
+     5.2:1 trên parchment và 5.7:1 trên ivory, nên chữ nhỏ cũng đọc được.
+     Dùng qua lớp .foil-ink, đừng gọi thẳng biến này. */
+  --ink-foil: linear-gradient(135deg,
+      #0B1130 0%, #3D4E8C 26%, #11183A 48%,
+      #4A5EA8 66%, #1A2456 86%, #0B1130 100%);
+
   /* ---- Type roles (aliased to next/font variables from layout.tsx) ---- */
   /* CHUẨN CHUNG UNICOACH — xem unicoach-bms/brand/BRAND-FONTS.md
      Đúng BA font: Cinzel · Prata · EB Garamond. Không thêm font thứ tư.
@@ -46,17 +56,84 @@
   --font-subhead:  var(--font-body);        /* subheads, quotes â Vietnamese-safe */
   --font-body:     var(--font-eb-garamond), 'EB Garamond', serif;             /* body copy â Vietnamese-safe */
 
-  /* ---- Functional roles ---- */
-  --bg:        var(--parchment);
-  --surface:   var(--ivory);
-  --ink:       var(--sepia-ink);
+  /* ---- Functional roles ----
+     Bảng màu thương hiệu ở trên là HẰNG SỐ — không đổi theo sáng/tối.
+     Chỉ các token chức năng --wr-* bên dưới đổi. Mã giao diện luôn dùng
+     token chức năng, không dùng thẳng --parchment / --ivory / --sepia-ink,
+     nếu không chế độ tối sẽ ra chữ đen trên nền đen. */
+  --wr-bg:        var(--parchment);          /* nền trang */
+  --wr-surface:   var(--ivory);              /* nền thẻ */
+  --wr-ink:       var(--sepia-ink);          /* chữ chính */
+  --wr-ink-soft:  rgba(36,27,16,.78);        /* chữ phụ */
+  --wr-ink-faint: rgba(36,27,16,.62);        /* ghi chú — .62 để vẫn đạt 4.5:1 */
+  --wr-heading:   var(--royal-sapphire);     /* tiêu đề trên nền sáng */
+  --wr-border:    rgba(90,23,38,.20);        /* đường kẻ mảnh */
+  --wr-track:     rgba(17,24,58,.12);        /* rãnh thanh đồ thị */
+  --wr-chart-1:   rgba(17,24,58,.62);        /* cột đồ thị thường (4.8:1) */
+  --wr-chart-accent: var(--royal-oxblood);   /* cột/đường được nhấn */
+  --wr-foil:      var(--ink-foil);           /* foil cho chữ trên nền trang */
+  --wr-band:      var(--royal-sapphire);     /* các dải tối (hero, giá, chân trang) */
+
+  /* Bí danh cũ — giữ để không phải sửa hàng loạt điểm gọi inline */
+  --bg:        var(--wr-bg);
+  --surface:   var(--wr-surface);
+  --ink:       var(--wr-ink);
   --brand:     var(--royal-sapphire);
   --accent:    var(--royal-oxblood);
 
   /* ---- Scale ---- */
   --radius: 10px;
   --shadow-card: 0 2px 4px rgba(17,24,58,.06), 0 12px 32px rgba(17,24,58,.10);
-  --hairline: 1px solid rgba(90,23,38,.20);
+  --hairline: 1px solid var(--wr-border);
+
+  color-scheme: light;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHẾ ĐỘ TỐI
+   Mặc định bám hệ điều hành (prefers-color-scheme). Người dùng bấm
+   nút chuyển thì <html data-theme="dark|light"> ghi đè, và lựa chọn
+   được nhớ trong localStorage (xem ThemeToggle + script chống nháy
+   trong app/layout.tsx).
+
+   Nền tối KHÔNG dùng đen tuyền — dùng Royal Sapphire đậm để giữ
+   đúng nhận diện. Các dải vốn đã tối thì sáng lên một bậc, nếu
+   không các mảng sẽ dính liền vào nhau.
+   ══════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --wr-bg:        #0A0E24;
+    --wr-surface:   #141C42;
+    --wr-ink:       #EAE3D2;
+    --wr-ink-soft:  rgba(234,227,210,.76);
+    --wr-ink-faint: rgba(234,227,210,.58);
+    --wr-heading:   var(--champagne);
+    --wr-border:    rgba(200,161,75,.22);
+    --wr-track:     rgba(231,206,142,.16);
+    --wr-chart-1:   rgba(231,206,142,.65);
+    --wr-chart-accent: var(--imperial-gold);
+    --wr-foil:      var(--gold-foil);   /* nền đã tối → quay lại vàng thật */
+    --wr-band:      #101740;
+    --shadow-card:  0 2px 4px rgba(0,0,0,.28), 0 14px 34px rgba(0,0,0,.34);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --wr-bg:        #0A0E24;
+  --wr-surface:   #141C42;
+  --wr-ink:       #EAE3D2;
+  --wr-ink-soft:  rgba(234,227,210,.76);
+  --wr-ink-faint: rgba(234,227,210,.58);
+  --wr-heading:   var(--champagne);
+  --wr-border:    rgba(200,161,75,.22);
+  --wr-track:     rgba(231,206,142,.16);
+  --wr-chart-1:   rgba(231,206,142,.65);
+  --wr-chart-accent: var(--imperial-gold);
+  --wr-foil:      var(--gold-foil);   /* nền đã tối → quay lại vàng thật */
+  --wr-band:      #101740;
+  --shadow-card:  0 2px 4px rgba(0,0,0,.28), 0 14px 34px rgba(0,0,0,.34);
+  color-scheme: dark;
 }
 
 /* Gold-foil text helper â apply to a span, not a whole heading of Vietnamese */
@@ -67,8 +144,27 @@
   color: transparent;
 }
 
+/* Foil cho chữ trên NỀN TRANG (parchment / ivory ở chế độ sáng).
+   .gold-foil CHỈ hợp với nền tối; trên nền giấy nó chỉ đạt 1.05:1.
+   .foil-ink giữ nguyên hiệu ứng kim loại nhưng đánh bằng Royal Sapphire,
+   và tự quay về vàng thật ở chế độ tối (xem --wr-foil).
+   Có màu dự phòng đặc cho trình duyệt không hỗ trợ background-clip:text —
+   thiếu nó thì chữ sẽ trong suốt, tức là mất hẳn. */
+.foil-ink { color: var(--wr-heading); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .foil-ink {
+    background: var(--wr-foil);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
 /* Gold-foil surface (badges, rules, buttons borders) */
 .gold-rule { height: 2px; background: var(--gold-foil); border: 0; }
+/* Cùng vai trò nhưng dùng trên nền trang sáng — vàng trên giấy chỉ 2.3:1,
+   gần như không thấy đường kẻ. */
+.foil-rule { height: 2px; background: var(--wr-foil); border: 0; }
 
 /* Eyebrow label â Cinzel, Latin/English only (e.g. "PER TE, AD ASTRA") */
 .eyebrow {
@@ -76,7 +172,7 @@
   letter-spacing: .22em;
   text-transform: uppercase;
   font-size: .72rem;
-  color: var(--royal-oxblood);
+  color: var(--wr-eyebrow, var(--royal-oxblood));
 }
 
 /* Eyebrow variant for use on dark (Royal Sapphire) grounds, e.g. the hero */
@@ -92,7 +188,7 @@
 .heading-vi {
   font-family: var(--font-heading);
   font-weight: 400;
-  color: var(--royal-sapphire);
+  color: var(--wr-heading);   /* sapphire ở chế độ sáng, champagne ở chế độ tối */
   line-height: 1.15;
 }
 
@@ -185,3 +281,32 @@
 .bandup-btn{padding:11px 22px;border-radius:10px;font-family:var(--font-body);font-size:15px;font-weight:600;cursor:pointer}
 @keyframes bandupIn{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
 @media (prefers-reduced-motion: reduce){.bandup-overlay,.bandup-card{animation:none}}
+
+
+/* ══════════════════════════════════════════════════════════════
+   Chế độ tối — các lớp còn dùng màu cố định
+   ══════════════════════════════════════════════════════════════ */
+:root[data-theme='dark'] { --wr-eyebrow: var(--champagne); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { --wr-eyebrow: var(--champagne); }
+}
+
+/* Nút phụ trên nền sáng: oxblood đọc không nổi trên nền tối */
+:root[data-theme='dark'] .btn-ghost { color: var(--champagne); border-color: rgba(200,161,75,.35); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .btn-ghost { color: var(--champagne); border-color: rgba(200,161,75,.35); }
+}
+
+/* ── Nút chuyển sáng / tối ─────────────────────────────────── */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  border-radius: 999px; cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(200,161,75,.32);
+  color: var(--champagne);
+  transition: background .18s ease, border-color .18s ease;
+}
+.theme-toggle:hover { background: rgba(200,161,75,.12); border-color: rgba(200,161,75,.55); }
+.theme-toggle:focus-visible { outline: 2px solid var(--champagne); outline-offset: 2px; }
+.theme-toggle svg { width: 17px; height: 17px; display: block; }

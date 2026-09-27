@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cinzel, Prata } from 'next/font/google';
 import './globals.css';
 import './writeright-theme.css';
@@ -49,6 +49,20 @@ export const metadata: Metadata = {
   },
 };
 
+// Thanh trạng thái trên di động đổi màu theo chế độ sáng/tối.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F4ECD8' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A0E24' },
+  ],
+};
+
+/* Chạy TRƯỚC khi trình duyệt vẽ khung hình đầu tiên: nếu người dùng đã
+   chọn sáng/tối bằng tay thì gắn data-theme ngay, tránh loé trắng một
+   nhịp rồi mới đổi sang tối. Không có lựa chọn nào thì để trống và CSS
+   media query tự bám theo hệ điều hành. */
+const NO_FLASH = `(function(){try{var m=localStorage.getItem('wr-theme');if(m==='dark'||m==='light')document.documentElement.setAttribute('data-theme',m);}catch(e){}})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -58,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preload" href="/fonts/ebgaramond-normal-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/ebgaramond-normal-vietnamese.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
       </head>
       <body className="min-h-screen antialiased">
         {children}

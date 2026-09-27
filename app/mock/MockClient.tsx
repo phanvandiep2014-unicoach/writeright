@@ -348,6 +348,7 @@ export default function MockClient({ examMinutes }: { examMinutes: number | null
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />
+          {!isExam && <Link href="/courses" className="app-nav-link">Khóa học</Link>}
           {!isExam && <Link href="/evaluate" className="app-nav-link">Chấm bài</Link>}
           {!isExam && <Link href="/dashboard" className="app-nav-link">Dashboard</Link>}
           {isExam && <span className="text-xs font-mono uppercase tracking-widest text-brand-400">Thi thử UNICOACH LMS</span>}

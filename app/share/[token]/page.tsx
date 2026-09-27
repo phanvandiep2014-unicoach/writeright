@@ -51,7 +51,7 @@ export default async function SharedScorecardPage({ params }: { params: Promise<
       <div style={{ background: 'var(--parchment)', minHeight: '100vh' }} className="flex items-center justify-center px-4">
         <div className="text-center" style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)' }}>
           <p className="text-xl mb-2">Liên kết này không còn tồn tại hoặc đã hết han.</p>
-          <Link href="/" className="gold-foil font-semibold">Về WriteRight →</Link>
+          <Link href="/" className="foil-ink font-semibold">Về WriteRight →</Link>
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export default async function SharedScorecardPage({ params }: { params: Promise<
           {/* Overall band — the hero number */}
           <div className="text-center mb-8 py-6" style={{ borderTop: 'var(--hairline)', borderBottom: 'var(--hairline)' }}>
             <p className="eyebrow mb-2">Overall Band</p>
-            <p className="gold-foil" style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', fontWeight: 700, lineHeight: 1 }}>
+            <p className="foil-ink" style={{ fontFamily: 'var(--font-display)', fontSize: '4rem', fontWeight: 700, lineHeight: 1 }}>
               {ev.overall_band}
             </p>
           </div>

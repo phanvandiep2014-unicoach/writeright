@@ -2,6 +2,8 @@
 import Link from 'next/link';
 import UserMenu from '@/components/UserMenu';
 import { RoyalIcon } from '@/components/RoyalIcons';
+import ProofStats from '@/components/ProofStats';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const features = [
   { icon: 'star', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
@@ -90,7 +92,10 @@ export default function Home() {
               Write<span className="gold-foil">Right</span>
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <ThemeToggle />
+            <Link href="/courses" className="app-nav-link" style={{ fontSize: 14 }}>Khóa học</Link>
+            <Link href="/mock" className="app-nav-link" style={{ fontSize: 14 }}>Thi thử</Link>
             <UserMenu />
             <Link href="/evaluate" className="btn-royal hidden sm:inline-block" style={{ fontSize: 14, padding: '9px 18px' }}>Chấm bài ngay</Link>
           </div>
@@ -100,7 +105,7 @@ export default function Home() {
       {/* Hero */}
       <section style={{
         padding: '90px 20px 70px', textAlign: 'center',
-        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.16), transparent 55%), var(--royal-sapphire)'
+        background: 'radial-gradient(ellipse 120% 100% at 50% -20%, rgba(200,161,75,.16), transparent 55%), var(--wr-band)'
       }}>
       <div style={{ maxWidth: 880, margin: '0 auto' }}>
         <div className="eyebrow" style={{
@@ -127,6 +132,8 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 36, flexWrap: 'wrap' }}>
           <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
+          <Link href="/mock" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>⏱ Thi thử có tính giờ</Link>
+          <Link href="/courses" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>📘 Khóa học Writing</Link>
           <a href="/pricing" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>Xem bảng giá</a>
         </div>
 
@@ -142,7 +149,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section style={{ maxWidth: 1060, margin: '0 auto', padding: '70px 20px', background: 'var(--parchment)' }}>
+      <section style={{ maxWidth: 1060, margin: '0 auto', padding: '70px 20px', background: 'var(--wr-bg)' }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <div className="eyebrow" style={{ marginBottom: 12 }}>Tính năng</div>
           <h2 className="heading-vi" style={{ fontSize: 'clamp(24px,3.6vw,34px)' }}>Mọi thứ bạn cần để nâng Band Writing</h2>
@@ -161,10 +168,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Số liệu thật — tự ẩn khi chưa đủ mẫu, xem components/ProofStats.tsx */}
+      <ProofStats />
+
       {/* Pricing */}
       <section id="pricing" style={{
         maxWidth: 1060, margin: '0 auto', padding: '70px 20px',
-        background: 'radial-gradient(ellipse 120% 80% at 50% 120%, rgba(200,161,75,.06), transparent 50%), var(--royal-sapphire)'
+        background: 'radial-gradient(ellipse 120% 80% at 50% 120%, rgba(200,161,75,.06), transparent 50%), var(--wr-band)'
       }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--imperial-gold)' }}>Bảng giá</div>
@@ -224,8 +234,8 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section style={{ maxWidth: 760, margin: '0 auto', padding: '80px 20px', textAlign: 'center', background: 'var(--parchment)' }}>
-        <div className="gold-rule" style={{ width: 80, margin: '0 auto 24px' }} />
+      <section style={{ maxWidth: 760, margin: '0 auto', padding: '80px 20px', textAlign: 'center', background: 'var(--wr-bg)' }}>
+        <div className="foil-rule" style={{ width: 80, margin: '0 auto 24px' }} />
         <h2 className="heading-vi" style={{ fontSize: 'clamp(22px,3.4vw,32px)', marginBottom: 14 }}>Sẵn sàng nâng Band Writing?</h2>
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 19, color: 'var(--ink)', opacity: .75, marginBottom: 30 }}>
           Chấm bài theo đúng 4 tiêu chí IELTS — nhận phản hồi chi tiết trong vài giây.
@@ -234,7 +244,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer style={{ background: 'var(--royal-sapphire)', padding: '46px 20px', textAlign: 'center' }}>
+      <footer style={{ background: 'var(--wr-band)', padding: '46px 20px', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
           <Crest size={26} />
           <span style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 16, color: 'var(--champagne)' }}>UNICOACH</span>

@@ -393,7 +393,7 @@ return (
 <img src="/favicon.svg" alt="" width={30} height={30} />
 <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
 </Link>
-<span style={{ flex: 1 }} /><Link href="/dashboard" className="app-nav-link">Dashboard</Link><Link href="/pricing" className="app-nav-link">Bảng giá</Link>
+<span style={{ flex: 1 }} /><Link href="/courses" className="app-nav-link">Khóa học</Link><Link href="/mock" className="app-nav-link">Thi thử</Link><Link href="/dashboard" className="app-nav-link">Dashboard</Link><Link href="/pricing" className="app-nav-link">Bảng giá</Link>
 </div>
 </header>
 
