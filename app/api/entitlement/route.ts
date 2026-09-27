@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await createAdminSupabase()
     .from('profiles')
-    .select('speak_plan, speak_expires_at, tier, tier_expires_at')
+    .select('speak_plan, speak_expires_at, tier, tier_expires_at, enrolled_override')
     // ilike để không phân biệt hoa thường — nhưng '_' và '%' là ký tự đại diện
     // của LIKE, mà email hay có '_' → phải thoát, không thì a_b@x khớp cả axb@x.
     .ilike('email', email.replace(/[\\%_]/g, (c) => '\\' + c))
@@ -54,8 +54,11 @@ export async function GET(req: NextRequest) {
 
   const now = Date.now();
   const alive = (d: string | null | undefined) => !!d && new Date(d).getTime() > now;
-  const speakPlan = data && data.speak_plan !== 'free' && alive(data.speak_expires_at) ? data.speak_plan : 'free';
-  const tier = data && data.tier !== 'free' && (!data.tier_expires_at || alive(data.tier_expires_at)) ? data.tier : 'free';
+  // enrolled_override = true → học viên đang học, LMS cấp Standard liên tục
+  // (xem sql/enrolled-standard.sql); coi như không bao giờ hết hạn ở CẢ HAI trục.
+  const overridden = !!data?.enrolled_override;
+  const speakPlan = data && data.speak_plan !== 'free' && (overridden || alive(data.speak_expires_at)) ? data.speak_plan : 'free';
+  const tier = data && data.tier !== 'free' && (overridden || !data.tier_expires_at || alive(data.tier_expires_at)) ? data.tier : 'free';
 
   return NextResponse.json(
     {

@@ -77,6 +77,44 @@ export async function GET(request: Request) {
       if (creditErr) console.error('[sso] không cấp được lượt miễn phí:', creditErr.message);
     }
 
+    // Ghi lại mã học viên LMS trên MỌI lần đăng nhập (không chỉ lúc cấp/hạ quyền) —
+    // cron/sync-active-students cần cột này để đối chiếu hàng loạt. Lỗi ở đây không
+    // được chặn đăng nhập, nên chỉ log.
+    const { error: codeErr } = await admin
+      .from('profiles')
+      .update({ lms_student_code: payload.sub })
+      .eq('id', userId);
+    if (codeErr) console.error('[sso] không ghi được lms_student_code:', codeErr.message);
+
+    // Học viên còn đang học tại UNICOACH: gói Standard (viết + nói) liên tục,
+    // không thu phí, cho đến khi nghỉ học (quyết định của Phan, 27/09/2026).
+    // Xem sql/enrolled-standard.sql. Precisely không cần biết gì thêm — nó
+    // đọc lại đúng hai cột này qua /api/entitlement.
+    if (payload.is_active_student === true) {
+      const { error: enrollErr } = await admin
+        .from('profiles')
+        .update({
+          tier: 'standard', tier_expires_at: null,
+          speak_plan: 'speak', speak_expires_at: null,
+          enrolled_override: true,
+        })
+        .eq('id', userId);
+      if (enrollErr) console.error('[sso] không cấp được gói Standard cho học viên đang học:', enrollErr.message);
+    } else if (payload.is_active_student === false) {
+      // Chỉ hạ quyền nếu CHÍNH cơ chế này đã cấp (enrolled_override=true) —
+      // không bao giờ đụng vào khách đã tự trả tiền.
+      const { error: revokeErr } = await admin
+        .from('profiles')
+        .update({
+          tier: 'free', tier_expires_at: null,
+          speak_plan: 'free', speak_expires_at: null,
+          enrolled_override: false,
+        })
+        .eq('id', userId)
+        .eq('enrolled_override', true);
+      if (revokeErr) console.error('[sso] không hạ được quyền sau khi học viên ngừng học:', revokeErr.message);
+    }
+
     // Sinh magic link rồi để /auth/confirm đổi lấy phiên (đặt cookie đúng chuẩn @supabase/ssr).
     const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
       type: 'magiclink', email,

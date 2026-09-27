@@ -24,6 +24,16 @@ export type LmsSsoPayload = {
   writing_free?: boolean;
   speaking_free?: boolean;
   /**
+   * 27/09/2026 — Phan chốt: học viên còn đang học tại UNICOACH (students.status
+   * = 'active' phía BMS) được dùng WriteRight ở mức gói Standard, không giới
+   * hạn số lượt, cho đến khi ngừng học. Cờ này đi kèm MỌI token SSO (xem
+   * server/free-credit.js → activeFlags() phía LMS). true/false đều tường minh —
+   * false nghĩa là BMS đã xác nhận học viên KHÔNG còn active, không phải "chưa rõ".
+   * Token cũ (trước khi LMS deploy đợt này) không có trường này → undefined,
+   * /sso route coi như "không có ý kiến", không tự hạ quyền ai.
+   */
+  is_active_student?: boolean;
+  /**
    * Có giá trị khi đây là chặng Writing trong bài thi thử 4 kỹ năng điều phối
    * bởi `ielts-module` (Listening → Reading → Writing → nghỉ → Speaking).
    * Xem `BAN-GIAO-DOI-TAC.md` phía LMS. Token vẫn cùng khóa, cùng iss/aud,
