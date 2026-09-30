@@ -20,8 +20,14 @@ export async function GET(req: NextRequest) {
   if (!secret || !/^[0-9a-f-]{36}$/i.test(u) || !verifyUnsubscribeToken(u, t, secret)) {
     return page('Liên kết không hợp lệ', 'Liên kết huỷ đăng ký không đúng hoặc đã hết hạn.', 400);
   }
-  const { error } = await createAdminSupabase().from('email_prefs')
-    .upsert({ user_id: u, practice_reminders: false, updated_at: new Date().toISOString() });
+  // k=nurture: chỉ hủy email hướng dẫn/tư vấn (nurture); mặc định giữ nguyên hành vi cũ (nhắc luyện tập).
+  const now = new Date().toISOString();
+  const nurture = req.nextUrl.searchParams.get('k') === 'nurture';
+  const { error } = await createAdminSupabase().from('email_prefs').upsert(
+    nurture ? { user_id: u, nurture_optout_at: now, updated_at: now }
+            : { user_id: u, practice_reminders: false, updated_at: now });
   if (error) return page('Chưa thực hiện được', 'Có lỗi xảy ra, vui lòng thử lại sau.', 500);
-  return page('Đã huỷ nhận email nhắc luyện tập', 'Bạn sẽ không nhận email nhắc luyện tập từ WriteRight nữa.');
+  return nurture
+    ? page('Đã hủy nhận email hướng dẫn và tư vấn', 'Bạn sẽ không nhận email hướng dẫn học tập và tư vấn từ UNICOACH nữa.')
+    : page('Đã huỷ nhận email nhắc luyện tập', 'Bạn sẽ không nhận email nhắc luyện tập từ WriteRight nữa.');
 }
