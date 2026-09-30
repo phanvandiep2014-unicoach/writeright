@@ -58,6 +58,34 @@ export async function GET(req: NextRequest) {
   // `dryRun=1` để thử: tìm người cần nhắc nhưng KHÔNG gửi, KHÔNG ghi log.
   const dryRun = req.nextUrl.searchParams.get('dryRun') === '1';
 
+  // `testTo=<email>`: gửi MỘT thư mẫu tới đúng địa chỉ này để kiểm tra SMTP.
+  // Vẫn cần CRON_SECRET (đã kiểm ở trên). Không đọc DB, không ghi email_log,
+  // không đụng tới học viên thật.
+  const testTo = req.nextUrl.searchParams.get('testTo');
+  if (testTo) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) {
+      return NextResponse.json({ error: 'testTo khong hop le' }, { status: 400 });
+    }
+    const input: RenewalEmailInput = {
+      fullName: 'Test',
+      tier: 'standard',
+      expiresOn: ddmmyyyy(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)),
+      daysLeft: 7,
+      pricingUrl,
+    };
+    try {
+      await sendMail({
+        to: testTo,
+        subject: `[TEST] ${renewalSubject(input)}`,
+        html: renewalHtml(input),
+        text: renewalText(input),
+      });
+      return NextResponse.json({ ok: true, test: true, to: testTo });
+    } catch (e: any) {
+      return NextResponse.json({ ok: false, test: true, error: e?.message ?? String(e) }, { status: 500 });
+    }
+  }
+
   const ketQua: Record<string, unknown>[] = [];
   let daGui = 0, boQua = 0, loi = 0;
 
