@@ -3,6 +3,8 @@ import { createAdminSupabase } from '@/lib/supabase-admin';
 import { sendMail } from '@/lib/mailer';
 import { unsubscribeUrl } from '@/lib/unsubscribe';
 import { pickNurture, withUtm, type NurtureCandidate, type NurtureKind } from '@/lib/nurture';
+import { pickOnboarding, type OnboardCandidate, type OnboardKind } from '@/lib/onboarding';
+import type { EmailKind } from '@/lib/emails/nurture';
 import { nurtureHtml, nurtureSubject, nurtureText, type BandRoute, type NurtureEmailInput } from '@/lib/emails/nurture';
 
 /**
@@ -27,7 +29,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const MAX_PER_RUN = 100;
-const KINDS: NurtureKind[] = ['nurture_d1', 'nurture_d3', 'nurture_d7', 'nurture_results'];
+const KINDS: EmailKind[] = ['nurture_d1', 'nurture_d3', 'nurture_d7', 'nurture_results', 'onboard_paid_a', 'onboard_paid_b'];
 
 async function fetchRoute(lms: string, band: number): Promise<BandRoute | null> {
   try {
@@ -51,7 +53,7 @@ export async function GET(req: NextRequest) {
   const campaign = process.env.NURTURE_CAMPAIGN || 'hoalac_free_test_2026q4';
   const unsub = (userId: string) => `${unsubscribeUrl(siteUrl, userId, secret)}&k=nurture`;
 
-  const build = (kind: NurtureKind, c: { user_id: string; full_name: string | null; band?: number | null; route?: BandRoute | null }): NurtureEmailInput => ({
+  const build = (kind: EmailKind, c: { user_id: string; full_name: string | null; band?: number | null; route?: BandRoute | null }): NurtureEmailInput => ({
     kind, fullName: c.full_name,
     practiceUrl: withUtm(`${siteUrl}/evaluate`, kind, campaign),
     ctaUrl: withUtm(ctaBase, kind, campaign),
@@ -63,7 +65,7 @@ export async function GET(req: NextRequest) {
   const testTo = req.nextUrl.searchParams.get('testTo');
   if (testTo) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testTo)) return NextResponse.json({ error: 'testTo khong hop le' }, { status: 400 });
-    const kind = (req.nextUrl.searchParams.get('kind') || 'nurture_results') as NurtureKind;
+    const kind = (req.nextUrl.searchParams.get('kind') || 'nurture_results') as EmailKind;
     if (!KINDS.includes(kind)) return NextResponse.json({ error: 'kind khong hop le' }, { status: 400 });
     const route = await fetchRoute(lms, 5.5);
     const input = build(kind, { user_id: '00000000-0000-0000-0000-000000000000', full_name: 'Test', band: 5.5, route });
@@ -131,6 +133,44 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // ── Onboarding cho khách đã trả tiền mà chưa chấm bài (bật riêng bằng ONBOARDING_ENABLED=1) ──
+  const onbEnabled = process.env.ONBOARDING_ENABLED === '1';
+  const onbDry = !onbEnabled || req.nextUrl.searchParams.get('dryRun') === '1';
+  const onb = { ungVien: 0, daGui: 0, boQua: 0, chuaDenLuc: 0, loi: 0, chiTiet: [] as Record<string, unknown>[] };
+  try {
+    const { data: od, error: oerr } = await admin.rpc('users_paid_unused', { max_rows: 200 });
+    if (oerr) throw new Error(oerr.message);
+    const orows = (od ?? []) as OnboardCandidate[];
+    onb.ungVien = orows.length;
+    for (const c of orows) {
+      const pick = pickOnboarding(c, now);
+      if (!pick) { onb.chuaDenLuc++; continue; }
+      const input = build(pick.kind, { user_id: c.user_id, full_name: c.full_name });
+      if (onbDry) { onb.chiTiet.push({ to: c.email, kind: pick.kind, dryRun: true }); continue; }
+      const { error: logErr } = await admin.from('email_log').insert({
+        user_id: c.user_id, kind: pick.kind, expires_on: pick.expiresOn, email_to: c.email,
+      });
+      if (logErr) {
+        if (logErr.code === '23505') { onb.boQua++; continue; }
+        onb.loi++; onb.chiTiet.push({ to: c.email, kind: pick.kind, error: logErr.message }); continue;
+      }
+      try {
+        await sendMail({
+          to: c.email, subject: nurtureSubject(input), html: nurtureHtml(input), text: nurtureText(input),
+          headers: { 'List-Unsubscribe': `<${input.unsubscribeUrl}>` },
+        });
+        onb.daGui++; onb.chiTiet.push({ to: c.email, kind: pick.kind, ok: true });
+      } catch (e: any) {
+        await admin.from('email_log').delete()
+          .eq('user_id', c.user_id).eq('kind', pick.kind).eq('expires_on', pick.expiresOn);
+        onb.loi++; onb.chiTiet.push({ to: c.email, kind: pick.kind, error: e?.message ?? String(e) });
+      }
+    }
+  } catch (e: any) {
+    onb.loi++; onb.chiTiet.push({ error: e?.message ?? String(e) });   // không làm hỏng phần nurture ở trên
+  }
+  console.log(`cron/onboarding: dryRun=${onbDry} ungVien=${onb.ungVien} gui=${onb.daGui} bo_qua=${onb.boQua} chua_den_luc=${onb.chuaDenLuc} loi=${onb.loi}`);
+
   console.log(`cron/nurture: dryRun=${dryRun} ungVien=${rows.length} gui=${daGui} bo_qua=${boQua} chua_den_luc=${chuaDenLuc} khong_co_khoa=${khongCoKhoa} loi=${loi}`);
-  return NextResponse.json({ ranAt: new Date().toISOString(), dryRun, enabled, ungVien: rows.length, daGui, boQua, chuaDenLuc, khongCoKhoa, loi, chiTiet });
+  return NextResponse.json({ ranAt: new Date().toISOString(), dryRun, enabled, ungVien: rows.length, daGui, boQua, chuaDenLuc, khongCoKhoa, loi, chiTiet, onboarding: { dryRun: onbDry, enabled: onbEnabled, ...onb } });
 }

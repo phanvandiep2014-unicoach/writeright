@@ -54,7 +54,7 @@ export function pickNurture(c: NurtureCandidate, now: number): { kind: NurtureKi
 }
 
 /** Gắn UTM chuẩn (chữ thường, không dấu, gạch dưới — xem GIAI-DOAN-0 mục 4). */
-export function withUtm(url: string, kind: NurtureKind, campaign: string): string {
+export function withUtm(url: string, kind: string, campaign: string): string {
   const u = new URL(url);
   u.searchParams.set('utm_source', 'writeright');
   u.searchParams.set('utm_medium', 'email');

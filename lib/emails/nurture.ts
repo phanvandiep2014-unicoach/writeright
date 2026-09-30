@@ -1,6 +1,13 @@
 /** Email nurture theo hành vi. Style inline như streak-reminder (Gmail/Outlook bỏ <style>).
  *  Không niêm yết học phí, không cam kết kết quả, không gọi tính năng chưa có. */
 import type { NurtureKind } from '../nurture';
+import type { OnboardKind } from '../onboarding';
+
+export type EmailKind = NurtureKind | OnboardKind;
+const isOnboard = (k: EmailKind) => k.startsWith('onboard_');
+const footerNote = (k: EmailKind) => isOnboard(k)
+  ? 'Bạn nhận email này vì đang dùng gói trả phí WriteRight.'
+  : 'Bạn nhận email này vì đã đồng ý nhận email hướng dẫn học tập và tư vấn từ UNICOACH.';
 
 const SAPPHIRE = '#11183A';
 const GOLD = '#C8A14B';
@@ -11,7 +18,7 @@ const INK = '#241B10';
 export interface BandRoute { route: 'course' | 'consult'; code: string; label: string }
 
 export interface NurtureEmailInput {
-  kind: NurtureKind;
+  kind: EmailKind;
   fullName: string | null;
   practiceUrl: string;     // đã gắn UTM
   ctaUrl: string;          // trang tư vấn/đặt lịch của UNICOACH, đã gắn UTM
@@ -24,6 +31,24 @@ interface Body { subject: string; paras: string[]; cta: { label: string; url: st
 
 function body(i: NurtureEmailInput): Body {
   switch (i.kind) {
+    case 'onboard_paid_a':
+      return {
+        subject: 'Gói WriteRight của bạn đã sẵn sàng — chấm bài đầu tiên trong vài phút',
+        paras: [
+          'Cảm ơn bạn đã đăng ký gói WriteRight. Bạn chưa nộp bài nào, nên đây là cách bắt đầu nhanh nhất.',
+          'Chọn Task 1 hoặc Task 2, dán bài viết của bạn (bài nháp hay bài cũ đều được) rồi bấm chấm. WriteRight trả về band ước tính theo bốn tiêu chí, chỉ ra lỗi cần sửa trước và cho bạn viết lại để so sánh. Kết quả do AI chấm nên chỉ mang tính tham khảo.',
+        ],
+        cta: { label: 'Chấm bài đầu tiên', url: i.practiceUrl },
+      };
+    case 'onboard_paid_b':
+      return {
+        subject: 'Bạn chưa chấm bài nào — cần UNICOACH hỗ trợ không?',
+        paras: [
+          'Gói của bạn vẫn đang chạy nhưng chưa có bài nào được chấm. Nếu bạn chưa biết bắt đầu từ đâu hoặc chưa rõ nên viết đề nào, mentor của UNICOACH có thể hướng dẫn bạn một buổi ngắn để dùng WriteRight đúng cách.',
+          'Hoặc bạn có thể tự bắt đầu ngay bằng bất kỳ bài viết nào có sẵn.',
+        ],
+        cta: { label: 'Nhờ mentor hướng dẫn', url: i.ctaUrl },
+      };
     case 'nurture_d1':
       return {
         subject: 'Bài Writing đầu tiên của bạn đang chờ được chấm',
@@ -86,7 +111,7 @@ export function nurtureText(i: NurtureEmailInput) {
     `Chào${ten},`, '', ...b.paras.flatMap(p => [p, '']),
     `${b.cta.label}: ${b.cta.url}`, '',
     'UNICOACH · WriteRight', '',
-    `Bạn nhận email này vì đã đồng ý nhận email hướng dẫn học tập và tư vấn từ UNICOACH.`,
+    footerNote(i.kind),
     `Không muốn nhận nữa? Hủy tại: ${i.unsubscribeUrl}`,
   ].join('\n');
 }
@@ -115,7 +140,7 @@ export function nurtureHtml(i: NurtureEmailInput) {
       </table>
     </td></tr>
     <tr><td style="padding:16px 28px 24px;border-top:1px solid #E3D7BC;font-family:Georgia,'Times New Roman',serif;font-size:12px;color:#8A8272;">
-      Bạn nhận email này vì đã đồng ý nhận email hướng dẫn học tập và tư vấn từ UNICOACH.
+      ${footerNote(i.kind)}
       <a href="${i.unsubscribeUrl}" style="color:#8A8272;">Hủy nhận email này</a>
     </td></tr>
   </table>
