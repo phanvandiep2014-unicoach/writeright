@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 import { RoyalIcon } from '@/components/RoyalIcons';
 import { BandUpCelebration } from '@/components/BandUp';
+import { NurtureConsent } from '@/components/NurtureConsent';
 import { ProgressDelta } from '@/components/ProgressDelta';
 import TaskVisual from '@/components/mock/TaskChart';
 import { findPracticeItem, PracticeItem } from '@/lib/practice';
@@ -437,6 +438,7 @@ className="border border-navy-600 text-navy-300 px-6 py-3 rounded-xl text-base h
 
 {/* Lễ thăng band — hiện khi phá kỷ lục */}
         <BandUpCelebration band={result.overall_band} />
+        <NurtureConsent band={result.overall_band} />
 
         {/* ── Overall Score Card + Radar ── */}
 <div className="bg-navy-800 border border-navy-700 rounded-2xl p-6 relative overflow-hidden">
