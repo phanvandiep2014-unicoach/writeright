@@ -30,7 +30,10 @@ async function getSharedEvaluation(token: string): Promise<SharedEval | null> { 
     }
   );
 
-  const { data, error } = await supabase.rpc('get_shared_evaluation', { share_token: token });
+  // Hàm có thật trên production là get_evaluation_by_share(p_share_id uuid) — get_shared_evaluation
+  // chưa từng tồn tại nên trang này trước 04/10/2026 luôn trả 404.
+  if (!/^[0-9a-f-]{36}$/i.test(token)) return null;
+  const { data, error } = await supabase.rpc('get_evaluation_by_share', { p_share_id: token });
   if (error || !data || data.length === 0) return null;
   return data[0] as SharedEval;
 }

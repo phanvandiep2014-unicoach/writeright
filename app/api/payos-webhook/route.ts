@@ -63,8 +63,11 @@ export async function POST(req: NextRequest) {
     .eq('order_code', data.orderCode)
     .single();
 
-  if (findErr && /billing_cycle/i.test(findErr.message)) {
-    console.warn('payos-webhook: cot orders.billing_cycle chua ton tai — chay sql/annual-billing.sql');
+  // Thiếu BẤT KỲ cột mở rộng nào (billing_cycle, speak_plan...) thì đọc lại bộ cột gốc.
+  // 23/09→04/10/2026: orders.speak_plan chưa có trên production, lỗi select bị coi là
+  // "không tìm thấy đơn" → khách trả tiền xong KHÔNG được nâng gói, PayOS vẫn nhận 200.
+  if (findErr && /column|billing_cycle|speak_plan|plan_code/i.test(findErr.message)) {
+    console.error('payos-webhook: thieu cot tren orders — doc lai bo cot goc:', findErr.message);
     ({ data: order, error: findErr } = await admin
       .from('orders')
       .select('id, user_id, tier, status')
@@ -73,7 +76,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (findErr || !order) {
-    console.error('PayOS webhook: order not found for orderCode', data.orderCode);
+    console.error('PayOS webhook: order not found for orderCode', data.orderCode, findErr?.message ?? '');
+    // Lỗi CSDL (khác "không có dòng") → trả 500 để PayOS gửi lại, đừng nuốt tiền của khách.
+    if (findErr && findErr.code !== 'PGRST116') {
+      return NextResponse.json({ error: 'DB error' }, { status: 500 });
+    }
     // Return 200 anyway — PayOS retries on non-2xx, and a missing order
     // on our side isn't something a retry will fix.
     return NextResponse.json({ success: true });

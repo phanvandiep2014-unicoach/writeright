@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase-browser';
+import { getShareUrl } from '@/lib/share-link';
 
 type Props = {
   evaluationId: string;
@@ -8,7 +8,6 @@ type Props = {
 };
 
 export function ShareScore({ evaluationId, disabled }: Props) {
-  const supabase = createClient();
   const [state, setState] = useState<'idle'|'loading'|'copied'|'error'>('idle');
   const [shareUrl, setShareUrl] = useState('');
 
@@ -22,23 +21,7 @@ export function ShareScore({ evaluationId, disabled }: Props) {
     }
     setState('loading');
     try {
-      const { data: existing } = await supabase
-        .from('shares')
-        .select('token')
-        .eq('evaluation_id', evaluationId)
-        .maybeSingle();
-      let token = existing?.token;
-      if (!token) {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data: created } = await supabase
-          .from('shares')
-          .insert({ evaluation_id: evaluationId, user_id: user?.id })
-          .select('token')
-          .single();
-        token = created?.token;
-      }
-      if (!token) throw new Error('no token');
-      const url = window.location.origin + '/share/' + token;
+      const url = await getShareUrl(evaluationId);
       setShareUrl(url);
       await navigator.clipboard.writeText(url);
       setState('copied');
