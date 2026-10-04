@@ -1,4 +1,5 @@
 'use client';
+import { getShareUrl } from '@/lib/share-link';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
@@ -134,15 +135,9 @@ export default function ProfilePage() {
   const handleShare = async (evalId: string) => {
     if (!user) return;
     setSharing(evalId);
-    const supabase = createClient();
-    const { data: existing } = await supabase.from('shares').select('token').eq('evaluation_id', evalId).eq('user_id', user.id).limit(1).maybeSingle();
-    let token = existing?.token;
-    if (!token) {
-      const { data: created, error } = await supabase.from('shares').insert({ evaluation_id: evalId, user_id: user.id }).select('token').single();
-      if (error || !created) { setSharing(null); return; }
-      token = created.token;
-    }
-    await navigator.clipboard.writeText(`${window.location.origin}/share/${token}`);
+    let url: string;
+    try { url = await getShareUrl(evalId); } catch { setSharing(null); return; }
+    await navigator.clipboard.writeText(url);
     setCopiedId(evalId);
     setSharing(null);
     setTimeout(() => setCopiedId(null), 2000);
