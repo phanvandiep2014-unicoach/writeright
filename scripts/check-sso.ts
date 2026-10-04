@@ -11,6 +11,7 @@
 import assert from 'node:assert';
 import crypto from 'node:crypto';
 import { verifyLmsToken, lmsEmailFor, LmsSsoPayload } from '../lib/unicoach';
+import { verifyLmsRequest } from '../lib/lms-server-auth';
 
 const SECRET = 'sso-test-secret-0123456789abcdef';
 const b64 = (v: string | Buffer) => Buffer.from(v).toString('base64url');
@@ -73,6 +74,27 @@ t('email: dùng email thật nếu hợp lệ, không thì email nội bộ theo
   assert.equal(lmsEmailFor({ ...good, email: ' Lan@X.co ' } as LmsSsoPayload), 'lan@x.co');
   assert.equal(lmsEmailFor({ ...good, email: undefined } as LmsSsoPayload), 'hv001@lms.unicoach.vn');
   assert.equal(lmsEmailFor({ ...good, email: 'khong-phai-email' } as LmsSsoPayload), 'hv001@lms.unicoach.vn');
+});
+
+// ── Lệnh máy-chủ-tới-máy-chủ từ LMS (bài thi thử 4 kỹ năng → /api/external/mock-*) ──
+// LMS ký y như dưới đây (unicoach-bms/server/ielts-writing.js → wrPost).
+const lmsReq = (body: string, o: { secret?: string; ts?: number } = {}) => {
+  const ts = o.ts ?? Math.floor(Date.now() / 1000);
+  const sig = crypto.createHmac('sha256', o.secret ?? SECRET).update(`${ts}.${body}`).digest('hex');
+  return new Request('https://wr.test/api/external/mock-paper', { method: 'POST', body,
+    headers: { 'x-unicoach-timestamp': String(ts), 'x-unicoach-signature': sig } });
+};
+const body = JSON.stringify({ paper: 'P06' });
+process.env.UNICOACH_SSO_SECRET = SECRET;
+t('lệnh LMS ký đúng → chấp nhận', () => assert.equal(verifyLmsRequest(lmsReq(body), body), null));
+t('lệnh LMS sai khóa / bị sửa body / quá 10 phút → từ chối', () => {
+  assert.match(String(verifyLmsRequest(lmsReq(body, { secret: 'khac' }), body)), /Chữ ký/);
+  assert.match(String(verifyLmsRequest(lmsReq(body), JSON.stringify({ paper: 'P07' }))), /Chữ ký/);
+  assert.match(String(verifyLmsRequest(lmsReq(body, { ts: Math.floor(Date.now() / 1000) - 601 }), body)), /quá hạn/);
+});
+t('chưa cấu hình UNICOACH_SSO_SECRET → từ chối, không cho qua', () => {
+  delete process.env.UNICOACH_SSO_SECRET;
+  assert.match(String(verifyLmsRequest(lmsReq(body), body)), /UNICOACH_SSO_SECRET/);
 });
 
 console.log(`\nSSO: ${n} kiểm tra đạt.`);
