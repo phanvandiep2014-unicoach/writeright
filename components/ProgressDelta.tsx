@@ -117,6 +117,10 @@ export function ProgressDelta({
     ? prev.feedback.error_corrections.length
     : -1;
   const dErrors = prevErrors >= 0 ? current.error_count - prevErrors : null;
+  // Bài trước chấm bằng prompt cũ (trước 04/10/2026, chưa có feedback.prompt_version='a1'),
+  // bài này chấm bằng prompt A1 — chặt hơn vì mỗi band phải dựa trên dẫn chứng. Nói rõ để
+  // học viên không hiểu nhầm một lần tụt band là mình viết kém đi.
+  const methodChanged = prev.feedback?.prompt_version !== 'a1';
 
   return (
     <div className="bg-navy-800 border border-navy-700 rounded-2xl px-6 py-5">
@@ -146,7 +150,9 @@ export function ProgressDelta({
           {dOverall > 0
             ? 'Band tổng đi lên. Giữ nhịp này.'
             : dOverall < 0
-              ? 'Band tổng thấp hơn lần trước — xem bốn tiêu chí bên dưới để biết rơi ở đâu.'
+              ? (methodChanged
+                ? 'Band tổng thấp hơn lần trước — một phần có thể do cách chấm mới (xem ghi chú bên dưới).'
+                : 'Band tổng thấp hơn lần trước — xem bốn tiêu chí bên dưới để biết rơi ở đâu.')
               : 'Band tổng giữ nguyên. Nhìn từng tiêu chí để thấy chỗ đã dịch chuyển.'}
         </span>
       </div>
@@ -174,6 +180,14 @@ export function ProgressDelta({
           );
         })}
       </div>
+
+      {methodChanged && (
+        <p className="mt-4 pt-4 border-t border-navy-700/50 text-sm text-navy-400 leading-relaxed">
+          Lưu ý: từ 04/10/2026 WriteRight chấm theo cách mới — mỗi band phải dựa trên câu trích từ chính bài của bạn
+          (xem “Căn cứ chấm” ở từng tiêu chí), nên thường chặt hơn trước. Bài lần trước được chấm theo cách cũ,
+          vì vậy chênh lệch lần này chưa hẳn phản ánh bài viết của bạn tốt lên hay kém đi.
+        </p>
+      )}
 
       {/* Số lỗi được đánh dấu */}
       {dErrors !== null && (

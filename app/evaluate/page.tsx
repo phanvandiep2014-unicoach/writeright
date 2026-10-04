@@ -1,4 +1,5 @@
 'use client';
+import CriterionEvidence from '@/components/CriterionEvidence';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
@@ -33,7 +34,7 @@ spelling: { label: 'Spelling', vi: 'Chính tả', color: '#D678AE' },
 const catOf = (c?: string) => (c && CAT_STYLE[c]) ? c : 'grammar';
 
 type ErrCorr = { original: string; corrected: string; category?: string; explanation: Bi };
-type CriterionResult = { band: number; feedback: Bi; improvements: Bi[] };
+type CriterionResult = { band: number; feedback: Bi; improvements: Bi[]; evidence?: string[]; descriptor_match?: string };
 type EvalResult = {
 overall_band: number;
 band_descriptor: string;
@@ -599,7 +600,8 @@ style={{ color: c.color, background: c.bg }}>{c.label}</span>
 ))}
 </ul>
 )}
-<div className="text-xs font-mono text-navy-500 mt-3">{isOpen ? '▲ Thu gọn' : '▼ Xem gợi ý cải thiện'}</div>
+{isOpen && <CriterionEvidence evidence={d.evidence} descriptorMatch={d.descriptor_match} color={c.color} />}
+<div className="text-xs font-mono text-navy-500 mt-3">{isOpen ? '▲ Thu gọn' : (d.evidence?.length ? '▼ Xem căn cứ chấm & gợi ý cải thiện' : '▼ Xem gợi ý cải thiện')}</div>
 </button>
 );
 })}

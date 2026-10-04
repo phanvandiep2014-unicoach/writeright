@@ -4,33 +4,12 @@ import { pushResultToLms } from '@/lib/unicoach';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { activationPatch } from '@/lib/activation';
 
-const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner (20+ years) and an applied linguist. Evaluate the essay and respond ONLY with valid JSON (no markdown, no code blocks). Every field marked {en, vi} is an object with an English string ("en") and a Vietnamese string ("vi"). Use this structure:
-{
-"overall_band": 6.5,
-"band_descriptor": "Competent User",
-"headline": {"en": "one sentence summary", "vi": "..."},
-"summary": {"en": "2-3 sentences", "vi": "..."},
-"task_achievement": { "band": 6.5, "feedback": {"en": "2-3 sentences", "vi": "..."}, "improvements": [{"en": "tip 1", "vi": "..."}, {"en": "tip 2", "vi": "..."}] },
-"coherence_cohesion": { "band": 6.5, "feedback": {"en": "...", "vi": "..."}, "improvements": [{"en": "...", "vi": "..."}] },
-"lexical_resource": { "band": 6.5, "feedback": {"en": "...", "vi": "..."}, "improvements": [{"en": "...", "vi": "..."}] },
-"grammatical_range": { "band": 6.5, "feedback": {"en": "...", "vi": "..."}, "improvements": [{"en": "...", "vi": "..."}] },
-"key_strengths": [{"en": "strength", "vi": "..."}],
-"priority_fixes": [{"en": "fix", "vi": "..."}],
-"error_corrections": [{"original": "exact phrase from essay", "corrected": "fixed version", "category": "grammar|vocabulary|register|tone|reference|dialect|spelling", "explanation": {"en": "why - one concise sentence", "vi": "..."}}],
-"language_insights": {
-"register": {"rating": "formal|mixed|informal", "notes": [{"en": "...", "vi": "..."}]},
-"tone_nuance": {"notes": [{"en": "...", "vi": "..."}]},
-"reference_cohesion": {"notes": [{"en": "...", "vi": "..."}]},
-"dialect": {"variety": "British|American|Mixed|Neutral", "notes": [{"en": "...", "vi": "..."}]}
-},
-"model_introduction": "A Band 9 introduction paragraph for this prompt (English only)",
-"model_rewrite": "The student's ENTIRE essay rewritten at Band 8.5-9.0 (English only). Preserve the student's own ideas, stance, examples and paragraph structure, but upgrade task response, cohesion, vocabulary and grammar. Keep a similar length to the original (within about 10%). Separate paragraphs with \\n\\n.",
-"transcribed_essay": "ONLY when the essay was submitted as an image: transcribe the student's essay text exactly as written, preserving their errors, with \\n\\n between paragraphs. OMIT this field entirely when essay text was provided directly."
-}
-ERROR CORRECTIONS - CRITICAL FOR HIGHLIGHTING: each "original" MUST be an exact, character-for-character quote copied verbatim from the student's essay (identical spelling, casing and punctuation) so the app can locate and colour-highlight it inside the essay text. Never paraphrase, never merge two separate errors into one item. Keep each quote short (2-8 words around the error). Provide 6-14 items covering the most band-limiting errors, spread across the whole essay.
-LANGUAGE INSIGHTS - analyse beyond surface grammar. REGISTER: flag informal items in academic context (e.g. "a lot of" -> "a considerable number of", "kids" -> "children", contractions). TONE & NUANCE: assess hedging and boosting ("will definitely" vs "is likely to"), connotation ("problem" vs "challenge"), over-generalisation ("everyone knows"). REFERENCE & COHESION: flag ambiguous pronouns (this/it/they with unclear antecedent), repetitive referencing, missing cohesive ties. DIALECT: identify the variety and flag inconsistency (e.g. colour and color in one essay); consistency matters, not the choice itself. Each note is one concise bullet quoting the exact phrase from the essay. Give 2-4 notes per group; use an empty array if nothing meaningful.
-BILINGUAL RULES: English is the primary feedback language - academic but accessible (readable at CEFR B2). Vietnamese "vi" is a concise natural rendering for Vietnamese students - translate meaning, never word-by-word; keep IELTS terminology in English (Task Response, cohesive device, band).
-CALIBRATION: Apply official IELTS band descriptors strictly. Never inflate scores; when between two bands choose the lower unless clear evidence supports the higher. HARD CAPS: under 250 words (Task 2) or 150 words (Task 1) -> Task Achievement max 5.0. Off-topic -> Task Achievement max 4.0. Memorised or template-heavy essays -> Lexical Resource max 6.0. Half bands are acceptable. Be honest and precise.`;
+// Prompt A1 (dẫn chứng → đối chiếu descriptor → band từng tiêu chí → band tổng) dùng chung với
+// /api/external/mock-grade. Bản cũ đặt overall_band lên ĐẦU nên mô hình chốt điểm trước rồi
+// viết nhận xét để hợp lý hoá. Mốc gốc trước khi đổi (04/10/2026, 255 bài): band tổng TB 5.74
+// — TA 5.61 · CC 5.88 · LR 5.67 · GRA 5.74. Bài chấm bằng prompt mới có feedback.prompt_version='a1'.
+import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
+const PROMPT_VERSION = 'a1';
 
 const FREE_EVALS_PER_WEEK = 1;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -160,6 +139,14 @@ const rawText = claudeData.content?.map((b: any) => b.text||'').join('') ?? '';
 let result;
 try { result = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
 catch { return NextResponse.json({ error: 'AI trả về định dạng không hợp lệ. Vui lòng thử lại.' }, { status: 502 }); }
+
+// Band tổng là SỐ SUY RA từ 4 tiêu chí (làm tròn kiểu IELTS) — mô hình khai lệch quá 0.5 thì ghi đè.
+const derivedOverall = officialOverall([result.task_achievement?.band, result.coherence_cohesion?.band, result.lexical_resource?.band, result.grammatical_range?.band]);
+if (derivedOverall != null && (typeof result.overall_band !== 'number' || Math.abs(result.overall_band - derivedOverall) > 0.5)) {
+  console.warn(`[evaluate] overall_band ${result.overall_band} lệch số suy ra ${derivedOverall} — ghi đè`);
+  result.overall_band = derivedOverall;
+}
+result.prompt_version = PROMPT_VERSION;
 
 const essayForCount = essayText || result.transcribed_essay || '';
 const wordCount = essayForCount ? essayForCount.trim().split(/\s+/).filter(Boolean).length : null;
