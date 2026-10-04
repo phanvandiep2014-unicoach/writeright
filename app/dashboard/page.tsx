@@ -1,4 +1,5 @@
 'use client';
+import { autoStartDate } from '@/lib/activation';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
@@ -103,7 +104,11 @@ export default function DashboardPage() {
           ent = full.data;
         }
       }
-      setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier), tier_expires_at: ent?.tier_expires_at ?? null } : prof);
+      // Kỳ chờ kích hoạt (hạn tính từ bài chấm đầu tiên — lib/activation.ts). Cột chưa có
+      // (chưa chạy sql/khoa-cot-va-han-dung.sql) thì select lỗi → coi như không chờ.
+      const pend = await supabase.from('profiles').select('tier_pending_days').eq('id', user.id).maybeSingle();
+      const pendingDays = pend.error ? null : ((pend.data as any)?.tier_pending_days ?? null);
+      setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier), tier_expires_at: ent?.tier_expires_at ?? null, tier_pending_days: pendingDays } : prof);
       const { data: evs } = await supabase.from('evaluations')
         .select('id,task_type,task_prompt,word_count,overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
         .eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
@@ -139,7 +144,10 @@ export default function DashboardPage() {
   // view `user_entitlements` đã hạ tier hết hạn xuống 'free', nên lọc theo
   // tier thì đúng người cần thấy lời nhắc gia hạn lại là người không thấy.
   const showExpiry = daysLeft !== null;
-  const expiryUrgent = daysLeft !== null && daysLeft <= 7;
+  // Gói chưa kích hoạt: hạn chưa bắt đầu đếm, chỉ có mốc tự bắt đầu.
+  const autoStart = autoStartDate(profile ?? null);
+  const pendingDays: number | null = autoStart && autoStart.getTime() > Date.now() ? profile?.tier_pending_days ?? null : null;
+  const expiryUrgent = daysLeft !== null && daysLeft <= 7 && profile?.tier_pending_days == null;
   const expiryText = expiresAt
     ? expiresAt.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : '';
@@ -201,13 +209,19 @@ export default function DashboardPage() {
                     color: expiryUrgent ? '#F0B4B4' : 'rgba(231,206,142,.6)',
                   }}
                 >
-                  {daysLeft! > 0
-                    ? `Hết hạn ${expiryText} · còn ${daysLeft} ngày`
-                    : `Đã hết hạn ${expiryText}`}
-                  {' · '}
-                  <Link href="/pricing" style={{ color: '#E7CE8E', textDecoration: 'underline' }}>
-                    Gia hạn
-                  </Link>
+                  {pendingDays != null ? (
+                    <>{`${pendingDays} ngày của gói bắt đầu tính từ bài chấm đầu tiên`}
+                      {` · tự bắt đầu ${autoStart!.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })} nếu chưa chấm · `}
+                      <Link href="/evaluate" style={{ color: '#E7CE8E', textDecoration: 'underline' }}>Chấm bài đầu tiên</Link></>
+                  ) : (
+                    <>{daysLeft! > 0
+                      ? `Hết hạn ${expiryText} · còn ${daysLeft} ngày`
+                      : `Đã hết hạn ${expiryText}`}
+                    {' · '}
+                    <Link href="/pricing" style={{ color: '#E7CE8E', textDecoration: 'underline' }}>
+                      Gia hạn
+                    </Link></>
+                  )}
                 </span>
               )}
               {profile?.public_token && (

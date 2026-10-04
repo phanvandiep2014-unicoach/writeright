@@ -35,7 +35,8 @@ function body(i: NurtureEmailInput): Body {
       return {
         subject: 'Gói WriteRight của bạn đã sẵn sàng — chấm bài đầu tiên trong vài phút',
         paras: [
-          'Cảm ơn bạn đã đăng ký gói WriteRight. Bạn chưa nộp bài nào, nên đây là cách bắt đầu nhanh nhất.',
+          'Cảm ơn bạn đã đăng ký gói WriteRight. Thời hạn của gói chỉ bắt đầu tính từ bài chấm đầu tiên của bạn (hoặc tự bắt đầu sau 14 ngày nếu bạn chưa chấm bài nào), nên bạn không mất ngày nào khi chưa sẵn sàng.',
+          'Khi đã sẵn sàng, đây là cách bắt đầu nhanh nhất.',
           'Chọn Task 1 hoặc Task 2, dán bài viết của bạn (bài nháp hay bài cũ đều được) rồi bấm chấm. WriteRight trả về band ước tính theo bốn tiêu chí, chỉ ra lỗi cần sửa trước và cho bạn viết lại để so sánh. Kết quả do AI chấm nên chỉ mang tính tham khảo.',
         ],
         cta: { label: 'Chấm bài đầu tiên', url: i.practiceUrl },
@@ -44,7 +45,7 @@ function body(i: NurtureEmailInput): Body {
       return {
         subject: 'Bạn chưa chấm bài nào — cần UNICOACH hỗ trợ không?',
         paras: [
-          'Gói của bạn vẫn đang chạy nhưng chưa có bài nào được chấm. Nếu bạn chưa biết bắt đầu từ đâu hoặc chưa rõ nên viết đề nào, mentor của UNICOACH có thể hướng dẫn bạn một buổi ngắn để dùng WriteRight đúng cách.',
+          'Bạn chưa chấm bài nào. Thời hạn gói sẽ tự bắt đầu tính khi đủ 14 ngày kể từ lúc thanh toán, kể cả khi bạn chưa chấm. Nếu bạn chưa biết bắt đầu từ đâu hoặc chưa rõ nên viết đề nào, mentor của UNICOACH có thể hướng dẫn bạn một buổi ngắn để dùng WriteRight đúng cách.',
           'Hoặc bạn có thể tự bắt đầu ngay bằng bất kỳ bài viết nào có sẵn.',
         ],
         cta: { label: 'Nhờ mentor hướng dẫn', url: i.ctaUrl },
