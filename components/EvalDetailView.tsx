@@ -1,4 +1,5 @@
 'use client';
+import CriterionEvidence from '@/components/CriterionEvidence';
 import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 
@@ -337,6 +338,7 @@ export default function EvalDetailView({ row }: { row: any }) {
                   ))}
                 </ul>
               )}
+              <CriterionEvidence evidence={d.evidence} descriptorMatch={d.descriptor_match} color={c.color} />
             </div>
           );
         })}
