@@ -3,3 +3,11 @@ node_modules
 .env
 .env.local
 tsconfig.tsbuildinfo
+
+# Test trình duyệt (e2e/) + Supabase cục bộ do CI sinh
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+supabase/config.toml
+supabase/.gitignore
+supabase/.temp/

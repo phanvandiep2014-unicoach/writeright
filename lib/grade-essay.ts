@@ -1,3 +1,4 @@
+import { ANTHROPIC_MESSAGES_URL } from '@/lib/anthropic-url';
 // Lõi chấm bài Writing dùng chung cho /api/evaluate (học viên đăng nhập, có ảnh)
 // và /api/external/mock-grade (LMS gọi từ máy chủ trong bài thi thử 4 kỹ năng).
 // Tách ra để hai đường KHÔNG bao giờ chấm bằng hai bộ tiêu chí khác nhau.
@@ -84,7 +85,7 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
   const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch(ANTHROPIC_MESSAGES_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: SYSTEM_PROMPT,

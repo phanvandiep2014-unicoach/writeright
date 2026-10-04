@@ -9,6 +9,7 @@ import { activationPatch } from '@/lib/activation';
 // viết nhận xét để hợp lý hoá. Mốc gốc trước khi đổi (04/10/2026, 255 bài): band tổng TB 5.74
 // — TA 5.61 · CC 5.88 · LR 5.67 · GRA 5.74. Bài chấm bằng prompt mới có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
+import { ANTHROPIC_MESSAGES_URL } from '@/lib/anthropic-url';
 const PROMPT_VERSION = 'a1';
 
 const FREE_EVALS_PER_WEEK = 1;
@@ -119,7 +120,7 @@ instruction += essayText
 : `Student Essay: written in the attached image(s). Transcribe it exactly into the "transcribed_essay" field, then evaluate it.`;
 userContent.push({ type: 'text', text: instruction });
 
-const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+const apiRes = await fetch(ANTHROPIC_MESSAGES_URL, {
 method: 'POST',
 headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
 body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:0.2, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),

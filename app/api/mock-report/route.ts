@@ -16,6 +16,7 @@ import { cookies } from 'next/headers';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { analyseTiming, weightedWritingBand, timingBrief, TaskTiming } from '@/lib/mock-timing';
 import { pushBandToLms } from '@/lib/unicoach';
+import { ANTHROPIC_MESSAGES_URL } from '@/lib/anthropic-url';
 
 // Lần gọi này ngắn, nhưng vẫn phải nới trần mặc định — nếu không Vercel cắt
 // hàm giữa chừng và học viên mất luôn báo cáo sau khi đã ngồi thi 60 phút.
@@ -198,7 +199,7 @@ export async function POST(req: NextRequest) {
 
       const ac = new AbortController();
       const kill = setTimeout(() => ac.abort(), AI_TIMEOUT_MS);
-      const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const apiRes = await fetch(ANTHROPIC_MESSAGES_URL, {
         method: 'POST',
         signal: ac.signal,
         headers: {

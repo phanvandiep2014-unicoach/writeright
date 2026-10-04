@@ -32,3 +32,55 @@ jobs:
       # typecheck + kiểm tra giờ thi thử, đề, bài luyện tập, cổng SSO từ LMS
       - run: npm run verify
       - run: npx next build
+
+  e2e:
+    # Test trình duyệt thật trên Supabase CỤC BỘ (Docker trong runner) nạp đúng cấu trúc production
+    # (supabase/schema-production.sql) + Anthropic giả. Không chạm tới project Supabase thật.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            e2e/package-lock.json
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Dựng Supabase cục bộ
+        run: |
+          supabase init --force
+          supabase start -x studio,imgproxy,inbucket,edge-runtime,logflare,vector,supavisor,realtime,storage-api,postgres-meta
+      - name: Nạp cấu trúc CSDL production
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 \
+            -f supabase/schema-production.sql -f sql/public-stats.sql
+      - name: Lấy khoá Supabase cục bộ
+        run: |
+          eval "$(supabase status -o env | sed 's/^/export /')"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+          } >> "$GITHUB_ENV"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+      - run: npm ci --no-audit --no-fund
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npx playwright test
+        working-directory: e2e
+        env:
+          CI: '1'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-writeright
+          path: e2e/playwright-report
+          retention-days: 7
