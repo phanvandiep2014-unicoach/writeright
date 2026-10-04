@@ -10,8 +10,9 @@
     "check:timing": "sucrase-node scripts/check-mock-timing.ts",
     "check:papers": "sucrase-node scripts/check-papers.ts",
     "check:practice": "sucrase-node scripts/check-practice.ts",
-    "verify": "npm run typecheck && npm run check:timing && npm run check:papers && npm run check:practice && npm run check:sso",
-    "check:sso": "sucrase-node scripts/check-sso.ts"
+    "verify": "npm run typecheck && npm run check:timing && npm run check:papers && npm run check:practice && npm run check:sso && npm run check:activation",
+    "check:sso": "sucrase-node scripts/check-sso.ts",
+    "check:activation": "sucrase-node scripts/check-activation.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",

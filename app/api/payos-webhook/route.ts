@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { verifyWebhookSignature } from '@/lib/payos';
+import { paymentPatch } from '@/lib/activation';
 
 /**
  * PayOS webhook receiver.
@@ -134,28 +135,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
-  const { data: current } = await admin
+  // ── 5. Nâng tier + đặt hạn. Hạn tính từ BÀI CHẤM ĐẦU TIÊN (lib/activation.ts):
+  //    mua mới → hạn tạm = hôm nay + 14 + N ngày, ghi tier_pending_days = N; bài chấm đầu
+  //    tiên trong /api/evaluate sẽ chốt lại hạn = lúc chấm + N. Gia hạn khi còn hạn thì
+  //    vẫn cộng dồn như cũ.
+  //    Cột tier_pending_days chỉ có sau khi chạy sql/khoa-cot-va-han-dung.sql — chưa có
+  //    thì quay về cách cũ (tính từ hôm nay). Cột tier_expires_at chưa có (chưa chạy
+  //    sql/annual-billing.sql) thì vẫn nâng tier: thà cấp quyền không hạn còn hơn để
+  //    khách trả tiền rồi mà không được gì.
+  const patch = { tier: order.tier, updated_at: now.toISOString() };
+  let expiresAt: string | null = null;
+  let updateProfileErr: { message: string } | null = null;
+
+  const { data: cur, error: curErr } = await admin
     .from('profiles')
-    .select('tier_expires_at')
+    .select('tier_expires_at, tier_pending_days')
     .eq('id', order.user_id)
     .maybeSingle();
 
-  const currentExpiry = (current as any)?.tier_expires_at
-    ? new Date((current as any).tier_expires_at)
-    : null;
-  const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
-  const expiresAt = new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
+  if (!curErr) {
+    const p = paymentPatch(cur as any, days, now.getTime());
+    expiresAt = p.tier_expires_at;
+    ({ error: updateProfileErr } = await admin.from('profiles').update({ ...patch, ...p }).eq('id', order.user_id));
+  }
 
-  // ── 5. Upgrade the user's profile tier.
-  //    `tier_expires_at` chỉ có sau khi chạy sql/annual-billing.sql. Nếu
-  //    chưa có cột, vẫn phải nâng tier — thà cấp quyền không hạn còn hơn
-  //    để khách trả tiền rồi mà không được gì.
-  const patch = { tier: order.tier, updated_at: now.toISOString() };
-
-  let { error: updateProfileErr } = await admin
-    .from('profiles')
-    .update({ ...patch, tier_expires_at: expiresAt.toISOString() })
-    .eq('id', order.user_id);
+  if (curErr || (updateProfileErr && /tier_pending_days|tier_activated_at/i.test(updateProfileErr.message))) {
+    console.warn('payos-webhook: chua co cot tier_pending_days — chay sql/khoa-cot-va-han-dung.sql. Tinh han tu hom nay.');
+    const { data: old } = await admin.from('profiles').select('tier_expires_at').eq('id', order.user_id).maybeSingle();
+    const oldExp = (old as any)?.tier_expires_at ? new Date((old as any).tier_expires_at) : null;
+    const base = oldExp && oldExp > now ? oldExp : now;
+    expiresAt = new Date(base.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+    ({ error: updateProfileErr } = await admin.from('profiles').update({ ...patch, tier_expires_at: expiresAt }).eq('id', order.user_id));
+  }
 
   if (updateProfileErr && /tier_expires_at/i.test(updateProfileErr.message)) {
     console.warn(
@@ -174,7 +185,7 @@ export async function POST(req: NextRequest) {
   }
 
   console.log(
-    `payos-webhook: ${order.user_id} -> ${order.tier} (+${days} ngay, het han ${expiresAt.toISOString()})`
+    `payos-webhook: ${order.user_id} -> ${order.tier} (+${days} ngay, het han tam ${expiresAt})`
   );
 
   return NextResponse.json({ success: true });

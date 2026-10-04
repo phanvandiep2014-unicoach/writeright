@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { pushResultToLms } from '@/lib/unicoach';
+import { createAdminSupabase } from '@/lib/supabase-admin';
+import { activationPatch } from '@/lib/activation';
 
 const SYSTEM_PROMPT = `You are a highly experienced IELTS examiner (20+ years) and an applied linguist. Evaluate the essay and respond ONLY with valid JSON (no markdown, no code blocks). Every field marked {en, vi} is an object with an English string ("en") and a Vietnamese string ("vi"). Use this structure:
 {
@@ -174,12 +176,32 @@ if (insertErr) console.error('Failed to log evaluation:', insertErr.message);
 // Mở theo KHOẢNG THỜI GIAN chứ không theo từng bài: nếu khoá lại ngay khi trừ
 // lượt thì học viên tải lại trang là mất luôn bài vừa chấm, đúng lúc họ đang
 // muốn đọc kỹ. Trừ lượt SAU khi chấm xong để lỗi API không ăn mất lượt của họ.
-if (usingFreeCredit) {
+//
+// Ghi bằng service role: sql/khoa-cot-va-han-dung.sql khoá quyền ghi của trình duyệt
+// vào mọi cột quyền lợi trên profiles (chỉ còn full_name, avatar_url, updated_at),
+// nên client theo phiên đăng nhập sẽ bị từ chối ở đây.
+let admin: ReturnType<typeof createAdminSupabase> | null = null;
+try { admin = createAdminSupabase(); } catch (e: any) { console.error('[evaluate] thiếu service role:', e?.message); }
+if (usingFreeCredit && admin) {
 const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-const { error: spendErr } = await supabase.from('profiles')
+const { error: spendErr } = await admin.from('profiles')
 .update({ free_full_credits: 0, free_full_until: until })
 .eq('id', user.id);
 if (spendErr) console.error('[evaluate] không trừ được lượt miễn phí:', spendErr.message);
+}
+
+// Hạn dùng gói trả phí tính từ BÀI CHẤM ĐẦU TIÊN (lib/activation.ts). Chỉ làm khi bài đã
+// được lưu — chấm hỏng thì không ăn mất ngày của khách. Cột chưa có (chưa chạy SQL) thì
+// select lỗi → bỏ qua, hạn giữ nguyên như cách cũ.
+if (admin && evalData?.id) {
+const { data: cur, error: curErr } = await admin.from('profiles')
+.select('tier_expires_at, tier_pending_days').eq('id', user.id).maybeSingle();
+const patch = !curErr ? activationPatch(cur as any, Date.now()) : null;
+if (patch) {
+const { error: actErr } = await admin.from('profiles').update(patch).eq('id', user.id).not('tier_pending_days', 'is', null);
+if (actErr) console.error('[evaluate] không kích hoạt được hạn dùng:', actErr.message);
+else console.log(`[evaluate] ${user.id} kích hoạt hạn dùng, hết hạn ${patch.tier_expires_at}`);
+}
 }
 
 // UNICOACH LMS: học viên vào qua SSO thì đẩy điểm về hồ sơ học tập bên LMS.
