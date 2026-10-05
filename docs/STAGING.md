@@ -11,7 +11,10 @@ Mục đích: thử thay đổi (code + migration SQL) trước khi lên product
 | Cấu trúc | đã nạp từ `supabase/schema-production.sql` (20 bảng, 210 cột, 39 policy, 78 ràng buộc — khớp production 05/10/2026). KHÔNG có dữ liệu thật |
 | Chưa nạp | `sql/public-stats.sql` (hàm `wr_public_stats`, chỉ phục vụ số liệu trang chủ). Cần thì chạy riêng trong SQL Editor của staging |
 
-## CẢNH BÁO — Preview đang trỏ vào CSDL production
+## CẢNH BÁO — Preview của các nhánh KHÁC `staging` vẫn trỏ vào CSDL production
+
+Đã xử lý riêng cho nhánh `staging` (06/10/2026: ghi đè Supabase URL/anon/service_role sang staging, vô hiệu hóa PAYOS_* và
+UNICOACH_*; SMTP_* vốn chỉ đặt cho Production). Nhánh khác/PR vẫn như mô tả dưới đây — đừng thử tính năng ghi dữ liệu ở đó.
 
 Trên Vercel, các biến `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
 `ANTHROPIC_API_KEY`, `PAYOS_*` đang đặt cho "Production and Preview". Mọi bản Preview (mọi nhánh, mọi PR) vì vậy
@@ -20,7 +23,7 @@ Trên Vercel, các biến `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON
 ## Việc cần làm một lần (cần chủ dự án — đây là khóa bí mật)
 
 1. Supabase (project staging) → Settings → API: chép `anon` key và `service_role` key.
-2. Vercel → writeright-w5r9 → Settings → Environment Variables. Thêm 3 biến, môi trường **Preview**, nhánh **staging**
+2. Vercel → dự án `writeright` (trước 05/10/2026 tên `writeright-w5r9`, cùng một dự án) → Settings → Environment Variables. Thêm 3 biến, môi trường **Preview**, nhánh **staging**
    (Vercel cho phép biến riêng theo nhánh, ghi đè biến "Preview" chung):
    - `NEXT_PUBLIC_SUPABASE_URL` = `https://pwvrtafdxqjiyqxsiaqa.supabase.co`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key của staging
