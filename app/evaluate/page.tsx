@@ -229,6 +229,9 @@ const [images, setImages] = useState<Img[]>([]);
 const [loading, setLoading] = useState(false);
 const [result, setResult] = useState<EvalResult | null>(null);
 const [error, setError] = useState('');
+// Số từ tại lần bấm chấm đã cảnh báo "thiếu từ". Bấm lại khi số từ không đổi = vẫn chấm.
+// (05/10/2026: một nửa bài Task 2 của khách bỏ đi dưới 250 từ, điểm tụt làm họ nản.)
+const [shortWarnAt, setShortWarnAt] = useState<number | null>(null);
 const [needsLogin, setNeedsLogin] = useState(false);
 const [expandedCriterion, setExpandedCriterion] = useState<string | null>(null);
 const [activeErr, setActiveErr] = useState<number | null>(null);
@@ -304,6 +307,8 @@ return () => document.removeEventListener('paste', onDocPaste);
 }, [result, loading, addImageFiles]);
 
 const wordCount = essay.trim() ? essay.trim().split(/\s+/).filter(Boolean).length : 0;
+const minWords = TASK_MIN_WORDS[taskKey(taskType)];
+const showShortWarn = shortWarnAt !== null && images.length === 0 && wordCount < minWords;
 
 const essayForReview = result ? (essay || result.transcribed_essay || '') : '';
 const { segments, foundIdx } = useMemo(
@@ -322,6 +327,8 @@ const removeImage = (i: number) => setImages(prev => prev.filter((_, j) => j !==
 const evaluate = async () => {
 if (!prompt.trim() && images.length === 0) { setError('Vui lòng nhập đề bài hoặc dán ảnh chụp đề (Ctrl+V)'); return; }
 if (!essay.trim() && images.length === 0) { setError('Vui lòng nhập bài luận hoặc dán/tải ảnh bài viết'); return; }
+if (images.length === 0 && wordCount < minWords && shortWarnAt !== wordCount) { setShortWarnAt(wordCount); return; }
+setShortWarnAt(null);
 setLoading(true); setError(''); setResult(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
 try {
 const res = await fetch('/api/evaluate', {
@@ -918,8 +925,16 @@ className="block border-2 border-dashed border-navy-600 rounded-xl p-5 text-cent
 
 {error && <div className="bg-red-900/20 border border-red-800 text-red-300 text-base px-4 py-3 rounded-xl mb-4">{error}</div>}
 
+{showShortWarn && (
+<div className="bg-amber-900/20 border border-amber-700 text-amber-200 text-base px-4 py-3 rounded-xl mb-4">
+Bài của bạn có <strong>{wordCount} từ</strong>, dưới mức tối thiểu <strong>{minWords} từ</strong> của Task {taskKey(taskType)}.
+{' '}Giám khảo trừ điểm Task {taskKey(taskType) === 1 ? 'Achievement' : 'Response'} khi bài thiếu từ, nên band sẽ thấp hơn sức thật của bạn.
+{' '}Hãy viết thêm cho đủ, hoặc bấm nút bên dưới lần nữa để chấm luôn.
+</div>
+)}
+
 <button onClick={evaluate} className="w-full btn-foil py-3.5 rounded-xl text-lg font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 mt-2">
-<span>✦</span> Chấm bài ngay
+<span>✦</span> {showShortWarn ? 'Vẫn chấm bài này' : 'Chấm bài ngay'}
 </button>
 </div>
 )}
