@@ -102,14 +102,49 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  console.log(`cron/sync-active-students: revoked=${revoked} kept=${kept} skippedNoCode=${skippedNoCode} dryRun=${dryRun}`);
+  // ── 3. CẤP quyền cho học viên đã được xếp lớp SAU lần đăng nhập SSO gần nhất.
+  // Lỗi thực tế 05/10/2026: học viên tự đăng ký Google (token lúc đó is_active_student=false),
+  // sau đó mới được xếp lớp → chỉ cấp ở /sso thì họ mãi ở gói free nếu không mở lại từ LMS.
+  // Khớp CHÍNH XÁC theo lms_student_code (không đoán); chỉ cấp cho tài khoản đang ở gói free
+  // hoặc đã hết hạn — không đè lên khách đang trả tiền còn hạn.
+  let granted = 0;
+  if (activeCodes.size > 0) {
+    const { data: cands, error: candErr } = await admin
+      .from('profiles')
+      .select('id, email, lms_student_code, tier, tier_expires_at, enrolled_override')
+      .in('lms_student_code', Array.from(activeCodes))
+      .or('enrolled_override.is.null,enrolled_override.eq.false');
+    if (candErr) {
+      console.error('[cron/sync-active-students] đọc ứng viên cấp quyền lỗi:', candErr.message);
+    } else {
+      const now = Date.now();
+      for (const p of cands ?? []) {
+        const paidActive = p.tier && p.tier !== 'free' && p.tier_expires_at && Date.parse(p.tier_expires_at) > now;
+        if (paidActive) continue;
+        chiTiet.push({ email: p.email, code: p.lms_student_code, action: dryRun ? 'would_grant' : 'grant' });
+        if (dryRun) continue;
+        const { error: gErr } = await admin
+          .from('profiles')
+          .update({
+            tier: 'standard', tier_expires_at: null,
+            speak_plan: 'speak', speak_expires_at: null,
+            enrolled_override: true,
+          })
+          .eq('id', p.id);
+        if (gErr) console.error('[cron/sync-active-students] cấp quyền lỗi:', p.email, gErr.message);
+        else granted++;
+      }
+    }
+  }
+
+  console.log(`cron/sync-active-students: granted=${granted} revoked=${revoked} kept=${kept} skippedNoCode=${skippedNoCode} dryRun=${dryRun}`);
 
   return NextResponse.json({
     ranAt: new Date().toISOString(),
     dryRun,
     activeCodesCount: activeCodes.size,
     overriddenCount: rows.length,
-    revoked, kept, skippedNoCode,
+    granted, revoked, kept, skippedNoCode,
     chiTiet,
   });
 }
