@@ -56,6 +56,7 @@ const NAV = [
   { href: '/admin/rooms', label: 'Phòng họp', icon: '🏢', roles: ['admin', 'teacher', 'assistant'] },
   { href: '/admin/notes', label: 'Biên bản', icon: '📝', roles: ['admin', 'teacher', 'assistant'] },
   { href: '/admin/mock-papers', label: 'Đề thi chung', icon: '✍️', roles: ['admin', 'teacher'] },
+  { href: '/admin/retention', label: 'Giữ chân khách', icon: '🔔', roles: ['admin'] },
 ];
 
 // ---------- Shell + role guard ----------

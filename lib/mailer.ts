@@ -46,9 +46,11 @@ export interface SendMailParams {
   html: string;
   text: string;
   headers?: Record<string, string>;
+  /** Địa chỉ nhận thư trả lời (khách bấm Reply). Bỏ trống = trả lời về MAIL_FROM. */
+  replyTo?: string;
 }
 
-export async function sendMail({ to, subject, html, text, headers }: SendMailParams) {
+export async function sendMail({ to, subject, html, text, headers, replyTo }: SendMailParams) {
   const from = process.env.MAIL_FROM || `UNICOACH <${env('SMTP_USER')}>`;
-  return getTransport().sendMail({ from, to, subject, html, text, headers });
+  return getTransport().sendMail({ from, to, subject, html, text, headers, ...(replyTo ? { replyTo } : {}) });
 }
