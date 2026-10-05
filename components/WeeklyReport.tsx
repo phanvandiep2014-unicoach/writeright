@@ -1,6 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { criterionAverages, ictDay, recommendToday } from '@/lib/practice-insights';
+import { currentBand, planFor } from '@/lib/goal';
+import { weekPlan, DEFAULT_ESSAYS, DEFAULT_DRILL_DAYS, type WeekPlan } from '@/lib/weekly-plan';
 
 /**
  * <WeeklyReport> — Học bạ tuần.
@@ -34,6 +38,7 @@ export function WeeklyReport() {
     weekLabel: string; count: number; lastCount: number;
     band: number | null; lastBand: number | null;
     weak: { label: string; band: number; focus: string } | null;
+    plan: WeekPlan;
   }>(null);
 
   useEffect(() => {
@@ -41,10 +46,17 @@ export function WeeklyReport() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from('evaluations')
-        .select('overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(80);
-      const rows = (data || []) as Row[];
+      const [evRes, goalRes, exRes] = await Promise.all([
+        supabase.from('evaluations')
+          .select('overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
+          .eq('user_id', user.id).order('created_at', { ascending: false }).limit(80),
+        supabase.from('user_goals').select('target_band, exam_date')
+          .eq('user_id', user.id).maybeSingle(),
+        // Bảng có thể chưa tồn tại (chưa chạy sql/practice.sql) → coi như chưa làm bài tập nào.
+        supabase.from('exercise_results').select('created_at')
+          .order('created_at', { ascending: false }).limit(300),
+      ]);
+      const rows = (evRes.data || []) as Row[];
       const now = new Date();
       const thisMon = mondayOf(now);
       const lastMon = new Date(thisMon); lastMon.setUTCDate(lastMon.getUTCDate() - 7);
@@ -66,7 +78,26 @@ export function WeeklyReport() {
         const w = crits[0];
         if (w && w.v < 9) weak = { label: CRIT_META[w.k].label, band: w.v, focus: CRIT_META[w.k].focus };
       }
+      // Kế hoạch tuần: chỉ tiêu theo mục tiêu (nếu có) + một bước tiếp theo cho hôm nay.
+      const today = ictDay(now.getTime());
+      const monStr = thisMon.toISOString().slice(0, 10);
+      const thisWeekDays = (ts: string[]) => ts.map((t) => ictDay(Date.parse(t))).filter((d) => d >= monStr && d <= today);
+      const avgs = criterionAverages(rows, 5);
+      const g = goalRes.error || !goalRes.data ? null
+        : { target_band: Number(goalRes.data.target_band), exam_date: goalRes.data.exam_date ?? null };
+      const gp = g ? planFor(g, currentBand(rows), today, avgs) : null;
+      const rec = recommendToday(rows, today);
+      const plan = weekPlan({
+        today,
+        essayDays: thisWeekDays(rows.map((r) => r.created_at)),
+        drillDays: exRes.error ? [] : thisWeekDays((exRes.data || []).map((r: any) => r.created_at)),
+        essaysTarget: gp && gp.pace !== 'reached' ? gp.essaysPerWeek : DEFAULT_ESSAYS,
+        drillTarget: gp ? gp.drillDaysPerWeek : DEFAULT_DRILL_DAYS,
+        focus: gp?.focus ?? (rec.basis === 'bands' ? rec.criterion : null),
+        todayKind: rec.kind,
+      });
       setState({
+        plan,
         weekLabel: `${fmt(thisMon)} – ${fmt(sunEnd)}`,
         count: cur.length, lastCount: prev.length,
         band: avg(cur.map((r) => Number(r.overall_band))),
@@ -126,6 +157,48 @@ export function WeeklyReport() {
           )}
         </>
       )}
+      <PlanBlock plan={state.plan} />
+    </div>
+  );
+}
+
+/** Chỉ tiêu tuần (bài viết · ngày luyện kỹ năng) + nút "Bước tiếp theo". */
+function PlanBlock({ plan }: { plan: WeekPlan }) {
+  const pill = (done: number, target: number, text: string) => {
+    const ok = done >= target;
+    return (
+      <span style={{
+        fontFamily: 'var(--font-body)', fontSize: 13.5, padding: '4px 11px', borderRadius: 99,
+        background: ok ? 'rgba(18,63,51,.12)' : 'rgba(138,106,40,.1)',
+        border: `1px solid ${ok ? 'rgba(18,63,51,.35)' : 'rgba(138,106,40,.3)'}`,
+        color: ok ? '#123F33' : '#5a4a3a', whiteSpace: 'nowrap',
+      }}>{ok ? '✓ ' : ''}{Math.min(done, target)}/{target} {text}</span>
+    );
+  };
+  const n = plan.next;
+  return (
+    <div style={{ borderTop: '1px solid rgba(138,106,40,.2)', marginTop: 14, paddingTop: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9c8657', marginRight: 4 }}>Chỉ tiêu tuần</span>
+        {pill(plan.essaysDone, plan.essaysTarget, 'bài viết')}
+        {pill(plan.drillDaysDone, plan.drillTarget, 'ngày luyện kỹ năng')}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, color: '#5a4a3a', margin: 0, lineHeight: 1.55, flex: '1 1 260px' }}>
+          <strong style={{ color: '#241B10' }}>Bước tiếp theo:</strong> {n.why}
+        </p>
+        {n.href ? (
+          <Link href={n.href} style={{
+            fontFamily: 'var(--font-body)', fontSize: 14.5, fontWeight: 600, padding: '9px 18px',
+            borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap',
+            background: n.kind === 'done' ? 'transparent' : '#11183A',
+            color: n.kind === 'done' ? '#5a4a3a' : '#E7CE8E',
+            border: n.kind === 'done' ? '1px solid rgba(138,106,40,.4)' : '1px solid #11183A',
+          }}>{n.label} →</Link>
+        ) : (
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 14.5, fontWeight: 600, color: '#123F33' }}>✓ {n.label}</span>
+        )}
+      </div>
     </div>
   );
 }
