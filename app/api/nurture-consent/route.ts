@@ -30,10 +30,14 @@ async function currentUser() {
 
 export async function GET() {
   const user = await currentUser();
-  if (!user) return NextResponse.json({ needed: false });
+  if (!user) return NextResponse.json({ needed: false, sampleNeeded: false });
   const { data } = await createAdminSupabase().from('email_prefs')
-    .select('nurture_consent_at, nurture_optout_at').eq('user_id', user.id).maybeSingle();
-  return NextResponse.json({ needed: !(data?.nurture_consent_at || data?.nurture_optout_at) });
+    .select('nurture_consent_at, nurture_optout_at, sample_consent_at').eq('user_id', user.id).maybeSingle();
+  return NextResponse.json({
+    needed: !(data?.nurture_consent_at || data?.nurture_optout_at),
+    // Đồng ý dùng bài ẩn danh làm bài mẫu công khai: hỏi riêng, một lần, không tick sẵn.
+    sampleNeeded: !data?.sample_consent_at,
+  });
 }
 
 export async function POST(req: Request) {
@@ -43,16 +47,29 @@ export async function POST(req: Request) {
   try { body = await req.json(); } catch {}
   const now = new Date().toISOString();
 
-  const { error } = await createAdminSupabase().from('email_prefs').upsert({
-    user_id: user.id, nurture_consent_at: now, nurture_consent_source: 'writeright_result',
-    nurture_optout_at: null, updated_at: now,
-  });
+  // Hai đồng ý độc lập. Client cũ không gửi cờ nào → hiểu là đồng ý nhận email như trước.
+  const legacy = body.nurture === undefined && body.sample === undefined;
+  const wantNurture = legacy || body.nurture === true;
+  const wantSample = body.sample === true;
+  if (!wantNurture && !wantSample) return NextResponse.json({ error: 'nothing_to_save' }, { status: 400 });
+
+  const row: Record<string, unknown> = { user_id: user.id, updated_at: now };
+  if (wantNurture) {
+    row.nurture_consent_at = now;
+    row.nurture_consent_source = 'writeright_result';
+    row.nurture_optout_at = null;
+  }
+  if (wantSample) {
+    row.sample_consent_at = now;
+    row.sample_consent_source = 'writeright_result';
+  }
+  const { error } = await createAdminSupabase().from('email_prefs').upsert(row);
   if (error) return NextResponse.json({ error: 'save_failed' }, { status: 500 });
 
-  // Đẩy lead về LMS — không làm hỏng việc lưu đồng ý nếu LMS lỗi/chưa cấu hình.
+  // Đẩy lead về LMS (chỉ khi đồng ý nhận email) — không làm hỏng việc lưu nếu LMS lỗi/chưa cấu hình.
   let lms: 'sent' | 'skipped' | 'failed' = 'skipped';
   const key = process.env.LMS_LEADS_API_KEY;
-  if (key) {
+  if (key && wantNurture) {
     const base = (process.env.LMS_BASE_URL || 'https://lms.unicoach.vn').replace(/\/$/, '');
     const band = Number(body.band);
     const utm = body.utm && typeof body.utm === 'object' ? body.utm : {};
