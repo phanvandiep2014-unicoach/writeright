@@ -70,6 +70,8 @@ export function ProgressDelta({
   current: CurrentBands;
 }) {
   const [prev, setPrev] = useState<Row | null>(null);
+  // Các bài cùng dạng trước bài này, CŨ → MỚI (tối đa 5) — để vẽ xu hướng thay vì chỉ so hai bài.
+  const [hist, setHist] = useState<number[]>([]);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ export function ProgressDelta({
           .eq('user_id', user.id)
           .eq('task_type', taskType)
           .order('created_at', { ascending: false })
-          .limit(3);
+          .limit(8);
 
         const rows = (data || []) as Row[];
 
@@ -102,7 +104,12 @@ export function ProgressDelta({
           r.gra_band === current.gra_band;
 
         const found = rows.find(r => !isCurrent(r) && r.overall_band != null) || null;
-        if (!cancelled) { setPrev(found); setReady(true); }
+        const older = rows
+          .filter(r => !isCurrent(r) && r.overall_band != null)
+          .slice(0, 5)
+          .map(r => r.overall_band as number)
+          .reverse();
+        if (!cancelled) { setPrev(found); setHist(older); setReady(true); }
       } catch {
         if (!cancelled) setReady(true);
       }
@@ -156,6 +163,46 @@ export function ProgressDelta({
               : 'Band tổng giữ nguyên. Nhìn từng tiêu chí để thấy chỗ đã dịch chuyển.'}
         </span>
       </div>
+
+      {/* Xu hướng qua các bài gần nhất — điểm dao động ±0.5 giữa hai bài là bình thường,
+          nên đặt bài này vào chuỗi để học viên không hiểu nhầm một lần tụt là "mình kém đi". */}
+      {hist.length >= 2 && (() => {
+        const seq = [...hist, current.overall_band];
+        const best = Math.max(...seq);
+        const avg = (a: number[]) => a.reduce((s, x) => s + x, 0) / a.length;
+        const recent = avg(seq.slice(-3));
+        const before = seq.length >= 5 ? avg(seq.slice(-6, -3)) : null;
+        const trendMsg = before == null
+          ? null
+          : recent - before > 0.05
+            ? `Trung bình 3 bài gần nhất cao hơn ${(recent - before).toFixed(1)} band so với 3 bài trước đó.`
+            : recent - before < -0.05
+              ? `Trung bình 3 bài gần nhất thấp hơn ${(before - recent).toFixed(1)} band so với 3 bài trước đó — xem tiêu chí nào đang kéo xuống.`
+              : 'Trung bình 3 bài gần nhất đang ổn định so với 3 bài trước đó.';
+        return (
+          <div className="mb-5 pb-5 border-b border-navy-700/50">
+            <div className="text-sm font-mono text-navy-500 uppercase tracking-wider mb-2">
+              {seq.length} bài gần nhất cùng dạng
+            </div>
+            <div className="flex items-center gap-2 flex-wrap font-mono tabular-nums">
+              {seq.map((b, i) => (
+                <span key={i} className="flex items-center gap-2">
+                  {i > 0 && <span className="text-navy-600">→</span>}
+                  <span
+                    className={i === seq.length - 1 ? 'text-xl font-bold text-brand-400' : 'text-base text-navy-300'}
+                  >
+                    {b}
+                  </span>
+                </span>
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-navy-400 leading-relaxed">
+              Band cao nhất của bạn: <span className="text-white font-semibold">{best}</span>.{' '}
+              {trendMsg ?? 'Band có thể lên xuống nửa band giữa các bài — hãy nhìn xu hướng qua 3–5 bài, không chỉ hai bài liền nhau.'}
+            </p>
+          </div>
+        );
+      })()}
 
       {/* Bốn tiêu chí */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-navy-700/50">
