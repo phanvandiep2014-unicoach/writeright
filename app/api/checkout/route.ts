@@ -65,6 +65,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Gói không hợp lệ.' }, { status: 400 });
   }
 
+  // ── 2b. Chống tạo đơn trùng. Quan sát 03/09/2026: 10 đơn 90.000đ trong 75 giây của MỘT khách
+  //    (bấm đúp / bấm Back từ PayOS về /pricing?plan=… làm trang tự mở thanh toán lần nữa).
+  //    Còn đơn đang chờ cùng người + cùng số tiền + cùng gói, tạo trong 10 phút gần nhất và đã có
+  //    link PayOS → trả lại đúng link đó, không tạo đơn mới.
+  {
+    const adminEarly = createAdminSupabase();
+    const since = new Date(Date.now() - 10 * 60_000).toISOString();
+    const { data: recent } = await adminEarly
+      .from('orders')
+      .select('payos_payment_link_id')
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .eq('amount', plan.amount)
+      .eq('tier', plan.tier)
+      .not('payos_payment_link_id', 'is', null)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const reuseId = recent?.[0]?.payos_payment_link_id;
+    if (reuseId) {
+      return NextResponse.json({ checkoutUrl: `https://pay.payos.vn/web/${reuseId}`, reused: true });
+    }
+  }
+
   // ── 3. Create the order row first (service role — bypasses RLS insert
   //    restriction, which is intentional: only server code may create
   //    orders).

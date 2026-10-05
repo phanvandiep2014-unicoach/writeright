@@ -11,12 +11,17 @@ import { PricingRoyal } from '@/components/PricingRoyal';
 export default function PricingPage() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const inFlight = useRef(false);
 
   const handleChoose = async (tierId: string) => {
     if (tierId === 'free') {
       window.location.href = '/evaluate';
       return;
     }
+
+    // Chặn bấm đúp / gọi lại khi một yêu cầu đang chạy (state cập nhật chậm nên dùng ref).
+    if (inFlight.current) return;
+    inFlight.current = true;
 
     setErrorMsg(null);
     setLoadingTier(tierId);
@@ -38,6 +43,7 @@ export default function PricingPage() {
         }
         setErrorMsg(body.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
         setLoadingTier(null);
+        inFlight.current = false;
         return;
       }
 
@@ -46,6 +52,7 @@ export default function PricingPage() {
     } catch {
       setErrorMsg('Không thể kết nối tới máy chủ. Vui lòng thử lại.');
       setLoadingTier(null);
+      inFlight.current = false;
     }
   };
 
