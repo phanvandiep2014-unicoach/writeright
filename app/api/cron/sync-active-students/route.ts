@@ -137,7 +137,54 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  console.log(`cron/sync-active-students: granted=${granted} revoked=${revoked} kept=${kept} skippedNoCode=${skippedNoCode} dryRun=${dryRun}`);
+  // ── 3b. Tài khoản CHƯA có mã học viên (tự đăng ký Google trên WriteRight, chưa từng đi qua SSO):
+  // hỏi LMS theo email (POST /api/v1/lookup-user — API có sẵn, chỉ trả mã). Có mã và mã đó
+  // đang xếp lớp → ghi mã + cấp Standard. Giới hạn 100 tài khoản/lần để không vượt maxDuration.
+  let linkedByEmail = 0;
+  if (activeCodes.size > 0) {
+    const { data: noCode } = await admin
+      .from('profiles')
+      .select('id, email, tier, tier_expires_at, role')
+      .is('lms_student_code', null)
+      .not('email', 'is', null)
+      .or('enrolled_override.is.null,enrolled_override.eq.false')
+      .limit(100);
+    const now2 = Date.now();
+    for (const p of noCode ?? []) {
+      if (p.role === 'admin' || p.role === 'teacher') continue;
+      const paidActive = p.tier && p.tier !== 'free' && p.tier_expires_at && Date.parse(p.tier_expires_at) > now2;
+      if (paidActive) continue;
+      let code: string | null = null;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+        const r = await fetch(`${base}/api/v1/lookup-user`, {
+          method: 'POST',
+          headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: String(p.email).trim().toLowerCase() }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        if (r.ok) code = ((await r.json()) as { student_code?: string | null }).student_code?.trim() || null;
+      } catch { /* lỗi mạng một người → bỏ qua, lần sau thử lại */ }
+      if (!code || !activeCodes.has(code)) continue;
+      chiTiet.push({ email: p.email, code, action: dryRun ? 'would_link_and_grant' : 'link_and_grant' });
+      if (dryRun) continue;
+      const { error: lErr } = await admin
+        .from('profiles')
+        .update({
+          lms_student_code: code,
+          tier: 'standard', tier_expires_at: null,
+          speak_plan: 'speak', speak_expires_at: null,
+          enrolled_override: true,
+        })
+        .eq('id', p.id);
+      if (lErr) console.error('[cron/sync-active-students] liên kết theo email lỗi:', p.email, lErr.message);
+      else { linkedByEmail++; granted++; }
+    }
+  }
+
+  console.log(`cron/sync-active-students: linkedByEmail=${linkedByEmail} granted=${granted} revoked=${revoked} kept=${kept} skippedNoCode=${skippedNoCode} dryRun=${dryRun}`);
 
   return NextResponse.json({
     ranAt: new Date().toISOString(),
