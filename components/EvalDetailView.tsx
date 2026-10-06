@@ -2,6 +2,7 @@
 import CriterionEvidence from '@/components/CriterionEvidence';
 import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import BandDisclaimer from './BandDisclaimer';
 
 // Interactive evaluation detail view — shared by /e/[token]
 // Mirrors the /evaluate results UI: highlighted essay, radar chart, category bars, model rewrite
@@ -227,6 +228,7 @@ export default function EvalDetailView({ row }: { row: any }) {
             </div>
           ))}
         </div>
+        <BandDisclaimer />
       </div>
 
       {/* ── Task prompt ── */}

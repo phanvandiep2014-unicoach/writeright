@@ -12,6 +12,7 @@ import { findPracticeItem, PracticeItem } from '@/lib/practice';
 import { revisionProgress } from '@/lib/revision';
 import { PracticeTimer } from '@/components/PracticeTimer';
 import { TASK_MIN_WORDS, taskKey } from '@/lib/practice-timer';
+import BandDisclaimer from '@/components/BandDisclaimer';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -483,6 +484,7 @@ return d ? (
 ) : null;
 })}
 </div>
+<BandDisclaimer />
 </div>
 
 {/* ── So với lần trước — không gọi thêm AI, chỉ đối chiếu dữ liệu đã có ── */}
