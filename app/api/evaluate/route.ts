@@ -9,7 +9,7 @@ import { activationPatch } from '@/lib/activation';
 // viết nhận xét để hợp lý hoá. Mốc gốc trước khi đổi (04/10/2026, 255 bài): band tổng TB 5.74
 // — TA 5.61 · CC 5.88 · LR 5.67 · GRA 5.74. Bài chấm bằng prompt mới có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
-const PROMPT_VERSION = 'a1';
+const PROMPT_VERSION = 'a2';
 
 const FREE_EVALS_PER_WEEK = 1;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
