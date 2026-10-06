@@ -95,8 +95,11 @@ export async function GET(req: NextRequest) {
   }
   const optout = new Set((prefs.data ?? []).filter((p) => p.nurture_optout_at).map((p) => p.user_id));
 
-  let daGui = 0, boQua = 0, loi = 0, khongGui = 0;
+  let daGui = 0, boQua = 0, loi = 0, khongGui = 0, conLai = 0;
   const chiTiet: Record<string, unknown>[] = [];
+  // Mỗi thư mất ~10-12 giây qua SMTP, hàm bị cắt ở maxDuration=60s. Ngừng BẮT ĐẦU thư mới sau 38s để không bị cắt
+  // giữa chừng (đã ghi email_log mà chưa gửi); người còn lại sẽ được cron ngày hôm sau gửi tiếp.
+  const t0 = Date.now();
 
   for (const p of profs ?? []) {
     const s = stats.get(p.id) ?? { n: 0, first: null, last: null };
@@ -115,6 +118,8 @@ export async function GET(req: NextRequest) {
     const input = build(pick.kind, p.id, p.full_name, p.tier_expires_at!, progressLine(s.n, s.first, s.last));
     if (dryRun) { chiTiet.push({ to: p.email, kind: pick.kind, subject: winbackSubject(input), progress: input.progress, dryRun: true }); continue; }
 
+    if (Date.now() - t0 > 38_000) { conLai++; continue; }
+
     const { error: logErr } = await admin.from('email_log').insert({
       user_id: p.id, kind: pick.kind, expires_on: pick.expiresOn, email_to: p.email,
     });
@@ -132,6 +137,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  console.log(`cron/winback: dryRun=${dryRun} ungVien=${ids.length} gui=${daGui} bo_qua=${boQua} khong_gui=${khongGui} loi=${loi}`);
-  return NextResponse.json({ ranAt: new Date().toISOString(), dryRun, enabled, ungVien: ids.length, daGui, boQua, khongGui, loi, chiTiet });
+  console.log(`cron/winback: dryRun=${dryRun} ungVien=${ids.length} gui=${daGui} bo_qua=${boQua} khong_gui=${khongGui} loi=${loi} con_lai=${conLai}`);
+  return NextResponse.json({ ranAt: new Date().toISOString(), dryRun, enabled, ungVien: ids.length, daGui, boQua, khongGui, loi, conLai, chiTiet });
 }
