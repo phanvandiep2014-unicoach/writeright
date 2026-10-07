@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           Chính sách bảo mật
         </h1>
         <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: '#9c8657', marginBottom: 40 }}>
-          Cập nhật lần cuối: 30/06/2026
+          Cập nhật lần cuối: 08/10/2026
         </p>
 
         <div style={{ fontFamily: 'var(--font-body)', fontSize: 16, color: '#cdbb8e', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -79,11 +79,19 @@ export default function PrivacyPage() {
 
           <section>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>6. Cookie</h2>
-            <p>Chúng tôi sử dụng cookie phiên làm việc (session cookie) cần thiết cho đăng nhập và xác thực. Chúng tôi không sử dụng cookie theo dõi hay quảng cáo.</p>
+            <p>Chúng tôi sử dụng cookie phiên làm việc (session cookie) cần thiết cho đăng nhập và xác thực, và một cookie đo lường nguồn truy cập (<code>wr_ft</code>, 30 ngày) được mô tả ở mục 7. Chúng tôi không sử dụng cookie quảng cáo hay công cụ theo dõi của bên thứ ba.</p>
           </section>
 
           <section>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>7. Liên hệ</h2>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>7. Đo lường truy cập và nguồn giới thiệu</h2>
+            <p style={{ marginBottom: 10 }}>Để biết người học biết đến WriteRight qua kênh nào và cải thiện trải nghiệm, chúng tôi ghi nhận các sự kiện truy cập cơ bản: trang bạn xem (trang chủ, chấm bài, đăng nhập, bảng giá, thi thử), việc bạn bấm nộp bài và việc bạn đăng ký tài khoản.</p>
+            <p style={{ marginBottom: 10 }}>Khi bạn đến từ một đường link có thẻ UTM hoặc mã giới thiệu, chúng tôi lưu thông tin nguồn đó cùng một mã ngẫu nhiên trong bộ nhớ trình duyệt và cookie trong 30 ngày. Khi bạn đăng ký tài khoản, nguồn truy cập này được gắn với tài khoản của bạn để chúng tôi biết lượt đăng ký đến từ kênh nào (và, khi chương trình giới thiệu được triển khai, để ghi nhận đúng người giới thiệu).</p>
+            <p style={{ marginBottom: 10 }}>Chúng tôi không lưu địa chỉ IP, họ tên hay nội dung bài viết của bạn trong dữ liệu đo lường này, không dùng công cụ phân tích của bên thứ ba cho mục đích này và không bán dữ liệu này.</p>
+            <p>Bạn có thể xóa cookie và dữ liệu trang trong trình duyệt bất kỳ lúc nào. Để hỏi hoặc yêu cầu xóa dữ liệu gắn với tài khoản của mình, hãy liên hệ <a href="mailto:cs@unicoach.vn" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>cs@unicoach.vn</a>.</p>
+          </section>
+
+          <section>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>8. Liên hệ</h2>
             <p>Mọi câu hỏi về chính sách bảo mật, vui lòng liên hệ:<br />
               <a href="mailto:phanvandiep2014@gmail.com" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>phanvandiep2014@gmail.com</a>
             </p>
