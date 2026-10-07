@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Cinzel, Prata } from 'next/font/google';
 import './globals.css';
 import './writeright-theme.css';
+import FunnelTracker from '@/components/FunnelTracker';
 
 /* ============================================================
    Brand fonts â loaded via next/font so the @font-face rules
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased">
         {children}
+        <FunnelTracker />
       </body>
     </html>
   );

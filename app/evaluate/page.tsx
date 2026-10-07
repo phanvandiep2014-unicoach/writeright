@@ -13,6 +13,7 @@ import { revisionProgress } from '@/lib/revision';
 import { PracticeTimer } from '@/components/PracticeTimer';
 import { TASK_MIN_WORDS, taskKey } from '@/lib/practice-timer';
 import BandDisclaimer from '@/components/BandDisclaimer';
+import { track } from '@/lib/track-client';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -331,6 +332,7 @@ if (!essay.trim() && images.length === 0) { setError('Vui lòng nhập bài lu�
 if (images.length === 0 && wordCount < minWords && shortWarnAt !== wordCount) { setShortWarnAt(wordCount); return; }
 setShortWarnAt(null);
 setLoading(true); setError(''); setResult(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
+track('evaluate_submit', '/evaluate');
 try {
 const res = await fetch('/api/evaluate', {
 method: 'POST',
@@ -343,9 +345,10 @@ images: images.length ? images.map(im => ({ data: im.data, media_type: im.type }
 });
 const data = await res.json();
 if (!res.ok) {
-if (data.code === 'AUTH_REQUIRED') { setNeedsLogin(true); return; }
+if (data.code === 'AUTH_REQUIRED') { track('auth_required', '/evaluate'); setNeedsLogin(true); return; }
 throw new Error(data.error);
 }
+track('evaluate_done', '/evaluate');
 setResult(data);
 try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
 window.scrollTo({ top: 0, behavior: 'smooth' });

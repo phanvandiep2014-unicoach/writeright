@@ -65,6 +65,22 @@ export async function GET(request: Request) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Đo đầu phễu: tài khoản vừa được tạo trong 2 phút qua = lượt đăng ký mới. Lỗi nào cũng bị nuốt.
+  try {
+    const u = data.session.user;
+    if (u?.created_at && Date.now() - Date.parse(u.created_at) < 120_000) {
+      let ft: any = {};
+      try { ft = JSON.parse(decodeURIComponent(cookieStore.get('wr_ft')?.value || '{}')); } catch { /* cookie hỏng */ }
+      const cut = (v: unknown, n: number) => (typeof v === 'string' && v ? v.slice(0, n) : null);
+      const { createAdminSupabase } = await import('@/lib/supabase-admin');
+      await createAdminSupabase().from('funnel_events').insert({
+        anon_id: cut(ft.a, 64), user_id: u.id, event: 'signup', path: '/auth/callback',
+        utm_source: cut(ft.s, 60), utm_medium: cut(ft.m, 60), utm_campaign: cut(ft.c, 80),
+        utm_content: cut(ft.t, 80), ref_host: cut(ft.r, 80),
+      });
+    }
+  } catch (e) { console.error('[auth/callback] funnel signup bỏ qua:', (e as Error)?.message); }
+
   // Quay lại nơi khách đang đứng trước khi đăng nhập (cookie do /login đặt).
   const rawNext = cookieStore.get('wr_next')?.value;
   let dest = '/evaluate';
