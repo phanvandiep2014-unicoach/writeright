@@ -74,7 +74,7 @@ export default function PrivacyPage() {
               <li>Xuất lịch sử chấm bài của bạn (tính năng đang phát triển).</li>
               <li>Rút lại sự đồng ý bằng cách xóa tài khoản.</li>
             </ul>
-            <p style={{ marginTop: 12 }}>Để thực hiện các quyền trên, liên hệ: <a href="mailto:phanvandiep2014@gmail.com" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>phanvandiep2014@gmail.com</a></p>
+            <p style={{ marginTop: 12 }}>Để thực hiện các quyền trên, liên hệ: <a href="mailto:cs@unicoach.vn" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>cs@unicoach.vn</a></p>
           </section>
 
           <section>
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>8. Liên hệ</h2>
             <p>Mọi câu hỏi về chính sách bảo mật, vui lòng liên hệ:<br />
-              <a href="mailto:phanvandiep2014@gmail.com" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>phanvandiep2014@gmail.com</a>
+              <a href="mailto:cs@unicoach.vn" style={{ color: 'var(--imperial-gold)', textDecoration: 'none' }}>cs@unicoach.vn</a>
             </p>
           </section>
         </div>
