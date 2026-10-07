@@ -32,7 +32,7 @@ export default function TermsPage() {
 
           <section>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>1. Chấp nhận điều khoản</h2>
-            <p>Bằng cách truy cập và sử dụng WriteRight (writeright-w5r9.vercel.app), bạn đồng ý tuân thủ các Điều khoản Dịch vụ này. Nếu không đồng ý, vui lòng không sử dụng dịch vụ.</p>
+            <p>Bằng cách truy cập và sử dụng WriteRight (writeright.unicoach.vn), bạn đồng ý tuân thủ các Điều khoản Dịch vụ này. Nếu không đồng ý, vui lòng không sử dụng dịch vụ.</p>
           </section>
 
           <section>

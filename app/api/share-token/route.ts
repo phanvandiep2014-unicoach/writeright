@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     const { data: existing } = await supabase
       .from('shares').select('id').eq('evaluation_id', evaluationId).maybeSingle();
     if (existing?.id) {
-      const origin = req.headers.get('origin') || 'https://writeright-w5r9.vercel.app';
+      const origin = req.headers.get('origin') || 'https://writeright.unicoach.vn';
       return NextResponse.json({
         token: existing.id,
         url: `${origin}/e/${existing.id}`,
@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insErr?.message || 'Insert failed' }, { status: 500 });
     }
 
-    const origin = req.headers.get('origin') || 'https://writeright-w5r9.vercel.app';
+    const origin = req.headers.get('origin') || 'https://writeright.unicoach.vn';
     return NextResponse.json({
       token: created.id,
       url: `${origin}/e/${created.id}`,

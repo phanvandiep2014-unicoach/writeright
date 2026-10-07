@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { type Transporter as NodemailerTransporter } from 'nodemailer';
 
 /**
  * SMTP mailer — gửi qua hộp thư tên miền sẵn có (maychuemail).
@@ -15,7 +15,8 @@ import nodemailer from 'nodemailer';
  * p=reject nên thư sẽ bị chặn thẳng chứ không vào spam.
  */
 
-type Transporter = ReturnType<typeof nodemailer.createTransport>;
+// Transporter chung (cả kiểu thường lẫn pool) — tránh lệch kiểu SentMessageInfo.
+type Transporter = NodemailerTransporter<any>;
 let cached: Transporter | null = null;
 
 function env(name: string): string {
@@ -34,6 +35,11 @@ export function getTransport(): Transporter {
     port,
     // 465 = TLS ngầm định; 587 = kết nối thường rồi nâng cấp STARTTLS.
     secure: port === 465,
+    // Giữ một kết nối SMTP dùng lại cho cả loạt thư (cron gửi nhiều thư liền),
+    // tránh bắt tay TLS + đăng nhập lại ở mỗi thư.
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 50,
     auth: { user: env('SMTP_USER'), pass: env('SMTP_PASS') },
   });
 

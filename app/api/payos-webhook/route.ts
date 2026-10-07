@@ -10,7 +10,7 @@ import { paymentPatch } from '@/lib/activation';
  * `signature` is HMAC-SHA256 over the sorted key=value pairs of `data`.
  *
  * Register this URL in PayOS dashboard → Kênh thanh toán → Webhook URL:
- *   https://writeright-w5r9.vercel.app/api/payos-webhook
+ *   https://writeright.unicoach.vn/api/payos-webhook
  *
  * IMPORTANT: this route has no user session — it must use the admin
  * (service role) Supabase client to write to `orders` / `profiles`.
