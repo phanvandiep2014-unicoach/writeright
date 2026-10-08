@@ -343,8 +343,16 @@ essayText: essay.trim() ? essay : null,
 images: images.length ? images.map(im => ({ data: im.data, media_type: im.type })) : null,
 }),
 });
-const data = await res.json();
-if (!res.ok) {
+const rawBody = await res.text();
+let data: any;
+try { data = JSON.parse(rawBody); }
+catch {
+// Vercel trả trang lỗi dạng chữ (quá thời gian / quá dung lượng) thay vì JSON
+throw new Error(res.status === 413
+? 'Ảnh đính kèm quá nặng. Hãy dùng ít ảnh hơn hoặc chụp/cắt nhỏ lại rồi chấm lại.'
+: 'Máy chủ chấm bài phản hồi quá lâu hoặc bị gián đoạn (bài có ảnh cần nhiều thời gian hơn). Lượt chấm của bạn chưa bị trừ — vui lòng bấm chấm lại, hoặc dán bài viết dưới dạng chữ để chấm nhanh hơn.');
+}
+if (!res.ok || data.error) {
 if (data.code === 'AUTH_REQUIRED') { track('auth_required', '/evaluate'); setNeedsLogin(true); return; }
 throw new Error(data.error);
 }

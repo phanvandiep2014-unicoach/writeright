@@ -106,6 +106,7 @@ if (!isPaid && (entitlement?.evals_this_week ?? 0) >= (entitlement?.weekly_quota
 return NextResponse.json({ error: 'Hết lượt miễn phí tuần này.', code: 'QUOTA_EXCEEDED' }, { status: 403 });
 }
 
+const work = async (): Promise<NextResponse> => {
 try {
 const userContent: any[] = imgList.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.media_type, data: im.data } }));
 let instruction = `IELTS Task ${taskType || 2}\n\n`;
@@ -122,20 +123,43 @@ userContent.push({ type: 'text', text: instruction });
 const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
 method: 'POST',
 headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
-body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:0.2, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),
+body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:0.2, stream:true, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),
+signal: AbortSignal.timeout(105_000), // ngắt trước maxDuration để còn trả JSON lỗi thay vì trang lỗi của Vercel
 });
 
+if (!apiRes.ok || !apiRes.body) {
 const responseText = await apiRes.text();
-if (!apiRes.ok) {
 console.error(`[evaluate] Anthropic API error ${apiRes.status}:`, responseText);
 return NextResponse.json({ error: friendlyApiError(apiRes.status, responseText), code: 'AI_UNAVAILABLE' }, { status: 503 });
 }
 
-let claudeData;
-try { claudeData = JSON.parse(responseText); }
-catch { return NextResponse.json({ error: 'Lỗi kết nối AI. Vui lòng thử lại.' }, { status: 502 }); }
+// Đọc SSE từ Anthropic, gộp các text_delta thành rawText
+let rawText = '';
+{
+const reader = apiRes.body.getReader();
+const dec = new TextDecoder();
+let buf = '';
+for (;;) {
+const { done, value } = await reader.read();
+if (done) break;
+buf += dec.decode(value, { stream: true });
+const lines = buf.split('\n');
+buf = lines.pop() ?? '';
+for (const line of lines) {
+if (!line.startsWith('data:')) continue;
+const payload = line.slice(5).trim();
+if (!payload || payload === '[DONE]') continue;
+let ev: any;
+try { ev = JSON.parse(payload); } catch { continue; }
+if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') rawText += ev.delta.text || '';
+else if (ev.type === 'error') {
+console.error('[evaluate] Anthropic stream error:', payload);
+return NextResponse.json({ error: friendlyApiError(ev.error?.type === 'overloaded_error' ? 529 : 500, payload), code: 'AI_UNAVAILABLE' }, { status: 503 });
+}
+}
+}
+}
 
-const rawText = claudeData.content?.map((b: any) => b.text||'').join('') ?? '';
 let result;
 try { result = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
 catch { return NextResponse.json({ error: 'AI trả về định dạng không hợp lệ. Vui lòng thử lại.' }, { status: 502 }); }
@@ -222,6 +246,28 @@ await supabase
 
 return NextResponse.json(result);
 } catch (err: any) {
+if (err?.name === 'TimeoutError' || err?.name === 'AbortError')
+return NextResponse.json({ error: 'AI chấm quá lâu (bài có ảnh thường chậm hơn). Lượt chấm chưa bị trừ — vui lòng thử lại, hoặc dán bài viết dạng chữ để chấm nhanh hơn.', code: 'AI_TIMEOUT' }, { status: 504 });
 return NextResponse.json({ error: 'Server error: ' + err.message }, { status: 500 });
 }
+};
+
+// Trả về dạng stream: gửi khoảng trắng giữ kết nối mỗi 5 giây trong lúc AI chấm, rồi một khối JSON cuối.
+// (Khoảng trắng đầu JSON hợp lệ.) Lỗi xảy ra sau khi bắt đầu stream nằm trong body dưới khoá `error`.
+const enc = new TextEncoder();
+const stream = new ReadableStream({
+async start(controller) {
+const ping = setInterval(() => { try { controller.enqueue(enc.encode(' ')); } catch {} }, 5000);
+try {
+const r = await work();
+controller.enqueue(enc.encode(await r.text()));
+} catch (e: any) {
+controller.enqueue(enc.encode(JSON.stringify({ error: 'Server error: ' + (e?.message || e) })));
+} finally {
+clearInterval(ping);
+controller.close();
+}
+},
+});
+return new Response(stream, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' } });
 }
