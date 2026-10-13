@@ -34,6 +34,8 @@ export default function UserMenu() {
   const logout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Đăng xuất chung: xóa cả phiên LMS (*.unicoach.vn), nếu không lần mở /login kế tiếp sẽ tự vào lại.
+    try { await fetch('/api/sso-logout', { method: 'POST' }); } catch { /* vẫn đăng xuất WriteRight */ }
     setOpen(false);
     window.location.href = '/';
   };

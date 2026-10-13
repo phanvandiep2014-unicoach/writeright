@@ -1,10 +1,31 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 
 function LoginContent() {
   const [loadingProvider, setLoadingProvider] = useState<'google' | 'facebook' | null>(null);
+
+  // Đăng nhập 1 lần: học viên đã đăng nhập ở LMS (cookie dấu hiệu uc_in trên *.unicoach.vn)
+  // thì chuyển im lặng qua LMS lấy link SSO rồi vào thẳng WriteRight, không phải bấm gì.
+  // Chống vòng lặp: LMS trả về /login?sso=none khi không có phiên; lỗi SSO có ?error=.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('sso') || q.get('error')) return;
+    if (!/(?:^|;\s*)uc_in=1/.test(document.cookie)) return;
+    try {
+      const last = Number(sessionStorage.getItem('uc_sso_try') || 0);
+      if (Date.now() - last < 60000) return;
+      sessionStorage.setItem('uc_sso_try', String(Date.now()));
+    } catch { /* không có sessionStorage: dựa vào ?sso=none */ }
+    let cancelled = false;
+    createClient().auth.getSession().then(({ data }) => {
+      if (cancelled || data.session) return;
+      const lms = process.env.NEXT_PUBLIC_UNICOACH_LMS_URL || 'https://lms.unicoach.vn';
+      window.location.replace(`${lms}/api/auth/sso-start?app=writeright&mode=silent&return=/login`);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleLogin = async (provider: 'google' | 'facebook') => {
     setLoadingProvider(provider);
