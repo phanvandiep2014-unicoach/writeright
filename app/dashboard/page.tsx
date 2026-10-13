@@ -8,6 +8,7 @@ import { EvalCard } from '@/components/EvalCard';
 import { GoalRitual } from '@/components/GoalRitual';
 import { WeeklyReport } from '@/components/WeeklyReport';
 import { MentorNote } from '@/components/MentorNote';
+import { GradingQueue } from '@/components/GradingQueue';
 
 type Evaluation = {
   id: string; task_type: number; task_prompt: string | null;
@@ -109,23 +110,30 @@ export default function DashboardPage() {
       const pend = await supabase.from('profiles').select('tier_pending_days').eq('id', user.id).maybeSingle();
       const pendingDays = pend.error ? null : ((pend.data as any)?.tier_pending_days ?? null);
       setProfile(prof ? { ...prof, tier: (ent?.plan ?? prof.tier), tier_expires_at: ent?.tier_expires_at ?? null, tier_pending_days: pendingDays } : prof);
-      const { data: evs } = await supabase.from('evaluations')
-        .select('id,task_type,task_prompt,word_count,overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
-        .eq('user_id', user.id).order('created_at', { ascending: false }).limit(50);
-      const list = evs || [];
-      setEvaluations(list);
-      if (list.length > 0) {
-        const bands = list.map(e => e.overall_band).filter(Boolean);
-        setStats({
-          total: list.length,
-          avg: bands.length ? Math.round((bands.reduce((a, b) => a + b, 0) / bands.length) * 10) / 10 : 0,
-          max: bands.length ? Math.max(...bands) : 0,
-        });
-      }
+      await loadEvaluations(user.id);
       setLoading(false);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tải lại lịch sử chấm — gọi lúc vào trang và mỗi khi một bài chấm nền vừa xong.
+  async function loadEvaluations(uid?: string) {
+    const id = uid ?? user?.id;
+    if (!id) return;
+    const { data: evs } = await supabase.from('evaluations')
+      .select('id,task_type,task_prompt,word_count,overall_band,ta_band,cc_band,lr_band,gra_band,created_at')
+      .eq('user_id', id).order('created_at', { ascending: false }).limit(50);
+    const list = evs || [];
+    setEvaluations(list);
+    if (list.length > 0) {
+      const bands = list.map(e => e.overall_band).filter(Boolean);
+      setStats({
+        total: list.length,
+        avg: bands.length ? Math.round((bands.reduce((a, b) => a + b, 0) / bands.length) * 10) / 10 : 0,
+        max: bands.length ? Math.max(...bands) : 0,
+      });
+    }
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -259,6 +267,9 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+
+        {/* Bài đang chấm nền */}
+        <GradingQueue onDone={() => loadEvaluations()} />
 
         {/* History */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>

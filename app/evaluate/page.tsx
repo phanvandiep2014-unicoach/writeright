@@ -1,6 +1,7 @@
 'use client';
 import CriterionEvidence from '@/components/CriterionEvidence';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { GradingQueue } from '@/components/GradingQueue';
 import Link from 'next/link';
 import { QuotaBanner, DetailGate } from '@/components/DetailGate';
 import { RoyalIcon } from '@/components/RoyalIcons';
@@ -229,6 +230,12 @@ const [prompt, setPrompt] = useState('');
 const [essay, setEssay] = useState('');
 const [images, setImages] = useState<Img[]>([]);
 const [loading, setLoading] = useState(false);
+// Chấm nền: xếp hàng rồi dán bài tiếp, kết quả ở Dashboard. Bật mặc định; nhớ lựa chọn trên máy này.
+const [bgMode, setBgMode] = useState(true);
+const [queueTick, setQueueTick] = useState(0);
+const [queuedNote, setQueuedNote] = useState('');
+useEffect(() => { try { if (localStorage.getItem('wr_bg_mode') === '0') setBgMode(false); } catch {} }, []);
+const toggleBg = (v: boolean) => { setBgMode(v); setQueuedNote(''); try { localStorage.setItem('wr_bg_mode', v ? '1' : '0'); } catch {} };
 const [result, setResult] = useState<EvalResult | null>(null);
 const [error, setError] = useState('');
 // Số từ tại lần bấm chấm đã cảnh báo "thiếu từ". Bấm lại khi số từ không đổi = vẫn chấm.
@@ -364,6 +371,40 @@ window.scrollTo({ top: 0, behavior: 'smooth' });
 finally { setLoading(false); }
 };
 
+const enqueue = async () => {
+if (!prompt.trim() && images.length === 0) { setError('Vui lòng nhập đề bài hoặc dán ảnh chụp đề (Ctrl+V)'); return; }
+if (!essay.trim() && images.length === 0) { setError('Vui lòng nhập bài luận hoặc dán/tải ảnh bài viết'); return; }
+if (images.length === 0 && wordCount < minWords && shortWarnAt !== wordCount) { setShortWarnAt(wordCount); return; }
+setShortWarnAt(null);
+setLoading(true); setError(''); setQueuedNote(''); setNeedsLogin(false);
+track('evaluate_enqueue', '/evaluate');
+try {
+const res = await fetch('/api/evaluate/queue', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+taskType, taskPrompt: prompt.trim() ? prompt : null,
+essayText: essay.trim() ? essay : null,
+images: images.length ? images.map(im => ({ data: im.data, media_type: im.type })) : null,
+}),
+});
+const rawBody = await res.text();
+let data: any;
+try { data = JSON.parse(rawBody); }
+catch { throw new Error(res.status === 413 ? 'Ảnh đính kèm quá nặng. Hãy dùng ít ảnh hơn hoặc chụp/cắt nhỏ lại.' : 'Không xếp hàng được bài này. Vui lòng thử lại.'); }
+if (!res.ok || data.error) {
+if (data.code === 'AUTH_REQUIRED') { track('auth_required', '/evaluate'); setNeedsLogin(true); return; }
+throw new Error(data.error);
+}
+// Xếp hàng xong: xoá form để dán bài tiếp theo ngay (giữ nguyên loại Task).
+setEssay(''); setPrompt(''); setImages([]);
+try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
+setQueuedNote(`Đã xếp hàng chấm nền${data.ahead > 0 ? ` (phía trước còn ${data.ahead} bài)` : ''}. Bạn có thể dán bài tiếp theo hoặc rời trang — kết quả sẽ có trong Dashboard.`);
+setQueueTick(t => t + 1);
+} catch (err: any) { setError(err.message); }
+finally { setLoading(false); }
+};
+
 const reset = () => {
 setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null); setRevision(null); setRevealed(new Set());
 setExpandedCriterion(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
@@ -419,6 +460,7 @@ return (
 </header>
 
 <main className="max-w-4xl mx-auto px-4 py-8">
+<GradingQueue refreshKey={queueTick} />
 <QuotaBanner onUpgrade={() => window.location.href='/pricing'} />
 
 {/* ════════════ LOGIN PROMPT (AUTH_REQUIRED) ════════════ */}
@@ -807,7 +849,7 @@ Chia sẻ ↗
 )}
 
 {/* ════════════ FORM ════════════ */}
-{!result && !loading && !needsLogin && (
+{!result && !(loading && !bgMode) && !needsLogin && (
 <div className="animate-fade-up max-w-3xl mx-auto">
 <div className="text-center mb-8">
 <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Chấm bài Writing</div>
@@ -946,14 +988,21 @@ Bài của bạn có <strong>{wordCount} từ</strong>, dưới mức tối thi�
 </div>
 )}
 
-<button onClick={evaluate} className="w-full btn-foil py-3.5 rounded-xl text-lg font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 mt-2">
-<span>✦</span> {showShortWarn ? 'Vẫn chấm bài này' : 'Chấm bài ngay'}
+{queuedNote && <div className="bg-green-900/20 border border-green-800 text-green-200 text-base px-4 py-3 rounded-xl mb-4">{queuedNote}</div>}
+
+<label className="flex items-start gap-3 text-sm text-navy-300 mb-3 cursor-pointer select-none">
+<input type="checkbox" checked={bgMode} onChange={(e) => toggleBg(e.target.checked)} className="mt-1" />
+<span><strong className="text-brand-400">Chấm nền, nhiều bài liên tiếp</strong> — bấm chấm là dán bài tiếp được ngay, không phải chờ; kết quả hiện ở Dashboard khi xong.</span>
+</label>
+
+<button onClick={bgMode ? enqueue : evaluate} disabled={loading} className="w-full btn-foil py-3.5 rounded-xl text-lg font-semibold hover:-translate-y-0.5 transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 mt-2 disabled:opacity-60">
+<span>✦</span> {showShortWarn ? 'Vẫn chấm bài này' : bgMode ? 'Xếp hàng chấm bài' : 'Chấm bài ngay'}
 </button>
 </div>
 )}
 
 {/* ════════════ LOADING ════════════ */}
-{loading && (
+{loading && !bgMode && (
 <div className="text-center py-16 animate-fade-up">
 <div className="w-14 h-14 border-[3px] border-navy-600 border-t-brand-500 rounded-full animate-spin-slow mx-auto mb-6" />
 <p className="text-navy-300 italic text-lg" style={{ fontFamily: 'var(--font-subhead)' }}>Mentor đang đọc bài của bạn…</p>
