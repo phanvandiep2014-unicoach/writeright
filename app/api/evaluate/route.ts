@@ -47,7 +47,7 @@ return monday.toISOString().split('T')[0];
 }
 
 // Chấm bài gọi AI với max_tokens lớn (bài dài / ảnh chữ viết tay) nên cần chạy lâu hơn mặc định.
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -124,7 +124,7 @@ const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
 method: 'POST',
 headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
 body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:12000, temperature:0.2, stream:true, system: SYSTEM_PROMPT, messages:[{ role:'user', content: userContent }] }),
-signal: AbortSignal.timeout(105_000), // ngắt trước maxDuration để còn trả JSON lỗi thay vì trang lỗi của Vercel
+signal: AbortSignal.timeout(285_000), // ngắt trước maxDuration để còn trả JSON lỗi thay vì trang lỗi của Vercel
 });
 
 if (!apiRes.ok || !apiRes.body) {
