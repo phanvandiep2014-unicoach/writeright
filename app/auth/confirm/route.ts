@@ -6,6 +6,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { BASE } from '@/lib/base-path';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') || '/evaluate';
 
   if (!tokenHash) {
-    const url = new URL('/login', origin);
+    const url = new URL(BASE + '/login', origin);
     url.searchParams.set('error', 'sso');
     url.searchParams.set('msg', 'Thiếu mã xác nhận phiên.');
     return NextResponse.redirect(url);
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.verifyOtp({ type: 'magiclink', token_hash: tokenHash });
   if (error) {
     console.error('[auth/confirm] verifyOtp:', error.message);
-    const url = new URL('/login', origin);
+    const url = new URL(BASE + '/login', origin);
     url.searchParams.set('error', 'sso');
     url.searchParams.set('msg', error.message.slice(0, 200));
     return NextResponse.redirect(url);
@@ -45,5 +46,5 @@ export async function GET(request: Request) {
 
   // Chỉ cho phép chuyển hướng nội bộ — chặn open redirect
   const dest = next.startsWith('/') && !next.startsWith('//') ? next : '/evaluate';
-  return NextResponse.redirect(`${origin}${dest}`);
+  return NextResponse.redirect(`${origin}${BASE}${dest}`);
 }

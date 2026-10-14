@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { BASE } from '@/lib/base-path';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -10,14 +11,14 @@ export async function GET(request: Request) {
 
   // Surface OAuth provider errors (Google denied consent, etc.)
   if (oauthError) {
-    const loginUrl = new URL('/login', origin);
+    const loginUrl = new URL(BASE + '/login', origin);
     loginUrl.searchParams.set('error', 'oauth_provider');
     loginUrl.searchParams.set('msg', `${oauthError}: ${oauthErrorDescription || ''}`.slice(0, 300));
     return NextResponse.redirect(loginUrl);
   }
 
   if (!code) {
-    const loginUrl = new URL('/login', origin);
+    const loginUrl = new URL(BASE + '/login', origin);
     loginUrl.searchParams.set('error', 'no_code');
     loginUrl.searchParams.set('msg', 'No code present in callback URL');
     return NextResponse.redirect(loginUrl);
@@ -49,7 +50,7 @@ export async function GET(request: Request) {
       code: (error as any).code,
       name: error.name,
     });
-    const loginUrl = new URL('/login', origin);
+    const loginUrl = new URL(BASE + '/login', origin);
     loginUrl.searchParams.set('error', 'exchange_failed');
     // Pass through the actual error info so we can debug it from the URL
     loginUrl.searchParams.set('msg', error.message.slice(0, 300));
@@ -59,7 +60,7 @@ export async function GET(request: Request) {
   }
 
   if (!data?.session) {
-    const loginUrl = new URL('/login', origin);
+    const loginUrl = new URL(BASE + '/login', origin);
     loginUrl.searchParams.set('error', 'no_session');
     loginUrl.searchParams.set('msg', 'Exchange succeeded but no session returned');
     return NextResponse.redirect(loginUrl);
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
       if (n.startsWith('/') && !n.startsWith('//') && !n.includes('\\')) dest = n;
     } catch { /* cookie hỏng → về /evaluate */ }
   }
-  const res = NextResponse.redirect(`${origin}${dest}`);
+  const res = NextResponse.redirect(`${origin}${BASE}${dest}`);
   res.cookies.set('wr_next', '', { path: '/', maxAge: 0 });
   return res;
 }

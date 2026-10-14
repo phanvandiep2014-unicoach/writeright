@@ -6,6 +6,7 @@ import { useEntitlement } from '@/hooks/useEntitlement';
 import { usePracticeData } from '@/hooks/usePracticeData';
 import { activityDays, computeStreak, ictDay, recommendToday } from '@/lib/practice-insights';
 import { KIND_META } from '@/lib/skill-exercises';
+import { withBase } from '@/lib/base-path';
 import {
   PRACTICE_ITEMS, DEFAULT_FILTER, PracticeFilter, PracticeItem, AttemptSummary,
   applyFilter, summariseAttempts, distinct, suggestNext, kindLabel, categoryLabel,
@@ -96,7 +97,7 @@ export default function PracticeClient() {
       <header className="app-header">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />
@@ -106,7 +107,7 @@ export default function PracticeClient() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <QuotaBanner onUpgrade={() => { window.location.href = '/pricing'; }} />
+        <QuotaBanner onUpgrade={() => { window.location.href = withBase('/pricing'); }} />
 
         <div className="text-center">
           <div className="text-sm font-mono tracking-widest uppercase text-brand-400 mb-3">Practice</div>

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 
 type U = { id: string; email?: string; user_metadata?: { full_name?: string; name?: string; avatar_url?: string; picture?: string } };
 
@@ -35,9 +36,9 @@ export default function UserMenu() {
     const supabase = createClient();
     await supabase.auth.signOut();
     // Đăng xuất chung: xóa cả phiên LMS (*.unicoach.vn), nếu không lần mở /login kế tiếp sẽ tự vào lại.
-    try { await fetch('/api/sso-logout', { method: 'POST' }); } catch { /* vẫn đăng xuất WriteRight */ }
+    try { await fetch(withBase('/api/sso-logout'), { method: 'POST' }); } catch { /* vẫn đăng xuất WriteRight */ }
     setOpen(false);
-    window.location.href = '/';
+    window.location.href = withBase('/');
   };
 
   // Loading skeleton — avoid the "Đăng nhập" button flashing before we know

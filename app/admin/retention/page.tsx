@@ -4,6 +4,7 @@
 // thay vì phát hiện muộn cả tháng như đợt 14/09 và 27/09-03/10/2026.
 import { useEffect, useState, type ReactNode } from 'react';
 import { BmsShell, Card, Empty, PageHead, TableWrap, Th, Td, fmtDate, btnSm } from '@/components/bms/ui';
+import { withBase } from '@/lib/base-path';
 
 type Person = { id: string; email: string | null; name: string; essays: number; last_essay: string | null; last_band: number | null };
 type Data = {
@@ -40,7 +41,7 @@ function Inner() {
   const [data, setData] = useState<Data | null>(null);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    fetch('/api/admin/retention', { cache: 'no-store' })
+    fetch(withBase('/api/admin/retention'), { cache: 'no-store' })
       .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || r.statusText); setData(j); })
       .catch((e) => setErr(e.message));
   }, []);

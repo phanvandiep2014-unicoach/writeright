@@ -1,4 +1,5 @@
 'use client';
+import { withBase } from '@/lib/base-path';
 /**
  * Do dau phieu phia trinh duyet. Chi luu: ma an danh ngau nhien + UTM cham dau + ten mien gioi thieu.
  * Khong luu IP, noi dung bai viet hay thong tin ca nhan. Moi loi deu bi nuot de khong anh huong trang.
@@ -65,7 +66,7 @@ export function track(event: string, path?: string) {
     if (navigator.sendBeacon) {
       navigator.sendBeacon('/api/track', new Blob([body], { type: 'application/json' }));
     } else {
-      fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+      fetch(withBase('/api/track'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
     }
   } catch { /* khong bao gio lam hong trang */ }
 }

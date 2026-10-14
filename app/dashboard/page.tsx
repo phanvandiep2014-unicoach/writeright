@@ -9,6 +9,7 @@ import { GoalRitual } from '@/components/GoalRitual';
 import { WeeklyReport } from '@/components/WeeklyReport';
 import { MentorNote } from '@/components/MentorNote';
 import { GradingQueue } from '@/components/GradingQueue';
+import { withBase } from '@/lib/base-path';
 
 type Evaluation = {
   id: string; task_type: number; task_prompt: string | null;
@@ -87,7 +88,7 @@ export default function DashboardPage() {
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/login?next=/dashboard'; return; }
+      if (!user) { window.location.href = withBase('/login?next=/dashboard'); return; }
       setUser(user);
       const { data: prof } = await supabase.from('profiles')
         .select('full_name,avatar_url,tier,public_token,role').eq('id', user.id).single();
@@ -137,7 +138,7 @@ export default function DashboardPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    window.location.href = '/';
+    window.location.href = withBase('/');
   }
 
   const tierLabel = profile?.tier === 'premium' ? 'Premium' : profile?.tier === 'standard' ? 'Standard' : 'Free';

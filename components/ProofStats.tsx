@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { withBase } from '@/lib/base-path';
 
 /* ══════════════════════════════════════════════════════════════
    ProofStats — khối "số liệu thật" trên trang chủ WriteRight.
@@ -214,7 +215,7 @@ export default function ProofStats() {
 
   useEffect(() => {
     let alive = true;
-    fetch('/api/stats')
+    fetch(withBase('/api/stats'))
       .then((r) => r.json())
       .then((d) => {
         if (!alive || !d?.ok) return;

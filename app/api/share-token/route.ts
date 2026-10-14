@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { BASE } from '@/lib/base-path';
 
 // POST /api/share-token
 // Body: { evaluationId: string }
@@ -48,8 +49,8 @@ export async function POST(req: Request) {
       const origin = req.headers.get('origin') || 'https://writeright.unicoach.vn';
       return NextResponse.json({
         token: existing.id,
-        url: `${origin}/e/${existing.id}`,
-        scorecard_url: `${origin}/share/${existing.id}`,
+        url: `${origin}${BASE}/e/${existing.id}`,
+        scorecard_url: `${origin}${BASE}/share/${existing.id}`,
       });
     }
 
@@ -64,8 +65,8 @@ export async function POST(req: Request) {
     const origin = req.headers.get('origin') || 'https://writeright.unicoach.vn';
     return NextResponse.json({
       token: created.id,
-      url: `${origin}/e/${created.id}`,
-      scorecard_url: `${origin}/share/${created.id}`,
+      url: `${origin}${BASE}/e/${created.id}`,
+      scorecard_url: `${origin}${BASE}/share/${created.id}`,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

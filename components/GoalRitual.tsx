@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 
 /**
  * <GoalRitual> — nghi thức "Khai bút" + Lộ trình cá nhân.
@@ -103,7 +104,7 @@ export function GoalRitual() {
         boxShadow: '0 24px 70px rgba(0,0,0,.55)',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 6 }}>
-          <img src="/favicon.svg" alt="" width={44} height={44} />
+          <img src={withBase("/favicon.svg")} alt="" width={44} height={44} />
         </div>
         <h2 style={{
           fontFamily: 'var(--font-subhead)', fontWeight: 700, fontSize: 24,

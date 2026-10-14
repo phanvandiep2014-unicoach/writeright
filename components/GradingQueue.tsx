@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 
 type Job = {
   id: string; status: 'queued' | 'running' | 'done' | 'failed'; task_type: number; title: string | null;
@@ -26,7 +27,7 @@ export function GradingQueue({ refreshKey = 0, onDone }: { refreshKey?: number; 
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch('/api/evaluate/queue', { cache: 'no-store' });
+      const r = await fetch(withBase('/api/evaluate/queue'), { cache: 'no-store' });
       if (!r.ok) return false;
       const d = await r.json();
       const list: Job[] = d.jobs || [];
@@ -62,7 +63,7 @@ export function GradingQueue({ refreshKey = 0, onDone }: { refreshKey?: number; 
     setBusy(j.id); setMsg('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const r = await fetch('/api/share-token', {
+      const r = await fetch(withBase('/api/share-token'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token || ''}` },
         body: JSON.stringify({ evaluationId: j.evaluation_id }),
@@ -76,7 +77,7 @@ export function GradingQueue({ refreshKey = 0, onDone }: { refreshKey?: number; 
   async function act(j: Job, action: 'retry' | 'dismiss') {
     setBusy(j.id); setMsg('');
     try {
-      const r = await fetch('/api/evaluate/queue', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: j.id, action }) });
+      const r = await fetch(withBase('/api/evaluate/queue'), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: j.id, action }) });
       if (!r.ok) { const d = await r.json().catch(() => ({})); setMsg(d.error || 'Không thực hiện được.'); }
     } catch { setMsg('Không thực hiện được. Vui lòng thử lại.'); }
     setBusy(null);

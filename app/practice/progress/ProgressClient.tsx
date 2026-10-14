@@ -9,6 +9,7 @@ import {
 } from '@/lib/practice-insights';
 import { CRITERION_LABEL, KIND_META } from '@/lib/skill-exercises';
 import { currentBand, planFor, type Pace } from '@/lib/goal';
+import { withBase } from '@/lib/base-path';
 
 const PACE_TEXT: Record<Pace, { text: string; cls: string }> = {
   reached: { text: 'You are at your target band — keep it steady with regular practice.', cls: 'text-emerald-300' },
@@ -114,7 +115,7 @@ export default function ProgressClient() {
       <header className="app-header">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />

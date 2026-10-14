@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 import {
   SkillExercise, ExerciseKind, KIND_META, CRITERION_LABEL, exercisesByKind, SKILL_EXERCISES, withShuffledOptions,
 } from '@/lib/skill-exercises';
@@ -91,7 +92,7 @@ export default function SkillsClient() {
       <header className="app-header">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />

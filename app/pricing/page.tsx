@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { PricingRoyal } from '@/components/PricingRoyal';
+import { withBase } from '@/lib/base-path';
 
 /**
  * /pricing — dedicated pricing page.
@@ -15,7 +16,7 @@ export default function PricingPage() {
 
   const handleChoose = async (tierId: string) => {
     if (tierId === 'free') {
-      window.location.href = '/evaluate';
+      window.location.href = withBase('/evaluate');
       return;
     }
 
@@ -27,7 +28,7 @@ export default function PricingPage() {
     setLoadingTier(tierId);
 
     try {
-      const res = await fetch('/api/checkout', {
+      const res = await fetch(withBase('/api/checkout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier: tierId }),
@@ -38,7 +39,7 @@ export default function PricingPage() {
         if (body.code === 'AUTH_REQUIRED') {
           // Not logged in — send to login, then back to pricing.
           // Giữ nguyên gói đã chọn để đăng nhập xong quay lại là thanh toán tiếp.
-          window.location.href = '/login?next=' + encodeURIComponent('/pricing?plan=' + tierId);
+          window.location.href = withBase('/login?next=') + encodeURIComponent('/pricing?plan=' + tierId);
           return;
         }
         setErrorMsg(body.error || 'Có lỗi xảy ra. Vui lòng thử lại.');
@@ -75,7 +76,7 @@ export default function PricingPage() {
       <header className="app-header">
         <div className="app-header-inner">
           <Link href="/" className="app-logo-link" aria-label="WriteRight home">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} /><Link href="/courses" className="app-nav-link">Khóa học</Link><Link href="/mock" className="app-nav-link">Thi thử</Link><Link href="/evaluate" className="app-nav-link">Chấm bài</Link><Link href="/dashboard" className="app-nav-link">Dashboard</Link>

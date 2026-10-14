@@ -1,3 +1,4 @@
+import { withBase } from '@/lib/base-path';
 /**
  * Tạo (hoặc lấy lại) link chia sẻ một bài chấm. Mọi nút chia sẻ dùng chung hàm này.
  *
@@ -6,7 +7,7 @@
  * /api/share-token (đã chạy thật, tạo ra 137 lượt chia sẻ qua EvalCard) và dùng link /e/<id>.
  */
 export async function getShareUrl(evaluationId: string): Promise<string> {
-  const res = await fetch('/api/share-token', {
+  const res = await fetch(withBase('/api/share-token'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ evaluationId }),

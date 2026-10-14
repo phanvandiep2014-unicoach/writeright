@@ -7,12 +7,13 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { verifyLmsToken, lmsEmailFor } from '@/lib/unicoach';
+import { BASE } from '@/lib/base-path';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';   // cần node:crypto
 
 function fail(origin: string, msg: string) {
-  const url = new URL('/login', origin);
+  const url = new URL(BASE + '/login', origin);
   url.searchParams.set('error', 'sso');
   url.searchParams.set('msg', msg.slice(0, 200));
   return NextResponse.redirect(url);
@@ -128,7 +129,7 @@ export async function GET(request: Request) {
     // vào thẳng /mock ở chế độ khoá — không cho chọn đề, không cho làm lại.
     // Khác với luồng luyện tập thường (next=/evaluate).
     const isMockExam = !!payload.mock_session;
-    const confirm = new URL('/auth/confirm', origin);
+    const confirm = new URL(BASE + '/auth/confirm', origin);
     confirm.searchParams.set('token_hash', tokenHash);
     confirm.searchParams.set('next', isMockExam ? '/mock' : '/evaluate');
 

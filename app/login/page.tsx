@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { BASE } from '@/lib/base-path';
 
 function LoginContent() {
   const [loadingProvider, setLoadingProvider] = useState<'google' | 'facebook' | null>(null);
@@ -33,7 +34,7 @@ function LoginContent() {
     // Use the current origin so this works correctly across every Vercel
     // deployment domain (production, git-branch preview, etc.) instead of
     // being hard-pinned to a single domain.
-    const redirectTo = `${window.location.origin}/auth/callback`;
+    const redirectTo = `${window.location.origin}${BASE}/auth/callback`;
     // Nhớ nơi cần quay lại (vd. /pricing?plan=duo từ Precisely) bằng cookie ngắn
     // hạn thay vì gắn ?next= vào redirectTo — redirectTo có query sẽ bị Supabase
     // từ chối nếu không nằm trong danh sách Redirect URLs.
@@ -48,7 +49,7 @@ function LoginContent() {
     if (error) {
       setLoadingProvider(null);
       // Surface immediately instead of failing silently
-      window.location.href = `/login?error=oauth_init_failed&msg=${encodeURIComponent(error.message)}`;
+      window.location.href = `${BASE}/login?error=oauth_init_failed&msg=${encodeURIComponent(error.message)}`;
     }
   };
 

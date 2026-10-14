@@ -3,6 +3,7 @@
 // Cách hoạt động: đăng nhập lại Google kèm scope Classroom (read-only) → chọn khóa học
 // → đối chiếu học viên qua email → nhập điểm vào bms_grades (type 'classroom', chống trùng bằng external_id)
 import { useEffect, useState } from 'react';
+import { BASE } from '@/lib/base-path';
 import {
   BmsShell, supabase, Card, Empty, PageHead, btnPri, btnSec, btnSm, inputCls,
 } from '@/components/bms/ui';
@@ -55,7 +56,7 @@ function Inner() {
       provider: 'google',
       options: {
         scopes: SCOPES,
-        redirectTo: window.location.origin + '/admin/classroom',
+        redirectTo: window.location.origin + BASE + '/admin/classroom',
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });

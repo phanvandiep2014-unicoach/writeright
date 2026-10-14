@@ -15,6 +15,7 @@ import { PracticeTimer } from '@/components/PracticeTimer';
 import { TASK_MIN_WORDS, taskKey } from '@/lib/practice-timer';
 import BandDisclaimer from '@/components/BandDisclaimer';
 import { track } from '@/lib/track-client';
+import { withBase } from '@/lib/base-path';
 
 type Bi = string | { en: string; vi: string };
 const tEn = (f: Bi | undefined): string => !f ? '' : typeof f === 'string' ? f : (f.en || '');
@@ -341,7 +342,7 @@ setShortWarnAt(null);
 setLoading(true); setError(''); setResult(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
 track('evaluate_submit', '/evaluate');
 try {
-const res = await fetch('/api/evaluate', {
+const res = await fetch(withBase('/api/evaluate'), {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
@@ -379,7 +380,7 @@ setShortWarnAt(null);
 setLoading(true); setError(''); setQueuedNote(''); setNeedsLogin(false);
 track('evaluate_enqueue', '/evaluate');
 try {
-const res = await fetch('/api/evaluate/queue', {
+const res = await fetch(withBase('/api/evaluate/queue'), {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
@@ -452,7 +453,7 @@ return (
 <header className="app-header">
 <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
 <Link href="/" className="flex items-center gap-2">
-<img src="/favicon.svg" alt="" width={30} height={30} />
+<img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
 <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
 </Link>
 <span style={{ flex: 1 }} /><Link href="/courses" className="app-nav-link">Khóa học</Link><Link href="/mock" className="app-nav-link">Thi thử</Link><Link href="/dashboard" className="app-nav-link">Dashboard</Link><Link href="/pricing" className="app-nav-link">Bảng giá</Link>
@@ -461,7 +462,7 @@ return (
 
 <main className="max-w-4xl mx-auto px-4 py-8">
 <GradingQueue refreshKey={queueTick} />
-<QuotaBanner onUpgrade={() => window.location.href='/pricing'} />
+<QuotaBanner onUpgrade={() => window.location.href = withBase('/pricing')} />
 
 {/* ════════════ LOGIN PROMPT (AUTH_REQUIRED) ════════════ */}
 {needsLogin && (
@@ -553,7 +554,7 @@ return d ? (
   }}
 />
 
-<DetailGate onUpgrade={() => window.location.href='/pricing'}>
+<DetailGate onUpgrade={() => window.location.href = withBase('/pricing')}>
 
 {/* ── Your essay, with colour-coded mistakes ── */}
 {essayForReview && (

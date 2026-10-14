@@ -4,6 +4,7 @@ import UserMenu from '@/components/UserMenu';
 import { RoyalIcon } from '@/components/RoyalIcons';
 import ProofStats from '@/components/ProofStats';
 import ThemeToggle from '@/components/ThemeToggle';
+import { withBase } from '@/lib/base-path';
 
 const features = [
   { icon: 'star', title: 'Chấm điểm 4 tiêu chí', desc: 'Task Achievement, Lexical Resource, Grammar, Coherence — chuẩn IELTS.' },
@@ -134,7 +135,7 @@ export default function Home() {
           <Link href="/evaluate" className="btn-royal">✦ Chấm bài miễn phí</Link>
           <Link href="/mock" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>⏱ Thi thử có tính giờ</Link>
           <Link href="/courses" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>📘 Khóa học Writing</Link>
-          <a href="/pricing" className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>Xem bảng giá</a>
+          <a href={withBase("/pricing")} className="btn-ghost" style={{ color: 'var(--champagne)', borderColor: 'rgba(231,206,142,.45)' }}>Xem bảng giá</a>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 52, marginTop: 52, flexWrap: 'wrap' }}>

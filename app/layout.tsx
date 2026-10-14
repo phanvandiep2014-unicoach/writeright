@@ -3,6 +3,7 @@ import { Cinzel, Prata } from 'next/font/google';
 import './globals.css';
 import './writeright-theme.css';
 import FunnelTracker from '@/components/FunnelTracker';
+import { withBase } from '@/lib/base-path';
 
 /* ============================================================
    Brand fonts â loaded via next/font so the @font-face rules
@@ -33,20 +34,20 @@ export const metadata: Metadata = {
   title: 'WriteRight by UNICOACH — Luyện IELTS Writing cùng mentor AI',
   description: 'Chấm bài IELTS Writing chuẩn 4 tiêu chí, sửa lỗi chi tiết song ngữ và bài mẫu Band 9. Bắt đầu từ bạn — cùng nhau vươn tới band mục tiêu.',
   icons: {
-    icon: '/favicon.svg',
-    apple: '/apple-touch-icon.png',
+    icon: withBase('/favicon.svg'),
+    apple: withBase('/apple-touch-icon.png'),
   },
   openGraph: {
     title: 'WriteRight by UNICOACH — AI IELTS Writing Coach',
     description: 'AI chấm Writing chuẩn IELTS: điểm 4 tiêu chí, sửa lỗi song ngữ, bài mẫu Band 9. Nâng band ngay.',
     type: 'website',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: withBase('/og-image.png'), width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'WriteRight — AI IELTS Writing Coach',
     description: 'Nhận phản hồi chuẩn giám khảo cho bài IELTS Writing trong vài giây.',
-    images: ['/og-image.png'],
+    images: [withBase('/og-image.png')],
   },
 };
 
@@ -71,8 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${cinzel.variable} ${prata.variable}`}
     >
       <head>
-        <link rel="preload" href="/fonts/ebgaramond-normal-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/ebgaramond-normal-vietnamese.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href={withBase("/fonts/ebgaramond-normal-latin.woff2")} as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href={withBase("/fonts/ebgaramond-normal-vietnamese.woff2")} as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
       </head>
       <body className="min-h-screen antialiased">

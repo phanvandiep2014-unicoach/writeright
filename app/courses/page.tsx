@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 
 type Course = {
   id: string;
@@ -51,7 +52,7 @@ export default function CoursesPage() {
       <header className="app-header">
         <div className="app-header-inner">
           <Link href="/" className="app-logo-link" aria-label="WriteRight home">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />

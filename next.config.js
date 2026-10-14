@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Chạy dưới tiền tố (vd. /writeright). Để trống = ở gốc domain. Xem lib/base-path.ts.
+  ...(process.env.NEXT_PUBLIC_BASE_PATH ? { basePath: process.env.NEXT_PUBLIC_BASE_PATH } : {}),
   // ── Security headers applied to every response
   async headers() {
     return [

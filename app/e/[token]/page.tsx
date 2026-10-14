@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import EvalDetailView from '@/components/EvalDetailView';
+import { withBase } from '@/lib/base-path';
 
 // /e/[token] — Full evaluation detail page (read-only, shareable)
 // Uses security definer RPC so public can view without auth
@@ -46,7 +47,7 @@ export default async function EvalDetailPage({ params }: { params: Promise<{ tok
       <header className="app-header">
         <div className="app-header-inner">
           <Link href="/" className="app-logo-link" aria-label="WriteRight home">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} /><span className="app-nav-link" style={{ cursor: 'default', opacity: .7 }}>Phiếu chấm điểm</span><Link href="/dashboard" className="app-nav-link">Dashboard →</Link>

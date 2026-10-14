@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { withBase } from '@/lib/base-path';
 
 /**
  * Hai ô đồng ý độc lập — KHÔNG tick sẵn:
@@ -15,7 +16,7 @@ export function NurtureConsent({ band }: { band?: number }) {
   const [state, setState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
 
   useEffect(() => {
-    fetch('/api/nurture-consent').then(r => r.json()).then(d => {
+    fetch(withBase('/api/nurture-consent')).then(r => r.json()).then(d => {
       setNeeded(!!d.needed);
       setSampleNeeded(!!d.sampleNeeded);
     }).catch(() => {});
@@ -36,7 +37,7 @@ export function NurtureConsent({ band }: { band?: number }) {
       ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(k => { const v = q.get(k); if (v && !utm[k]) utm[k] = v; });
     } catch {}
     try {
-      const r = await fetch('/api/nurture-consent', {
+      const r = await fetch(withBase('/api/nurture-consent'), {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ band, utm, nurture: needed && email, sample: sampleNeeded && sample }),
       });

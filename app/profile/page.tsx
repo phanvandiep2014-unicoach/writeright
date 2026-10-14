@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
 import { HonorBoard } from '@/components/HonorBoard';
+import { withBase } from '@/lib/base-path';
 
 type Evaluation = {
   id: string;
@@ -107,7 +108,7 @@ export default function ProfilePage() {
     (async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/login'; return; }
+      if (!user) { window.location.href = withBase('/login'); return; }
       setUser(user);
 
       const [evalsRes, entitleRes, streakRes] = await Promise.all([
@@ -129,7 +130,7 @@ export default function ProfilePage() {
 
   const logout = async () => {
     await createClient().auth.signOut();
-    window.location.href = '/';
+    window.location.href = withBase('/');
   };
 
   const handleShare = async (evalId: string) => {

@@ -23,6 +23,7 @@ import { analyseTiming, weightedWritingBand, TaskTiming, TimingSample } from '@/
 import { useEntitlement } from '@/hooks/useEntitlement';
 import TaskVisual from '@/components/mock/TaskChart';
 import MockReport, { MockResult, TaskScore } from '@/components/mock/MockReport';
+import { withBase } from '@/lib/base-path';
 
 type Mode = 'full' | 'task1' | 'task2';
 type Stage = 'task1' | 'task2';
@@ -205,7 +206,7 @@ export default function MockClient({ examMinutes, dailyPaper }: { examMinutes: n
     const words = wordCountOf(essayText);
     if (words < MIN_WORDS_TO_GRADE) return { ok: false, reason: `Bài quá ngắn (dưới ${MIN_WORDS_TO_GRADE} từ) nên chưa chấm được.` };
     try {
-      const res = await fetch('/api/evaluate', {
+      const res = await fetch(withBase('/api/evaluate'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taskType, taskPrompt, essayText }),
       });
@@ -263,7 +264,7 @@ export default function MockClient({ examMinutes, dailyPaper }: { examMinutes: n
 
     let built: MockResult;
     try {
-      const res = await fetch('/api/mock-report', {
+      const res = await fetch(withBase('/api/mock-report'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           mode, paperId: paper?.id ?? null,
@@ -350,7 +351,7 @@ export default function MockClient({ examMinutes, dailyPaper }: { examMinutes: n
       <header className="app-header">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="" width={30} height={30} />
+            <img src={withBase("/favicon.svg")} alt="" width={30} height={30} />
             <span className="app-logo-wordmark">Write<span className="gold-foil">Right</span></span>
           </Link>
           <span style={{ flex: 1 }} />

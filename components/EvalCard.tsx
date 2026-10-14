@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
+import { withBase } from '@/lib/base-path';
 
 type Props = {
   id: string;
@@ -31,7 +32,7 @@ export function EvalCard({ id, taskType, taskPrompt, wordCount, overallBand, taB
   async function getToken(): Promise<string> {
     if (token) return token;
     const jwt = await getJWT();
-    const r = await fetch('/api/share-token', {
+    const r = await fetch(withBase('/api/share-token'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwt}` },
       body: JSON.stringify({ evaluationId: id }),
