@@ -84,13 +84,42 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
   const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] }),
-  });
-  const raw = await res.text();
+  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] });
+  // Thu lai khi Anthropic qua tai/gioi han toc do (429, 529, 5xx) hoac loi mang: nhieu bai cham cung luc (thi thu) hay gap.
+  // Tong ngan sach 160 giay (route mock-grade co maxDuration 180 giay); ton trong header retry-after; cho tang dan + jitter.
+  const BUDGET_MS = 160_000, MAX_RETRIES = 3;
+  const t0 = Date.now();
+  let res: Response | null = null;
+  let raw = '';
+  for (let attempt = 0; ; attempt++) {
+    const left = BUDGET_MS - (Date.now() - t0);
+    let wait = Math.min(30_000, 4_000 * 2 ** attempt) + Math.random() * 2_000;
+    try {
+      res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+        body,
+        signal: AbortSignal.timeout(Math.max(10_000, left)),
+      });
+      raw = await res.text();
+      const transient = res.status === 429 || res.status === 529 || res.status >= 500;
+      if (res.ok || !transient || attempt >= MAX_RETRIES) break;
+      const ra = Number(res.headers.get('retry-after'));
+      if (Number.isFinite(ra) && ra > 0) wait = Math.min(30_000, ra * 1000) + Math.random() * 1_000;
+      console.warn(`[grade-essay] Anthropic ${res.status}, thu lai lan ${attempt + 1} sau ${Math.round(wait / 1000)}s`);
+    } catch (e: any) {
+      if (attempt >= MAX_RETRIES) throw new Error(friendlyApiError(503, ''));
+      console.warn('[grade-essay] loi mang/timeout, thu lai:', e?.message);
+    }
+    if (BUDGET_MS - (Date.now() - t0) < wait + 30_000) {
+      if (res) break;
+      throw new Error(friendlyApiError(503, ''));
+    }
+    await new Promise(r => setTimeout(r, wait));
+  }
+  if (!res) throw new Error(friendlyApiError(503, ''));
+  console.log(`[grade-essay] done ${((Date.now() - t0) / 1000).toFixed(1)}s status=${res.status} task=${o.taskType}`);
   if (!res.ok) { console.error(`[grade-essay] Anthropic ${res.status}:`, raw); throw new Error(friendlyApiError(res.status, raw)); }
   let data: any; try { data = JSON.parse(raw); } catch { throw new Error('Lỗi kết nối AI. Vui lòng thử lại.'); }
   const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
