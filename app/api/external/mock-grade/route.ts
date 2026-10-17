@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { verifyLmsRequest } from '@/lib/lms-server-auth';
 import { gradeEssayText } from '@/lib/grade-essay';
-import { TEST_PAPERS } from '@/lib/writing-papers';
-import { TASK1_BANK, TASK2_BANK, task1ToText } from '@/lib/writing-tasks';
+import { task1ToText } from '@/lib/writing-tasks';
+import { resolvePaper } from '@/lib/weekly-papers';
 
 export const maxDuration = 180;   // hai lượt chấm chạy song song, mỗi lượt có thể mất ~60–90 giây
 
@@ -22,11 +22,10 @@ export async function POST(req: Request) {
   if (bad) return NextResponse.json({ error: bad }, { status: 401 });
 
   let b: any; try { b = JSON.parse(raw); } catch { return NextResponse.json({ error: 'Body không phải JSON' }, { status: 400 }); }
-  const paper = TEST_PAPERS.find(p => p.id === String(b.paper || '').toUpperCase());
-  const t1 = paper && TASK1_BANK.find(t => t.id === paper.task1Id);
-  const t2 = paper && TASK2_BANK.find(t => t.id === paper.task2Id);
-  if (!paper || !t1 || !t2) return NextResponse.json({ error: 'Mã đề không hợp lệ' }, { status: 400 });
+  const found = resolvePaper(b.paper);
+  if (!found) return NextResponse.json({ error: 'Mã đề không hợp lệ' }, { status: 400 });
 
+  const { paper, t1, t2 } = found;
   const e1 = String(b.task1_essay || ''), e2 = String(b.task2_essay || '');
   const MIN = 20;   // dưới 20 từ coi như không làm bài — cùng ngưỡng với /mock, đỡ tốn lượt gọi AI
 
