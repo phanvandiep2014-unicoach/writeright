@@ -16,64 +16,7 @@ const features = [
 ];
 
 function Crest({ size = 40 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 1.21} viewBox="330 70 420 480" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="crestGold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#8A6A28" /><stop offset=".28" stopColor="#E7CE8E" />
-          <stop offset=".52" stopColor="#C8A14B" /><stop offset=".74" stopColor="#F4E7BC" />
-          <stop offset="1" stopColor="#9A7A2E" />
-        </linearGradient>
-        <linearGradient id="crestField" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1B2552" /><stop offset="1" stopColor="#0B1029" />
-        </linearGradient>
-      </defs>
-      <path d="M462 182 L494 132 L520 160 L540 112 L560 160 L586 132 L618 182 Z" fill="url(#crestGold)" />
-      <circle cx="494" cy="129" r="6.5" fill="url(#crestGold)" />
-      <circle cx="586" cy="129" r="6.5" fill="url(#crestGold)" />
-      <circle cx="540" cy="108" r="7" fill="url(#crestGold)" />
-      <path d="M540 92 v16 M531 100 h18" stroke="url(#crestGold)" strokeWidth="4.5" strokeLinecap="round" />
-      <rect x="460" y="182" width="160" height="17" rx="4" fill="url(#crestField)" stroke="url(#crestGold)" strokeWidth="4" />
-      <circle cx="500" cy="190.5" r="3.4" fill="url(#crestGold)" />
-      <circle cx="540" cy="190.5" r="3.4" fill="url(#crestGold)" />
-      <circle cx="580" cy="190.5" r="3.4" fill="url(#crestGold)" />
-      <g fill="url(#crestGold)">
-        <path d="M420 488 C372 446 360 360 388 256" stroke="url(#crestGold)" strokeWidth="5" fill="none" />
-        <ellipse cx="378" cy="300" rx="18" ry="8" transform="rotate(40 378 300)" />
-        <ellipse cx="372" cy="348" rx="18" ry="8" transform="rotate(28 372 348)" />
-        <ellipse cx="376" cy="396" rx="18" ry="8" transform="rotate(14 376 396)" />
-        <ellipse cx="392" cy="440" rx="18" ry="8" transform="rotate(-2 392 440)" />
-        <path d="M660 488 C708 446 720 360 692 256" stroke="url(#crestGold)" strokeWidth="5" fill="none" />
-        <ellipse cx="702" cy="300" rx="18" ry="8" transform="rotate(-40 702 300)" />
-        <ellipse cx="708" cy="348" rx="18" ry="8" transform="rotate(-28 708 348)" />
-        <ellipse cx="704" cy="396" rx="18" ry="8" transform="rotate(-14 704 396)" />
-        <ellipse cx="688" cy="440" rx="18" ry="8" transform="rotate(2 688 440)" />
-      </g>
-      <path d="M432 214 L648 214 L648 330 C648 416 596 466 540 496 C484 466 432 416 432 330 Z" fill="url(#crestField)" stroke="url(#crestGold)" strokeWidth="6.5" />
-      <path d="M448 230 L632 230 L632 330 C632 405 586 451 540 474 C494 451 448 405 448 330 Z" fill="none" stroke="url(#crestGold)" strokeWidth="1.6" />
-      <g fill="url(#crestGold)">
-        <path d="M484 250 l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" />
-        <path d="M540 246 l5.5 12 13 1-10 8.5 3.2 13-11.7-6.4-11.7 6.4 3.2-13-10-8.5 13-1z" />
-        <path d="M596 250 l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" />
-      </g>
-      <g stroke="url(#crestGold)" strokeWidth="3.4" strokeLinecap="round">
-        <path d="M540 318 v-16" /><path d="M508 326 l-10-12" /><path d="M572 326 l10-12" />
-        <path d="M486 344 l-13-6" /><path d="M594 344 l13-6" />
-      </g>
-      <g stroke="url(#crestGold)" strokeWidth="4" fill="#0B1029" strokeLinejoin="round">
-        <path d="M540 352 C508 340 476 343 458 352 L458 422 C476 412 508 410 540 422 Z" />
-        <path d="M540 352 C572 340 604 343 622 352 L622 422 C604 412 572 410 540 422 Z" />
-        <path d="M540 352 V422" fill="none" />
-        <g strokeWidth="2.2">
-          <path d="M472 372 q24-7 56 1" /><path d="M472 388 q24-7 56 1" />          <path d="M552 373 q24-7 56 1" /><path d="M552 389 q24-7 56 1" />
-        </g>
-      </g>
-      <path d="M368 486 L400 478 L400 524 L368 532 L382 509 Z" fill="#3A0E18" stroke="url(#crestGold)" strokeWidth="3" />
-      <path d="M712 486 L680 478 L680 524 L712 532 L698 509 Z" fill="#3A0E18" stroke="url(#crestGold)" strokeWidth="3" />
-      <path d="M396 478 L684 478 L684 524 L540 534 L396 524 Z" fill="#5A1726" stroke="url(#crestGold)" strokeWidth="3.5" />
-      <text x="540" y="511" textAnchor="middle" fontFamily="Cinzel, serif" fontWeight="700" fontSize="24" letterSpacing="1.5" fill="url(#crestGold)">PER TE · AD ASTRA</text>
-    </svg>
-  );
+  return <img src={withBase('/crest.png')} alt="" height={Math.round(size * 1.21)} style={{ height: size * 1.21, width: 'auto' }} />;
 }
 
 export default function Home() {

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   title: 'WriteRight by UNICOACH — Luyện IELTS Writing cùng mentor AI',
   description: 'Chấm bài IELTS Writing chuẩn 4 tiêu chí, sửa lỗi chi tiết song ngữ và bài mẫu Band 9. Bắt đầu từ bạn — cùng nhau vươn tới band mục tiêu.',
   icons: {
-    icon: withBase('/favicon.svg'),
+    icon: [{ url: withBase('/favicon.svg'), type: 'image/svg+xml' }, { url: withBase('/favicon-32.png'), sizes: '32x32', type: 'image/png' }],
     apple: withBase('/apple-touch-icon.png'),
   },
   openGraph: {
