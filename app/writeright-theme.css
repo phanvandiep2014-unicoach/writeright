@@ -310,3 +310,7 @@
 .theme-toggle:hover { background: rgba(200,161,75,.12); border-color: rgba(200,161,75,.55); }
 .theme-toggle:focus-visible { outline: 2px solid var(--champagne); outline-offset: 2px; }
 .theme-toggle svg { width: 17px; height: 17px; display: block; }
+
+
+/* ── UI 2026 · Master Academic Ecosystem: tiêu đề honorific (Prata IN HOA, giãn chữ) ── */
+.honorific{font-family:var(--font-heading);font-weight:400;letter-spacing:.08em;text-transform:uppercase;line-height:1.3}

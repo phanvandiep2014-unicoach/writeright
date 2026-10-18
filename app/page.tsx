@@ -96,7 +96,7 @@ export default function Home() {
       <section style={{ maxWidth: 1060, margin: '0 auto', padding: '70px 20px', background: 'var(--wr-bg)' }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <div className="eyebrow" style={{ marginBottom: 12 }}>Tính năng</div>
-          <h2 className="heading-vi" style={{ fontSize: 'clamp(24px,3.6vw,34px)' }}>Mọi thứ bạn cần để nâng Band Writing</h2>
+          <h2 className="heading-vi honorific" style={{ fontSize: 'clamp(20px,3vw,28px)' }}>Mọi thứ bạn cần để nâng Band Writing</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
           {features.map((f) => (
@@ -122,7 +122,7 @@ export default function Home() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 44 }}>
           <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--imperial-gold)' }}>Bảng giá</div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 'clamp(24px,3.6vw,34px)', color: 'var(--ivory)' }}>Chọn gói phù hợp với bạn</h2>
+          <h2 className="honorific" style={{ fontSize: 'clamp(20px,3vw,28px)', color: 'var(--ivory)' }}>Chọn gói phù hợp với bạn</h2>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 22 }}>
 
@@ -180,7 +180,7 @@ export default function Home() {
       {/* CTA */}
       <section style={{ maxWidth: 760, margin: '0 auto', padding: '80px 20px', textAlign: 'center', background: 'var(--wr-bg)' }}>
         <div className="foil-rule" style={{ width: 80, margin: '0 auto 24px' }} />
-        <h2 className="heading-vi" style={{ fontSize: 'clamp(22px,3.4vw,32px)', marginBottom: 14 }}>Sẵn sàng nâng Band Writing?</h2>
+        <h2 className="heading-vi honorific" style={{ fontSize: 'clamp(20px,3vw,27px)', marginBottom: 14 }}>Sẵn sàng nâng Band Writing?</h2>
         <p style={{ fontFamily: 'var(--font-subhead)', fontSize: 19, color: 'var(--ink)', opacity: .75, marginBottom: 30 }}>
           Chấm bài theo đúng 4 tiêu chí IELTS — nhận phản hồi chi tiết trong vài giây.
         </p>
