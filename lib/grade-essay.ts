@@ -90,7 +90,7 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
   const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
-  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: o.lean ? 6000 : 12000, temperature: 0.2, system: o.lean ? LEAN_SYSTEM_PROMPT : SYSTEM_PROMPT,
+  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: o.lean ? LEAN_SYSTEM_PROMPT : SYSTEM_PROMPT,
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] });
   // Thu lai khi Anthropic qua tai/gioi han toc do (429, 529, 5xx) hoac loi mang: nhieu bai cham cung luc (thi thu) hay gap.
   // Tong ngan sach 160 giay (route mock-grade co maxDuration 180 giay); ton trong header retry-after; cho tang dan + jitter.
@@ -129,8 +129,17 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
   if (!res.ok) { console.error(`[grade-essay] Anthropic ${res.status}:`, raw); throw new Error(friendlyApiError(res.status, raw)); }
   let data: any; try { data = JSON.parse(raw); } catch { throw new Error('Lỗi kết nối AI. Vui lòng thử lại.'); }
   const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
-  let result: any; try { result = JSON.parse(text.replace(/```json|```/g, '').trim()); }
-  catch { throw new Error('AI trả về định dạng không hợp lệ.'); }
+  let result: any;
+  try { result = JSON.parse(text.replace(/```json|```/g, '').trim()); }
+  catch {
+    // Thử lấy đoạn JSON từ { đầu tiên đến } cuối cùng (AI đôi khi thêm lời dẫn/kết quanh JSON).
+    const a = text.indexOf('{'), z = text.lastIndexOf('}');
+    try { if (a < 0 || z <= a) throw new Error('no-json'); result = JSON.parse(text.slice(a, z + 1)); }
+    catch {
+      console.error(`[grade-essay] JSON không hợp lệ: stop_reason=${data.stop_reason} out_tokens=${data.usage?.output_tokens} len=${text.length} head=${JSON.stringify(text.slice(0, 200))} tail=${JSON.stringify(text.slice(-200))}`);
+      throw new Error(data.stop_reason === 'max_tokens' ? 'Bài chấm bị cắt do quá dài. Vui lòng bấm chấm lại.' : 'AI trả về định dạng không hợp lệ.');
+    }
+  }
   // Điểm tổng suy ra từ 4 tiêu chí — cùng quy tắc với /api/evaluate.
   const derived = officialOverall([result.task_achievement?.band, result.coherence_cohesion?.band,
     result.lexical_resource?.band, result.grammatical_range?.band]);
