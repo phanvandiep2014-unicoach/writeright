@@ -77,14 +77,20 @@ return 'Không thể chấm bài lúc này. Vui lòng thử lại hoặc liên h
 
 export const EVAL_MODEL = 'claude-sonnet-4-6';
 
+// Bản "gọn" của prompt: bỏ bài mẫu mở bài + bài viết lại toàn bộ band 8.5–9.0. Hai trường này chiếm phần lớn
+// token đầu ra nên làm mỗi lượt chấm mất >100 giây. Dùng cho thi thử: có band trong ~30–60 giây,
+// phần bài viết lại lấy sau bằng rewriteEssayText (route mock-rewrite).
+export const LEAN_SYSTEM_PROMPT = SYSTEM_PROMPT.replace(
+  /,\n"model_introduction":[^\n]*\n"model_rewrite":[^\n]*\n\}/, '\n}');
+
 export interface GradedEssay { result: any; band: number | null }
 
 /** Chấm MỘT bài (chỉ văn bản, không ảnh). Ném Error có message tiếng Việt khi lỗi. */
-export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string }): Promise<GradedEssay> {
+export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string; lean?: boolean }): Promise<GradedEssay> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
   const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
-  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: SYSTEM_PROMPT,
+  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: o.lean ? 6000 : 12000, temperature: 0.2, system: o.lean ? LEAN_SYSTEM_PROMPT : SYSTEM_PROMPT,
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] });
   // Thu lai khi Anthropic qua tai/gioi han toc do (429, 529, 5xx) hoac loi mang: nhieu bai cham cung luc (thi thu) hay gap.
   // Tong ngan sach 160 giay (route mock-grade co maxDuration 180 giay); ton trong header retry-after; cho tang dan + jitter.
@@ -133,4 +139,25 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
     if (claimed == null || Math.abs(claimed - derived) > 0.5) result.overall_band = derived;
   }
   return { result, band: typeof result.overall_band === 'number' ? result.overall_band : derived };
+}
+
+/** Viết lại bài ở band 8.5–9.0 + mở bài mẫu. Gọi sau khi đã có band (chấm bản gọn). */
+export async function rewriteEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string }): Promise<{ model_introduction: string; model_rewrite: string }> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
+  const system = 'You are an expert IELTS writing coach. Respond ONLY with valid JSON (no markdown) of the form {"model_introduction": "...", "model_rewrite": "..."}. model_introduction: a Band 9 introduction paragraph for this prompt (English only). model_rewrite: the student\'s ENTIRE essay rewritten at Band 8.5-9.0 (English only), preserving the student\'s own ideas, stance, examples and paragraph structure while upgrading task response, cohesion, vocabulary and grammar; similar length to the original (within about 10%); paragraphs separated by \\n\\n.';
+  const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: EVAL_MODEL, max_tokens: 4000, temperature: 0.3, system,
+      messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] }),
+    signal: AbortSignal.timeout(100_000),
+  });
+  const raw = await res.text();
+  if (!res.ok) { console.error(`[rewrite-essay] Anthropic ${res.status}:`, raw); throw new Error(friendlyApiError(res.status, raw)); }
+  const data = JSON.parse(raw);
+  const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
+  const out = JSON.parse(text.replace(/```json|```/g, '').trim());
+  return { model_introduction: String(out.model_introduction || ''), model_rewrite: String(out.model_rewrite || '') };
 }

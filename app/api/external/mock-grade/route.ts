@@ -4,7 +4,7 @@ import { gradeEssayText } from '@/lib/grade-essay';
 import { task1ToText } from '@/lib/writing-tasks';
 import { resolvePaper } from '@/lib/weekly-papers';
 
-export const maxDuration = 180;   // hai lượt chấm chạy song song, mỗi lượt có thể mất ~60–90 giây
+export const maxDuration = 180;   // hai lượt chấm GỌN chạy song song, mỗi lượt ~30–60 giây (bài viết lại lấy riêng ở mock-rewrite)
 
 const words = (s: string) => (s.trim().match(/\S+/g) || []).length;
 const half = (avg: number) => { const f = avg - Math.floor(avg); return f < 0.25 ? Math.floor(avg) : f < 0.75 ? Math.floor(avg) + 0.5 : Math.floor(avg) + 1; };
@@ -31,8 +31,8 @@ export async function POST(req: Request) {
 
   try {
     const [g1, g2] = await Promise.all([
-      words(e1) >= MIN ? gradeEssayText({ taskType: 1, taskPrompt: task1ToText(t1), essayText: e1 }) : null,
-      words(e2) >= MIN ? gradeEssayText({ taskType: 2, taskPrompt: t2.prompt, essayText: e2 }) : null,
+      words(e1) >= MIN ? gradeEssayText({ taskType: 1, taskPrompt: task1ToText(t1), essayText: e1, lean: true }) : null,
+      words(e2) >= MIN ? gradeEssayText({ taskType: 2, taskPrompt: t2.prompt, essayText: e2, lean: true }) : null,
     ]);
     const b1 = g1?.band ?? 0, b2 = g2?.band ?? 0;
     const band = half((b1 + b2 * 2) / 3);
