@@ -4,7 +4,7 @@ import { gradeEssayText } from '@/lib/grade-essay';
 import { task1ToText } from '@/lib/writing-tasks';
 import { resolvePaper } from '@/lib/weekly-papers';
 
-export const maxDuration = 180;   // hai lượt chấm GỌN chạy song song, mỗi lượt ~30–60 giây (bài viết lại lấy riêng ở mock-rewrite)
+export const maxDuration = 300;   // hai lượt chấm GỌN chạy song song, mỗi lượt ~30–60 giây (bài viết lại lấy riêng ở mock-rewrite)
 
 const words = (s: string) => (s.trim().match(/\S+/g) || []).length;
 const half = (avg: number) => { const f = avg - Math.floor(avg); return f < 0.25 ? Math.floor(avg) : f < 0.75 ? Math.floor(avg) + 0.5 : Math.floor(avg) + 1; };

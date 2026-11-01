@@ -94,7 +94,7 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] });
   // Thu lai khi Anthropic qua tai/gioi han toc do (429, 529, 5xx) hoac loi mang: nhieu bai cham cung luc (thi thu) hay gap.
   // Tong ngan sach 160 giay (route mock-grade co maxDuration 180 giay); ton trong header retry-after; cho tang dan + jitter.
-  const BUDGET_MS = 160_000, MAX_RETRIES = 3;
+  const BUDGET_MS = o.lean ? 280_000 : 160_000, MAX_RETRIES = 3;   // lean = thi thu (route mock-grade maxDuration 300s)
   const t0 = Date.now();
   let res: Response | null = null;
   let raw = '';
