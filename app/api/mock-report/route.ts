@@ -1,3 +1,4 @@
+import { recordAiUsage } from '@/lib/ai-budget';
 /**
  * Tổng hợp một lượt Thi thử Writing thành MỘT báo cáo cho cả hai phần.
  *
@@ -222,6 +223,7 @@ export async function POST(req: NextRequest) {
         reportError = 'Chưa tạo được phần tổng hợp hai bài. Điểm và phần thời gian bên dưới vẫn đầy đủ.';
       } else {
         const data = await apiRes.json();
+        await recordAiUsage('mock-report', 'claude-sonnet-4-6', data.usage);
         const raw = (data.content ?? []).map((b: any) => b.text ?? '').join('');
         report = JSON.parse(raw.replace(/```json|```/g, '').trim());
       }

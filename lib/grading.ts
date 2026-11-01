@@ -3,6 +3,7 @@ import { pushResultToLms } from '@/lib/unicoach';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { activationPatch } from '@/lib/activation';
 import { MEMBER_LABEL, MEMBER_WRITING_PER_30D, isMemberPlan } from '@/lib/membership';
+import { alertBudgetExhausted, budgetTight, isBudgetError, recordAiUsage } from '@/lib/ai-budget';
 // Prompt A1 (dẫn chứng → đối chiếu descriptor → band từng tiêu chí → band tổng) dùng chung với
 // /api/external/mock-grade. Bài chấm bằng prompt này có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
@@ -87,6 +88,13 @@ export async function evalAllowance(
   } else {
     const isPaid = ['standard', 'premium'].includes((entitlement as any)?.plan);
     if (!isPaid && ((entitlement as any)?.evals_this_week ?? 0) + pendingJobs >= ((entitlement as any)?.weekly_quota ?? FREE_EVALS_PER_WEEK)) return quotaOut;
+    // Ngân sách AI tháng đã dùng từ 90%: dành phần còn lại cho người trả phí + thi thử (lib/ai-budget.ts).
+    if (!isPaid && await budgetTight()) {
+      return { ok: false, status: 503, body: {
+        error: 'Lượt chấm miễn phí đang tạm dừng đến đầu tháng sau vì hệ thống đã dùng gần hết ngân sách chấm bài của tháng. Gói Scholar / Laureate vẫn chấm bình thường.',
+        code: 'FREE_PAUSED_BUDGET',
+      } };
+    }
     // Gói hội viên Scholar / Laureate (từ 02/11/2026): 15 / 30 bài mỗi 30 ngày gần nhất.
     // member_plan NULL = khách gói cũ hoặc học viên trung tâm → giữ không giới hạn như cũ.
     if (isPaid) {
@@ -156,6 +164,11 @@ signal: AbortSignal.timeout(285_000), // ngắt trước maxDuration để còn 
 if (!apiRes.ok || !apiRes.body) {
 const responseText = await apiRes.text();
 console.error(`[evaluate] Anthropic API error ${apiRes.status}:`, responseText);
+// Hết tiền / chạm hạn mức chi tiêu: báo admin ngay; nơi gọi xếp bài vào hàng chờ (code AI_BUDGET) thay vì báo lỗi.
+if (isBudgetError(apiRes.status, responseText)) {
+await alertBudgetExhausted(responseText);
+return { status: 503, body: { error: 'Hệ thống chấm đang tạm dừng vài giờ. Bài của bạn đã được giữ lại và sẽ tự chấm khi mở lại — xem ở mục "Bài chờ chấm".', code: 'AI_BUDGET' } };
+}
 return { status: 503, body: { error: friendlyApiError(apiRes.status, responseText), code: 'AI_UNAVAILABLE' } };
 }
 
@@ -190,6 +203,7 @@ return { status: 503, body: { error: friendlyApiError(ev.error?.type === 'overlo
 }
 
 console.log(`[evaluate] grading done ${((Date.now() - t0) / 1000).toFixed(1)}s in=${inTok} out=${outTok} stop=${stopReason} images=${imgList.length} task=${taskType || 2} prompt=${PROMPT_VERSION}`);
+await recordAiUsage('evaluate', 'claude-sonnet-4-6', { input_tokens: inTok, output_tokens: outTok });
 let result;
 try { result = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
 catch { return { status: 502, body: { error: 'AI trả về định dạng không hợp lệ. Vui lòng thử lại.' } }; }

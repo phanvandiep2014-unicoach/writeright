@@ -72,6 +72,14 @@ export async function processJob(jobId: string): Promise<void> {
 
     const code: string | undefined = r.body?.code;
     const message: string = r.body?.error || 'Không chấm được bài này.';
+    // AI chạm hạn mức chi tiêu: chờ 30 phút rồi thử lại, KHÔNG tính vào số lần thử (bài không lỗi gì).
+    if (code === 'AI_BUDGET') {
+      await admin.from('grading_jobs').update({
+        status: 'queued', attempts: job.attempts ?? 0, run_after: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+        error: message, error_code: code,
+      }).eq('id', jobId);
+      return;
+    }
     const retryable = (code && RETRYABLE_CODES.has(code)) || r.status === 502;
     const attempts = (job.attempts ?? 0) + 1;
     if (retryable && attempts < MAX_ATTEMPTS) {

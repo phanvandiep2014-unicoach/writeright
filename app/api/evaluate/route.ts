@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { MAX_IMAGE_BYTES, evalAllowance, normaliseImages, runGrading } from '@/lib/grading';
+import { createAdminSupabase } from '@/lib/supabase-admin';
 
 // Chấm đồng bộ (học viên ngồi chờ kết quả ngay trên trang). Chấm nền/xếp hàng: /api/evaluate/queue.
 // Chấm bài gọi AI với max_tokens lớn (bài dài / ảnh chữ viết tay) nên cần chạy lâu hơn mặc định.
@@ -38,6 +39,19 @@ async start(controller) {
 const ping = setInterval(() => { try { controller.enqueue(enc.encode(' ')); } catch {} }, 5000);
 try {
 const r = await runGrading({ supabase, user, taskType, taskPrompt, essayText, imgList, lessonId, usingFreeCredit: allow.usingFreeCredit });
+// AI chạm hạn mức chi tiêu: KHÔNG làm mất bài — đưa vào hàng chờ, tự chấm lại sau 30 phút (lib/ai-budget.ts).
+if (r.body?.code === 'AI_BUDGET') {
+  try {
+    const tt = taskType === 1 ? 1 : 2;
+    await createAdminSupabase().from('grading_jobs').insert({
+      user_id: user.id, task_type: tt,
+      title: String(taskPrompt || (hasImages ? 'Đề / bài viết trong ảnh' : 'Bài viết')).replace(/\s+/g, ' ').trim().slice(0, 90),
+      payload: { taskType: tt, taskPrompt: taskPrompt || null, essayText: essayText || null, images: hasImages ? imgList : [] },
+      run_after: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    });
+    r.body = { ...r.body, queued: true };
+  } catch (e: any) { console.error('[evaluate] khong xep hang duoc bai khi het han muc AI:', e?.message); }
+}
 controller.enqueue(enc.encode(JSON.stringify(r.body)));
 } catch (e: any) {
 controller.enqueue(enc.encode(JSON.stringify({ error: 'Server error: ' + (e?.message || e) })));
