@@ -27,7 +27,7 @@ for (const im of imgList)
 if (Math.ceil((im.data.length * 3) / 4) > MAX_IMAGE_BYTES)
 return NextResponse.json({ error: 'Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5 MB.' }, { status: 413 });
 
-const allow = await evalAllowance(supabase, user.id);
+const allow = await evalAllowance(supabase, user.id, 0, !essayText && hasImages);
 if (!allow.ok) return NextResponse.json(allow.body, { status: allow.status });
 
 // Trả về dạng stream: gửi khoảng trắng giữ kết nối mỗi 5 giây trong lúc AI chấm, rồi một khối JSON cuối.

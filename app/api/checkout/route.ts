@@ -12,7 +12,7 @@ import { createPaymentLink, encodeOrderCode } from '@/lib/payos';
  * nhét vào tier — nhét vào là vỡ constraint và hỏng mọi chỗ so sánh
  * `tier === 'premium'`.
  */
-type SpeakPlan = 'speak' | 'speak_plus';
+type SpeakPlan = 'speak' | 'speak_plus' | 'scholar' | 'laureate';
 type Plan = {
   amount: number;
   label: string;
@@ -20,15 +20,29 @@ type Plan = {
   tier: 'standard' | 'premium' | null;
   /** Quyền nói (Precisely). NULL = đơn không chứa phần nói. */
   speak: SpeakPlan | null;
-  cycle: 'monthly' | 'yearly';
+  cycle: 'monthly' | 'quarterly' | 'yearly';
+  /** Gói hội viên gộp (WriteRight + Precisely + Pass LMS). NULL = gói cũ. */
+  member?: 'scholar' | 'laureate';
+  /** Gói cũ: ngừng bán từ 02/11/2026, khách đang dùng giữ đến hết hạn. */
+  legacy?: boolean;
 };
 
 /**
  * BẢNG GIÁ DUY NHẤT của cả WriteRight lẫn Precisely — đổi giá ở đây.
- * Chiến lược: UNICOACH LMS/KE-HOACH-VAN-HANH-PRECISELY.md (23/09/2026).
- * Số phút nói của từng gói nằm ở gotcha-web/api/_lib/quota-rules.js.
+ * Từ 02/11/2026 chỉ bán gói hội viên Scholar / Laureate (WriteRight + Precisely + Pass tự học LMS).
+ * Hạn mức: lib/membership.ts (Writing) và gotcha-web/api/_lib/quota-rules.js (phút nói).
+ * Mô tả trên trang giá: components/PricingRoyal.tsx — đổi giá ở đây thì đổi cả ở đó.
  */
 const PLANS: Record<string, Plan> = {
+  scholar_monthly:    { amount: 199000,  label: 'UNICOACH Scholar 1T',  tier: 'standard', speak: 'scholar',  cycle: 'monthly',   member: 'scholar' },
+  scholar_quarterly:  { amount: 499000,  label: 'UNICOACH Scholar 3T',  tier: 'standard', speak: 'scholar',  cycle: 'quarterly', member: 'scholar' },
+  scholar_yearly:     { amount: 1590000, label: 'UNICOACH Scholar 12T', tier: 'standard', speak: 'scholar',  cycle: 'yearly',    member: 'scholar' },
+  laureate_monthly:   { amount: 299000,  label: 'UNICOACH Laureate 1T', tier: 'premium',  speak: 'laureate', cycle: 'monthly',   member: 'laureate' },
+  laureate_quarterly: { amount: 749000,  label: 'UNICOACH Laureate 3T', tier: 'premium',  speak: 'laureate', cycle: 'quarterly', member: 'laureate' },
+  laureate_yearly:    { amount: 2390000, label: 'UNICOACH Laureate 12T',tier: 'premium',  speak: 'laureate', cycle: 'yearly',    member: 'laureate' },
+  // ── Gói cũ (legacy): giữ định nghĩa để đọc đơn cũ, KHÔNG nhận đơn mới.
+};
+const LEGACY_PLANS: Record<string, Plan> = {
   standard:        { amount: 90000,   label: 'WriteRight Scholar', tier: 'standard', speak: null,         cycle: 'monthly' },
   premium:         { amount: 150000,  label: 'WriteRight Laureate',  tier: 'premium',  speak: null,         cycle: 'monthly' },
   premium_yearly:  { amount: 790000,  label: 'WriteRight nam',      tier: 'premium',  speak: null,         cycle: 'yearly'  },
@@ -60,6 +74,13 @@ export async function POST(req: NextRequest) {
   }
 
   const planId: string = body.tier;
+  if (LEGACY_PLANS[planId]) {
+    // Gói cũ ngừng bán 02/11/2026 (Phan chốt: khách cũ giữ đến hết hạn, lần sau mua gói hội viên).
+    return NextResponse.json(
+      { error: 'Gói này đã ngừng bán. Mời bạn chọn gói hội viên Scholar hoặc Laureate.', code: 'PLAN_RETIRED' },
+      { status: 410 }
+    );
+  }
   const plan = PLANS[planId];
   if (!plan) {
     return NextResponse.json({ error: 'Gói không hợp lệ.' }, { status: 400 });
@@ -117,7 +138,7 @@ export async function POST(req: NextRequest) {
   if (plan.speak) {
     const { error: speakErr } = await admin
       .from('orders')
-      .insert({ ...baseRow, billing_cycle: plan.cycle, plan_code: planId, speak_plan: plan.speak });
+      .insert({ ...baseRow, billing_cycle: plan.cycle, plan_code: planId, speak_plan: plan.speak, member_plan: plan.member ?? null });
     if (speakErr) {
       console.error('checkout: khong tao duoc don co phan noi (da chay sql/precisely-duo.sql chua?):', speakErr.message);
       return NextResponse.json(

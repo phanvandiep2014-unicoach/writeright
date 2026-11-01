@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { pushResultToLms } from '@/lib/unicoach';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { activationPatch } from '@/lib/activation';
+import { MEMBER_LABEL, MEMBER_WRITING_PER_30D, isMemberPlan } from '@/lib/membership';
 // Prompt A1 (dẫn chứng → đối chiếu descriptor → band từng tiêu chí → band tổng) dùng chung với
 // /api/external/mock-grade. Bài chấm bằng prompt này có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
@@ -62,7 +63,7 @@ export function normaliseImages(images: any, imageBase64?: any, imageType?: any)
  * hạn mức để người dùng miễn phí không xếp 5 bài cùng lúc rồi lách hạn mức 1 bài/tuần.
  */
 export async function evalAllowance(
-  supabase: SupabaseClient, userId: string, pendingJobs = 0,
+  supabase: SupabaseClient, userId: string, pendingJobs = 0, handwritten = false,
 ): Promise<{ ok: true; usingFreeCredit: boolean } | { ok: false; status: number; body: any }> {
   const weekStart = currentWeekStart();
   const quotaOut = { ok: false as const, status: 403, body: { error: 'Hết lượt miễn phí tuần này.', code: 'QUOTA_EXCEEDED' } };
@@ -86,6 +87,32 @@ export async function evalAllowance(
   } else {
     const isPaid = ['standard', 'premium'].includes((entitlement as any)?.plan);
     if (!isPaid && ((entitlement as any)?.evals_this_week ?? 0) + pendingJobs >= ((entitlement as any)?.weekly_quota ?? FREE_EVALS_PER_WEEK)) return quotaOut;
+    // Gói hội viên Scholar / Laureate (từ 02/11/2026): 15 / 30 bài mỗi 30 ngày gần nhất.
+    // member_plan NULL = khách gói cũ hoặc học viên trung tâm → giữ không giới hạn như cũ.
+    if (isPaid) {
+      const { data: prof } = await supabase.from('profiles').select('member_plan').eq('id', userId).maybeSingle();
+      const mp = (prof as any)?.member_plan;
+      if (isMemberPlan(mp)) {
+        // Chấm ẢNH BÀI VIẾT TAY (không gõ chữ, chỉ gửi ảnh) là quyền lợi của Laureate.
+        // Ảnh đề / biểu đồ Task 1 kèm bài gõ chữ thì Scholar vẫn dùng được.
+        if (mp === 'scholar' && handwritten) {
+          return { ok: false, status: 403, body: {
+            error: 'Chấm ảnh bài viết tay dành cho gói Laureate. Bạn có thể gõ bài vào ô văn bản để chấm bằng gói Scholar.',
+            code: 'HANDWRITING_LAUREATE_ONLY',
+          } };
+        }
+        const limit = MEMBER_WRITING_PER_30D[mp];
+        const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await supabase.from('evaluations').select('*', { count: 'exact', head: true })
+          .eq('user_id', userId).gte('created_at', since);
+        if ((count ?? 0) + pendingJobs >= limit) {
+          return { ok: false, status: 403, body: {
+            error: `Bạn đã dùng hết ${limit} lượt chấm của gói ${MEMBER_LABEL[mp]} trong 30 ngày qua. Lượt sẽ mở lại dần theo ngày chấm bài cũ.`,
+            code: 'MEMBER_QUOTA_EXCEEDED', limit,
+          } };
+        }
+      }
+    }
   }
   return { ok: true, usingFreeCredit };
 }

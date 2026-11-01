@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { verifyWebhookSignature } from '@/lib/payos';
 import { paymentPatch } from '@/lib/activation';
+import { CYCLE_DAYS, grantLmsPass, isMemberPlan } from '@/lib/membership';
 
 /**
  * PayOS webhook receiver.
@@ -59,14 +60,14 @@ export async function POST(req: NextRequest) {
   //    cột chưa tồn tại thì Supabase trả lỗi, ta select lại bộ cột cũ.
   let { data: order, error: findErr } = await admin
     .from('orders')
-    .select('id, user_id, tier, status, billing_cycle, speak_plan')
+    .select('id, user_id, tier, status, billing_cycle, speak_plan, member_plan, order_code')
     .eq('order_code', data.orderCode)
     .single();
 
   // Thiếu BẤT KỲ cột mở rộng nào (billing_cycle, speak_plan...) thì đọc lại bộ cột gốc.
   // 23/09→04/10/2026: orders.speak_plan chưa có trên production, lỗi select bị coi là
   // "không tìm thấy đơn" → khách trả tiền xong KHÔNG được nâng gói, PayOS vẫn nhận 200.
-  if (findErr && /column|billing_cycle|speak_plan|plan_code/i.test(findErr.message)) {
+  if (findErr && /column|billing_cycle|speak_plan|plan_code|member_plan/i.test(findErr.message)) {
     console.error('payos-webhook: thieu cot tren orders — doc lai bo cot goc:', findErr.message);
     ({ data: order, error: findErr } = await admin
       .from('orders')
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
   //    hạn khi quyền còn hiệu lực thì CỘNG DỒN từ ngày hết hạn cũ chứ
   //    không tính lại từ hôm nay — trả tiền sớm không được phạt.
   const now = new Date();
-  const days = (order as any).billing_cycle === 'yearly' ? 365 : 30;
+  const days = CYCLE_DAYS[(order as any).billing_cycle as string] ?? 30;
 
   // ── 4a. Phần NÓI (Precisely / Duo) — trục quyền riêng, hạn riêng.
   //    Chạy TRƯỚC phần viết vì đơn chỉ mua Precisely có tier = NULL và
@@ -194,6 +195,20 @@ export async function POST(req: NextRequest) {
   console.log(
     `payos-webhook: ${order.user_id} -> ${order.tier} (+${days} ngay, het han tam ${expiresAt})`
   );
+
+  // ── 6. Gói hội viên Scholar / Laureate: ghi hạng (hạn mức Writing 15/30 bài mỗi 30 ngày)
+  //    rồi báo LMS mở Pass tự học. Mở Pass hỏng thì KHÔNG trả lỗi cho PayOS (khách đã có
+  //    quyền viết + nói); orders.pass_granted_at còn NULL → cron hằng ngày thử lại.
+  const memberPlan = (order as any).member_plan;
+  if (isMemberPlan(memberPlan)) {
+    const { error: mErr } = await admin.from('profiles').update({ member_plan: memberPlan }).eq('id', order.user_id);
+    if (mErr) console.error('payos-webhook: khong ghi duoc member_plan:', mErr.message);
+    const { data: who } = await admin.from('profiles').select('email').eq('id', order.user_id).maybeSingle();
+    const ok = await grantLmsPass({
+      email: (who as any)?.email || '', plan: memberPlan, days, ref: `wr-${(order as any).order_code ?? order.id}`,
+    });
+    if (ok) await admin.from('orders').update({ pass_granted_at: new Date().toISOString() }).eq('id', order.id);
+  }
 
   return NextResponse.json({ success: true });
 }

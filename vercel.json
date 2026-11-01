@@ -20,6 +20,10 @@
     {
       "path": "/api/cron/sync-active-students",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/member-pass-retry",
+      "schedule": "15 3 * * *"
     }
   ]
 }

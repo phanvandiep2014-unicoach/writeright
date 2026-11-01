@@ -60,10 +60,11 @@ export default function TermsPage() {
             <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>4. Gói dịch vụ và thanh toán</h2>
             <ul style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <li><strong style={{ color: 'var(--ivory)' }}>Gói Miễn phí:</strong> 1 lượt chấm bài/tuần, không giới hạn thời gian sử dụng.</li>
-              <li><strong style={{ color: 'var(--ivory)' }}>Gói Scholar (90.000 VNĐ/tháng):</strong> Chấm bài không giới hạn, xem chi tiết 4 tiêu chí, theo dõi tiến bộ.</li>
-              <li><strong style={{ color: 'var(--ivory)' }}>Gói Laureate (150.000 VNĐ/tháng):</strong> Tất cả tính năng Scholar cộng thêm chụp ảnh bài viết tay, phân tích nâng cao và forecast đề thi.</li>
+              <li><strong style={{ color: 'var(--ivory)' }}>Gói hội viên Scholar (199.000 VNĐ/1 tháng · 499.000 VNĐ/3 tháng · 1.590.000 VNĐ/12 tháng):</strong> 15 lượt chấm Writing trong mỗi 30 ngày gần nhất, xem chi tiết 4 tiêu chí, theo dõi tiến bộ; 45 phút chấm Speaking trên Precisely mỗi tháng; mở mọi khóa tự học trên UNICOACH LMS trong thời hạn gói.</li>
+              <li><strong style={{ color: 'var(--ivory)' }}>Gói hội viên Laureate (299.000 VNĐ/1 tháng · 749.000 VNĐ/3 tháng · 2.390.000 VNĐ/12 tháng):</strong> Tất cả quyền lợi Scholar, nhưng 30 lượt chấm Writing trong mỗi 30 ngày và 90 phút chấm Speaking mỗi tháng, cộng thêm chấm ảnh bài viết tay.</li>
+              <li>Lượt chấm không cộng dồn sang kỳ sau. Khách đã mua gói cũ (Scholar/Laureate 90.000–150.000 VNĐ, Duo, Precisely Speak, Pass) giữ nguyên quyền lợi đã mua đến hết hạn.</li>
             </ul>
-            <p style={{ marginTop: 12 }}>Thanh toán được xử lý qua PayOS. Gói dịch vụ có hiệu lực ngay sau khi thanh toán thành công và gia hạn hàng tháng. Không hoàn tiền cho chu kỳ đã thanh toán.</p>
+            <p style={{ marginTop: 12 }}>Thanh toán được xử lý qua PayOS. Gói dịch vụ có hiệu lực ngay sau khi thanh toán thành công; không tự động gia hạn, hết hạn thì bạn chủ động mua tiếp. Không hoàn tiền cho chu kỳ đã thanh toán.</p>
           </section>
 
           <section>

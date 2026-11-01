@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   if (pendingN >= MAX_PENDING_PER_USER)
     return NextResponse.json({ error: `Đang có ${pendingN} bài chờ chấm. Hãy đợi một số bài xong rồi dán tiếp (tối đa ${MAX_PENDING_PER_USER} bài cùng lúc).`, code: 'QUEUE_FULL' }, { status: 429 });
 
-  const allow = await evalAllowance(supabase, user.id, pendingN);
+  const allow = await evalAllowance(supabase, user.id, pendingN, !essayText && hasImages);
   if (!allow.ok) return NextResponse.json(allow.body, { status: allow.status });
 
   const tt = taskType === 1 ? 1 : 2;

@@ -148,14 +148,15 @@ export default function Home() {
               background: 'var(--royal-oxblood)', color: 'var(--champagne)', padding: '6px 18px', borderRadius: 3, border: '1px solid #8A6A28', whiteSpace: 'nowrap'
             }}>Phổ biến</div>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--imperial-gold)' }}>Scholar</div>
-            <div className="gold-foil" style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, margin: '12px 0 2px' }}>90.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
+            <div className="gold-foil" style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, margin: '12px 0 2px' }}>499.000 <span style={{ fontSize: 16 }}>VNĐ</span></div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ 3 tháng · có gói 1 và 12 tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm không giới hạn</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 15 bài Writing mỗi 30 ngày</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Điểm 4 tiêu chí chi tiết</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Sửa lỗi inline + giải thích</li>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Vòng viết lại có so sánh điểm</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Biểu đồ tiến bộ theo thời gian</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 45 phút chấm Speaking (Precisely) mỗi tháng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mở mọi khóa tự học trên LMS</li>
             </ul>
             <Link href="/pricing" className="btn-royal" style={{ display: 'block', textAlign: 'center' }}>Đăng ký ngay</Link>
           </div>
@@ -163,14 +164,14 @@ export default function Home() {
           {/* Premium */}
           <div style={{ background: '#161E48', border: '1px solid rgba(200,161,75,.18)', borderRadius: 8, padding: '30px 26px' }}>
             <div style={{ fontFamily: 'var(--font-subhead)', fontWeight: 600, fontSize: 13, letterSpacing: '.1em', textTransform: 'uppercase', color: '#9c8657' }}>Laureate</div>
-            <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, color: 'var(--ivory)', margin: '12px 0 2px' }}>150.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
-            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ tháng</div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 32, color: 'var(--ivory)', margin: '12px 0 2px' }}>749.000 <span style={{ fontSize: 16, color: '#9c8657' }}>VNĐ</span></div>
+            <div style={{ fontFamily: 'var(--font-subhead)', fontStyle: 'italic', fontSize: 15, color: '#9c8657', marginBottom: 22 }}>/ 3 tháng · có gói 1 và 12 tháng</div>
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 26 }}>
               <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mọi tính năng Scholar</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Mẫu bài band 8.0–9.0 theo từng đề</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Ưu tiên chấm nhanh</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Báo cáo gửi giáo viên/lớp</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Forecast đề thi hàng tháng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 30 bài Writing mỗi 30 ngày</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Chấm ảnh bài viết tay</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ 90 phút chấm Speaking mỗi tháng</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: 15.5, color: '#cdbb8e' }}>✓ Các khóa học riêng trong WriteRight</li>
             </ul>
             <Link href="/pricing" className="btn-ghost" style={{ display: 'block', textAlign: 'center', color: 'var(--champagne)', borderColor: 'rgba(200,161,75,.3)' }}>Chọn Laureate</Link>
           </div>

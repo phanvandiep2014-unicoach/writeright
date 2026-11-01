@@ -63,7 +63,8 @@ export default function PricingPage() {
   useEffect(() => {
     if (autoStarted.current) return;
     const plan = new URLSearchParams(window.location.search).get('plan');
-    if (plan && plan !== 'free' && /^[a-z_]{3,20}$/.test(plan)) {
+    // Chỉ tự mở thanh toán cho gói đang bán; link cũ (?plan=duo, standard…) thì chỉ hiện bảng giá.
+    if (plan && /^(scholar|laureate)_(monthly|quarterly|yearly)$/.test(plan)) {
       autoStarted.current = true;
       void handleChoose(plan);
     }

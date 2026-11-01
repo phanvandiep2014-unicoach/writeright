@@ -9,8 +9,8 @@
  *   - A single gold-foil flourish on the recommended tier (Chanel rule: one accessory).
  *   - Annual is a *dated* launch price, not a permanent discount — it fuels the
  *     "khoá giá vĩnh viễn" mechanic and gives early buyers a reason to advocate.
- *   - Precisely / Duo are sellable since 24/09/2026: the minute meter is live in
- *     gotcha-web and entitlements come from /api/entitlement here.
+ *   - Từ 02/11/2026 chỉ bán gói hội viên Scholar / Laureate (WriteRight + Precisely + Pass LMS);
+ *     gói cũ (Duo, Precisely Speak, WriteRight 90k/150k) ngừng bán, khách cũ giữ đến hết hạn.
  *
  * IMPORTANT — every non-soft `id` (and `secondary.id`) MUST exist in PLANS in
  * app/api/checkout/route.ts. Anything not sellable yet sets `soft: true` → waitlist link.
@@ -33,12 +33,18 @@ type Tier = {
   soft?: boolean;
   badge?: string;
   note?: string;
-  /** Nút phụ trên cùng thẻ — dùng cho gói năm. `id` phải có trong PLANS ở app/api/checkout/route.ts. */
-  secondary?: { id: string; label: string };
+  /** Các nút phụ (gói 1 tháng, 12 tháng). `id` phải có trong PLANS ở app/api/checkout/route.ts. */
+  secondary?: { id: string; label: string }[];
   features: string[];
   locked: string[];
 };
 
+/**
+ * Gói hội viên (từ 02/11/2026): WriteRight + Precisely + Pass mọi khóa tự học trên LMS.
+ * Giá + mã gói phải khớp PLANS trong app/api/checkout/route.ts.
+ * Hạn mức phải khớp lib/membership.ts (15 / 30 bài) và gotcha-web/api/_lib/quota-rules.js (45 / 90 phút).
+ * Gói 3 tháng là nút chính vì người ôn IELTS thường ôn 2–3 tháng.
+ */
 const tiers: Tier[] = [
   {
     id: 'free',
@@ -49,108 +55,52 @@ const tiers: Tier[] = [
     cta: 'Bắt đầu miễn phí',
     featured: false,
     features: [
-      '1 bài chấm / tuần',
-      'Xem band tổng ngay lập tức',
-      'Gợi ý chung để cải thiện',
+      '1 bài chấm Writing / tuần',
+      '15 phút chấm phát âm Precisely (tặng một lần)',
+      'Unit 1–2 mọi khóa tự học trên LMS',
     ],
-    locked: ['Điểm 4 tiêu chí chi tiết', 'Sửa lỗi inline', 'Vòng viết lại', 'Biểu đồ tiến bộ'],
+    locked: ['Điểm 4 tiêu chí chi tiết', 'Sửa lỗi inline', 'Vòng viết lại', 'Mở toàn bộ khóa tự học'],
   },
   {
-    id: 'standard',
+    id: 'scholar_quarterly',
     name: 'Scholar',
-    price: '90.000đ',
-    cadence: '/ tháng',
-    outcome: 'Biết tại sao và sửa thế nào để lên band',
-    cta: 'Nâng cấp Scholar',
+    price: '499.000đ',
+    cadence: '/ 3 tháng',
+    outcome: 'Đủ cho một vòng ôn thi: viết, nói và toàn bộ khóa tự học',
+    cta: 'Chọn Scholar 3 tháng',
     featured: true,
-    note: 'Khoảng 3.000đ một ngày.',
+    badge: 'Mua lẻ 3 sản phẩm khoảng 335.000đ/tháng',
+    secondary: [
+      { id: 'scholar_monthly', label: '1 tháng · 199.000đ' },
+      { id: 'scholar_yearly', label: '12 tháng · 1.590.000đ' },
+    ],
+    note: 'Khoảng 5.500đ một ngày với gói 3 tháng. Đăng nhập Precisely và LMS bằng đúng email này để gói tự mở.',
     features: [
-      'Chấm bài viết không giới hạn',
-      'Điểm 4 tiêu chí chi tiết',
-      'Sửa lỗi inline + giải thích song ngữ',
-      'Vòng viết lại có so sánh điểm',
-      'Biểu đồ tiến bộ theo thời gian',
-      'Chia sẻ link kết quả cho thầy cô, bố mẹ',
+      'WriteRight: 15 bài chấm Writing mỗi 30 ngày, điểm 4 tiêu chí, sửa lỗi inline, vòng viết lại',
+      'Precisely: 45 phút chấm Speaking mỗi tháng (khoảng 3 bài nói đủ 3 Part)',
+      'LMS: mở mọi khóa tự học (Reading, Listening, Pronunciation, Shadowing, Từ vựng, Dịch, Writing, Speaking)',
+      'Biểu đồ tiến bộ, chia sẻ link kết quả cho thầy cô, bố mẹ',
     ],
     locked: [],
   },
   {
-    id: 'premium',
+    id: 'laureate_quarterly',
     name: 'Laureate',
-    price: '150.000đ',
-    cadence: '/ tháng',
-    outcome: 'Luyện như có gia sư UNICOACH kèm riêng',
-    cta: 'Chọn Laureate',
+    price: '749.000đ',
+    cadence: '/ 3 tháng',
+    outcome: 'Cường độ cao: gấp đôi lượt chấm cho giai đoạn nước rút',
+    cta: 'Chọn Laureate 3 tháng',
     featured: false,
-    badge: 'Trả năm 790.000đ — tiết kiệm 56%',
-    secondary: { id: 'premium_yearly', label: 'Mua gói năm 790.000đ' },
-    note: `Giá khai trương gói năm, áp dụng đến ${LAUNCH_PRICE_UNTIL}. Đăng ký trong thời gian này được giữ nguyên mức giá cho các lần gia hạn sau.`,
-    features: [
-      'Mọi tính năng Scholar',
-      'Mẫu bài band 8.0–9.0 theo từng đề',
-      'Ưu tiên chấm nhanh',
-      'Báo cáo gửi giáo viên / lớp',
+    secondary: [
+      { id: 'laureate_monthly', label: '1 tháng · 299.000đ' },
+      { id: 'laureate_yearly', label: '12 tháng · 2.390.000đ' },
     ],
-    locked: [],
-  },
-];
-
-/**
- * Luyện nói — Precisely + gói đôi. MỞ BÁN 24/09/2026.
- * `id` / `secondary.id` phải có trong PLANS ở app/api/checkout/route.ts.
- * Số phút phải khớp gotcha-web/api/_lib/quota-rules.js (speak 90, speak_plus 180).
- * Chỉ ghi tính năng ĐÃ CÓ THẬT trong Precisely — không hứa shadowing, band tổng
- * hợp hay link chia sẻ chung khi chưa làm.
- */
-const upcoming: Tier[] = [
-  {
-    id: 'precisely_speak',
-    name: 'Precisely Speak',
-    price: '129.000đ',
-    cadence: '/ tháng',
-    outcome: 'Chấm nói — nghe từng âm, không đoán từ bản chữ',
-    cta: 'Mua Precisely Speak',
-    featured: false,
-    secondary: { id: 'precisely_plus', label: 'Speak+ 219.000đ · 180 phút' },
-    note: 'Luyện nói và phản hồi từ vựng, ngữ pháp, nhịp nói vẫn miễn phí không giới hạn. Gói chỉ tính phần chấm phát âm.',
     features: [
-      '90 phút chấm phát âm mỗi tháng',
-      'Chấm tới từng âm, chỉ ra âm yếu nhất',
-      'Thi thử Part 1–3 cùng Duke, ước tính band 4 tiêu chí',
-      'Bản nâng cấp câu trả lời & vòng thử lại',
-    ],
-    locked: [],
-  },
-  {
-    id: 'duo',
-    name: 'UNICOACH Duo',
-    price: '169.000đ',
-    cadence: '/ tháng',
-    outcome: 'Viết và nói — một lần thanh toán',
-    cta: 'Chọn Duo',
-    featured: true,
-    badge: 'Mua riêng là 219.000đ',
-    secondary: { id: 'duo_yearly', label: 'Duo trả năm 1.590.000đ' },
-    note: 'Đăng nhập Precisely bằng đúng email bạn dùng ở WriteRight để gói tự nhận.',
-    features: [
-      'Toàn bộ WriteRight Scholar',
-      'Toàn bộ Precisely Speak — 90 phút chấm phát âm/tháng',
-      'Gia hạn chủ động, không tự trừ tiền',
-    ],
-    locked: [],
-  },
-  {
-    id: 'duo_pro',
-    name: 'Duo Pro',
-    price: '269.000đ',
-    cadence: '/ tháng',
-    outcome: 'Cường độ cao cho 4–6 tuần trước ngày thi',
-    cta: 'Chọn Duo Pro',
-    featured: false,
-    badge: 'Mua riêng là 369.000đ',
-    features: [
-      'Toàn bộ WriteRight Laureate',
-      'Precisely Speak+ — 180 phút chấm phát âm/tháng',
+      'Mọi quyền lợi Scholar',
+      'WriteRight: 30 bài chấm Writing mỗi 30 ngày',
+      'Chấm ảnh bài viết tay (chụp bài viết trên giấy)',
+      'Precisely: 90 phút chấm Speaking mỗi tháng',
+      'Các khóa học riêng trong WriteRight',
     ],
     locked: [],
   },
@@ -236,15 +186,16 @@ function TierCard({ t, onChoose }: { t: Tier; onChoose: (id: string) => void }) 
         {t.cta}
       </button>
 
-      {t.secondary && (
+      {t.secondary?.map((s, i) => (
         <button
-          className="btn-royal"
-          style={{ width: '100%', marginBottom: t.note ? 10 : 20 }}
-          onClick={() => onChoose(t.secondary!.id)}
+          key={s.id}
+          className="btn-ghost"
+          style={{ width: '100%', marginBottom: i === t.secondary!.length - 1 ? (t.note ? 10 : 20) : 8 }}
+          onClick={() => onChoose(s.id)}
         >
-          {t.secondary.label}
+          {s.label}
         </button>
-      )}
+      ))}
 
       {t.note && (
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', opacity: .7, margin: '0 0 16px', lineHeight: 1.5 }}>
@@ -294,23 +245,10 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
           ))}
         </div>
 
-        {/* ── Sắp ra mắt ─────────────────────────────────────────────── */}
-        <div style={{ marginTop: 72 }}>
-          <span className="eyebrow">Precisely · Luyện nói</span>
-          <h2 className="heading-vi" style={{ fontSize: '1.8rem', margin: '8px 0 6px' }}>
-            Còn <span className="foil-ink">phần nói</span> thì sao?
-          </h2>
-          <p style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)', maxWidth: 620, margin: '0 auto 36px' }}>
-            Mỗi tài khoản mới có 15 phút chấm phát âm miễn phí để thử trước. Khi thấy đáng, chọn gói ở dưới —
-            thanh toán một lần qua PayOS, quyền dùng áp cho cả WriteRight lẫn Precisely.
-          </p>
-
-          <div style={{ ...grid, maxWidth: 1080, margin: '0 auto' }}>
-            {upcoming.map((t) => (
-              <TierCard key={t.id} t={t} onChoose={onChoose} />
-            ))}
-          </div>
-        </div>
+        <p style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)', maxWidth: 620, margin: '28px auto 0', fontSize: '.92rem' }}>
+          Mỗi gói hội viên dùng chung cho WriteRight, Precisely và các khóa tự học trên LMS. Thanh toán một lần qua PayOS,
+          không tự động trừ tiền. Bạn đang dùng gói cũ (Scholar/Laureate 90k–150k, Duo, Precisely Speak, Pass) thì giữ nguyên đến hết hạn.
+        </p>
 
         {/* ── Nói thẳng ──────────────────────────────────────────────── */}
         <div
@@ -326,7 +264,7 @@ export function PricingRoyal({ onChoose }: { onChoose: (tierId: string) => void 
             {[
               ['Band là ước lượng tham khảo.', 'Điểm do WriteRight đưa ra dựa trên band descriptor công khai của IELTS và được hiệu chỉnh để ổn định giữa các lần chấm — nhưng nó không phải điểm thi chính thức và có thể lệch so với điểm thi thật.'],
               ['Không tự động trừ tiền.', 'Hết tháng là dừng. Muốn dùng tiếp thì bạn chủ động gia hạn. Chúng tôi không kiếm tiền từ việc bạn quên huỷ.'],
-              ['Chấm bài viết không giới hạn. Phút nói thì có hạn mức.', 'Chấm một bài viết và chấm một phút nói có chi phí rất khác nhau, nên chúng tôi đặt hạn mức ở phần nói thay vì tăng giá cả gói. Hạn mức luôn hiển thị rõ trong tài khoản.'],
+              ['Mỗi gói có hạn mức chấm rõ ràng.', 'Mỗi bài chấm đều tốn chi phí AI thật, nên Scholar có 15 bài Writing + 45 phút nói, Laureate có 30 bài + 90 phút. Lượt Writing tính theo 30 ngày gần nhất, phút nói tính theo tháng.'],
             ].map(([title, body]) => (
               <li key={title} style={{ fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1.6 }}>
                 <span style={{ color: 'var(--royal-oxblood)', marginRight: 8 }}>✦</span>
