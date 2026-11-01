@@ -3,8 +3,10 @@ import { verifyLmsRequest } from '@/lib/lms-server-auth';
 import { gradeEssayText } from '@/lib/grade-essay';
 import { task1ToText } from '@/lib/writing-tasks';
 import { resolvePaper } from '@/lib/weekly-papers';
+import { createAdminSupabase } from '@/lib/supabase-admin';
+import { BASE } from '@/lib/base-path';
 
-export const maxDuration = 300;   // hai lượt chấm GỌN chạy song song, mỗi lượt ~30–60 giây (bài viết lại lấy riêng ở mock-rewrite)
+export const maxDuration = 300;   // hai lượt chấm bản THI THỬ (gọn) chạy song song, mỗi lượt ~30–60 giây (bài viết lại lấy riêng ở mock-rewrite)
 
 const words = (s: string) => (s.trim().match(/\S+/g) || []).length;
 const half = (avg: number) => { const f = avg - Math.floor(avg); return f < 0.25 ? Math.floor(avg) : f < 0.75 ? Math.floor(avg) + 0.5 : Math.floor(avg) + 1; };
@@ -31,8 +33,8 @@ export async function POST(req: Request) {
 
   try {
     const [g1, g2] = await Promise.all([
-      words(e1) >= MIN ? gradeEssayText({ taskType: 1, taskPrompt: task1ToText(t1), essayText: e1, lean: true }) : null,
-      words(e2) >= MIN ? gradeEssayText({ taskType: 2, taskPrompt: t2.prompt, essayText: e2, lean: true }) : null,
+      words(e1) >= MIN ? gradeEssayText({ taskType: 1, taskPrompt: task1ToText(t1), essayText: e1, mock: true }) : null,
+      words(e2) >= MIN ? gradeEssayText({ taskType: 2, taskPrompt: t2.prompt, essayText: e2, mock: true }) : null,
     ]);
     const b1 = g1?.band ?? 0, b2 = g2?.band ?? 0;
     const band = half((b1 + b2 * 2) / 3);
@@ -46,7 +48,30 @@ export async function POST(req: Request) {
       g1 ? `Task 1 (band ${b1}): ${say(g1.result)}` : 'Task 1: chưa làm bài (dưới 20 từ) — tính band 0.',
     ].join('\n');
 
+    // Lưu bản chấm để mở được trên WriteRight (/lms-report/<id>) — link đi kèm phiếu điểm LMS và phiếu in.
+    // Lỗi lưu KHÔNG làm hỏng việc chấm: LMS vẫn nhận đủ band và nhận xét.
+    let report_id: string | null = null, report_url: string | null = null;
+    try {
+      const admin = createAdminSupabase();
+      const sid = Number(b.session_id);
+      const data = {
+        paper: { id: paper.id, focus: (paper as any).focus ?? null },
+        student_name: b.student_name ? String(b.student_name).slice(0, 80) : null,
+        band, graded_at: new Date().toISOString(),
+        tasks: {
+          task1: { prompt: task1ToText(t1), essay: e1, words: words(e1), band: b1, result: g1?.result ?? null },
+          task2: { prompt: t2.prompt, essay: e2, words: words(e2), band: b2, result: g2?.result ?? null },
+        },
+      };
+      const { data: row, error } = await admin.from('lms_mock_reports')
+        .insert({ lms_session_id: Number.isInteger(sid) ? sid : null, paper: paper.id, data }).select('id').single();
+      if (error) throw error;
+      report_id = row.id;
+      report_url = `${new URL(req.url).origin}${BASE}/lms-report/${row.id}`;
+    } catch (e: any) { console.error('[mock-grade] lưu bản chấm đầy đủ:', e?.message); }
+
     return NextResponse.json({
+      report_id, report_url,
       band, task1_band: b1, task2_band: b2, feedback,
       detail: { task1: crit(g1?.result), task1_band: b1, task2: crit(g2?.result), task2_band: b2,
         words: { task1: words(e1), task2: words(e2) }, paper: paper.id },

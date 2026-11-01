@@ -83,18 +83,37 @@ export const EVAL_MODEL = 'claude-sonnet-4-6';
 export const LEAN_SYSTEM_PROMPT = SYSTEM_PROMPT.replace(
   /,\n"model_introduction":[^\n]*\n"model_rewrite":[^\n]*\n\}/, '\n}');
 
+// Bản cho THI THỬ (02/11/2026): gọn hơn bản lean — bỏ thêm khối language_insights và giới hạn 4–8 lỗi.
+// Vẫn giữ evidence → descriptor → band theo đúng thứ tự lập luận (A1), nên band không bị "đoán".
+// language_insights + mở bài mẫu + bài viết lại được tạo SAU ở extrasEssayText (route mock-rewrite).
+const LANG_INSIGHTS_RULES = (SYSTEM_PROMPT.match(/^LANGUAGE INSIGHTS - .*$/m) || [''])[0];
+const LANG_INSIGHTS_SCHEMA = (SYSTEM_PROMPT.match(/"language_insights": \{\n[\s\S]*?\n\}/) || [''])[0];
+const BILINGUAL_RULES = (SYSTEM_PROMPT.match(/^BILINGUAL RULES: .*$/m) || [''])[0];
+export const MOCK_SYSTEM_PROMPT = LEAN_SYSTEM_PROMPT
+  .replace(/"language_insights": \{\n[\s\S]*?\n\},\n/, '')
+  .replace(LANG_INSIGHTS_RULES ? LANG_INSIGHTS_RULES + '\n' : '\u0000', '')
+  .replace('Provide 6-14 items covering the most band-limiting errors', 'Provide 4-8 items covering the most band-limiting errors');
+
+/** Lấy JSON từ câu trả lời của AI — chịu được lời dẫn/kết hoặc ``` quanh JSON. */
+function parseJsonLoose(text: string): any {
+  try { return JSON.parse(text.replace(/```json|```/g, '').trim()); } catch { /* thử cách dưới */ }
+  const a = text.indexOf('{'), z = text.lastIndexOf('}');
+  if (a < 0 || z <= a) throw new Error('no-json');
+  return JSON.parse(text.slice(a, z + 1));
+}
+
 export interface GradedEssay { result: any; band: number | null }
 
 /** Chấm MỘT bài (chỉ văn bản, không ảnh). Ném Error có message tiếng Việt khi lỗi. */
-export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string; lean?: boolean }): Promise<GradedEssay> {
+export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string; lean?: boolean; mock?: boolean }): Promise<GradedEssay> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
   const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
-  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: o.lean ? LEAN_SYSTEM_PROMPT : SYSTEM_PROMPT,
+  const body = JSON.stringify({ model: EVAL_MODEL, max_tokens: 12000, temperature: 0.2, system: o.mock ? MOCK_SYSTEM_PROMPT : o.lean ? LEAN_SYSTEM_PROMPT : SYSTEM_PROMPT,
     messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] });
   // Thu lai khi Anthropic qua tai/gioi han toc do (429, 529, 5xx) hoac loi mang: nhieu bai cham cung luc (thi thu) hay gap.
   // Tong ngan sach 160 giay (route mock-grade co maxDuration 180 giay); ton trong header retry-after; cho tang dan + jitter.
-  const BUDGET_MS = o.lean ? 280_000 : 160_000, MAX_RETRIES = 3;   // lean = thi thu (route mock-grade maxDuration 300s)
+  const BUDGET_MS = (o.lean || o.mock) ? 280_000 : 160_000, MAX_RETRIES = 3;   // lean = thi thu (route mock-grade maxDuration 300s)
   const t0 = Date.now();
   let res: Response | null = null;
   let raw = '';
@@ -169,4 +188,44 @@ export async function rewriteEssayText(o: { taskType: 1 | 2; taskPrompt: string;
   const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
   const out = JSON.parse(text.replace(/```json|```/g, '').trim());
   return { model_introduction: String(out.model_introduction || ''), model_rewrite: String(out.model_rewrite || '') };
+}
+
+/**
+ * Phần bổ sung cho bài thi thử (chạy nền SAU khi đã có band): phân tích ngôn ngữ (language_insights),
+ * mở bài mẫu band 9 và bài viết lại band 8.5–9.0. Không chấm lại, không đổi band.
+ */
+export async function extrasEssayText(o: { taskType: 1 | 2; taskPrompt: string; essayText: string }): Promise<{ model_introduction: string; model_rewrite: string; language_insights: any }> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('ANTHROPIC_API_KEY chưa được cấu hình.');
+  const system = [
+    'You are a highly experienced IELTS examiner and writing coach. The essay has ALREADY been marked: do NOT give, mention or imply any band score.',
+    'Respond ONLY with valid JSON (no markdown, no code blocks) of exactly this shape:',
+    '{',
+    LANG_INSIGHTS_SCHEMA + ',',
+    '"model_introduction": "A Band 9 introduction paragraph for this prompt (English only)",',
+    '"model_rewrite": "The student\'s ENTIRE essay rewritten at Band 8.5-9.0 (English only). Preserve the student\'s own ideas, stance, examples and paragraph structure, but upgrade task response, cohesion, vocabulary and grammar. Keep a similar length to the original (within about 10%). Separate paragraphs with \\n\\n."',
+    '}',
+    LANG_INSIGHTS_RULES,
+    BILINGUAL_RULES,
+  ].filter(Boolean).join('\n');
+  const instruction = `IELTS Task ${o.taskType}\n\nTask Prompt:\n${o.taskPrompt}\n\nStudent Essay:\n${o.essayText}`;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: EVAL_MODEL, max_tokens: 8000, temperature: 0.3, system,
+      messages: [{ role: 'user', content: [{ type: 'text', text: instruction }] }] }),
+    signal: AbortSignal.timeout(250_000),
+  });
+  const raw = await res.text();
+  if (!res.ok) { console.error(`[extras-essay] Anthropic ${res.status}:`, raw); throw new Error(friendlyApiError(res.status, raw)); }
+  const data = JSON.parse(raw);
+  const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
+  let out: any;
+  try { out = parseJsonLoose(text); }
+  catch { console.error(`[extras-essay] JSON không hợp lệ: stop_reason=${data.stop_reason} len=${text.length}`); throw new Error('AI trả về định dạng không hợp lệ.'); }
+  return {
+    model_introduction: String(out.model_introduction || ''),
+    model_rewrite: String(out.model_rewrite || ''),
+    language_insights: out.language_insights && typeof out.language_insights === 'object' ? out.language_insights : null,
+  };
 }
