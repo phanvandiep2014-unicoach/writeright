@@ -92,7 +92,7 @@ export default function CoursesPage() {
                   </div>
                   {!isPremium && (
                     <span className="shrink-0 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-full bg-navy-700 border border-navy-600 text-navy-300">
-                      🔒 Premium
+                      🔒 Laureate
                     </span>
                   )}
                 </div>

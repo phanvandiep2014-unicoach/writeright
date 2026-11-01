@@ -141,7 +141,7 @@ export default function DashboardPage() {
     window.location.href = withBase('/');
   }
 
-  const tierLabel = profile?.tier === 'premium' ? 'Premium' : profile?.tier === 'standard' ? 'Standard' : 'Free';
+  const tierLabel = profile?.tier === 'premium' ? 'Laureate' : profile?.tier === 'standard' ? 'Scholar' : 'Free';
 
   // Hạn dùng. Không có auto-renew nên người dùng PHẢI thấy ngày này —
   // nếu không họ sẽ mất quyền mà không hiểu vì sao.

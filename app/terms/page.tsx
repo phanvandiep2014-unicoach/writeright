@@ -60,8 +60,8 @@ export default function TermsPage() {
             <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 400, fontSize: 18, color: 'var(--ivory)', marginBottom: 12 }}>4. Gói dịch vụ và thanh toán</h2>
             <ul style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <li><strong style={{ color: 'var(--ivory)' }}>Gói Miễn phí:</strong> 1 lượt chấm bài/tuần, không giới hạn thời gian sử dụng.</li>
-              <li><strong style={{ color: 'var(--ivory)' }}>Gói Standard (90.000 VNĐ/tháng):</strong> Chấm bài không giới hạn, xem chi tiết 4 tiêu chí, theo dõi tiến bộ.</li>
-              <li><strong style={{ color: 'var(--ivory)' }}>Gói Premium (150.000 VNĐ/tháng):</strong> Tất cả tính năng Standard cộng thêm chụp ảnh bài viết tay, phân tích nâng cao và forecast đề thi.</li>
+              <li><strong style={{ color: 'var(--ivory)' }}>Gói Scholar (90.000 VNĐ/tháng):</strong> Chấm bài không giới hạn, xem chi tiết 4 tiêu chí, theo dõi tiến bộ.</li>
+              <li><strong style={{ color: 'var(--ivory)' }}>Gói Laureate (150.000 VNĐ/tháng):</strong> Tất cả tính năng Scholar cộng thêm chụp ảnh bài viết tay, phân tích nâng cao và forecast đề thi.</li>
             </ul>
             <p style={{ marginTop: 12 }}>Thanh toán được xử lý qua PayOS. Gói dịch vụ có hiệu lực ngay sau khi thanh toán thành công và gia hạn hàng tháng. Không hoàn tiền cho chu kỳ đã thanh toán.</p>
           </section>

@@ -88,9 +88,9 @@ export default function CourseDetailPage() {
         ) : locked ? (
           <div className="bg-navy-800 border border-brand-500/30 rounded-xl p-10 text-center">
             <p className="text-2xl mb-3">🔒</p>
-            <p className="text-navy-200 font-medium">Nội dung dành cho học viên Premium</p>
+            <p className="text-navy-200 font-medium">Nội dung dành cho học viên Laureate</p>
             <p className="text-sm text-navy-400 mt-1 mb-5">Nâng cấp để mở toàn bộ lộ trình band 5.0 → 8.0.</p>
-            <Link href="/pricing" className="inline-block px-6 py-2.5 rounded-lg bg-brand-500 text-navy-900 font-semibold text-sm hover:bg-brand-400 transition">Xem gói Premium</Link>
+            <Link href="/pricing" className="inline-block px-6 py-2.5 rounded-lg bg-brand-500 text-navy-900 font-semibold text-sm hover:bg-brand-400 transition">Xem gói Laureate</Link>
           </div>
         ) : lessons.length === 0 ? (
           <div className="bg-navy-800 border border-navy-700 rounded-xl p-8 text-center">

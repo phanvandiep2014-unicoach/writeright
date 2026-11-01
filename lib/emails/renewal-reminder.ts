@@ -22,7 +22,7 @@ export interface RenewalEmailInput {
 }
 
 function tierLabel(tier: string) {
-  return tier === 'premium' ? 'Premium' : 'Standard';
+  return tier === 'premium' ? 'Laureate' : 'Scholar';
 }
 
 export function renewalSubject({ daysLeft, expiresOn }: RenewalEmailInput) {

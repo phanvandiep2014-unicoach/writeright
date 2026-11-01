@@ -57,11 +57,11 @@ const tiers: Tier[] = [
   },
   {
     id: 'standard',
-    name: 'Standard',
+    name: 'Scholar',
     price: '90.000đ',
     cadence: '/ tháng',
     outcome: 'Biết tại sao và sửa thế nào để lên band',
-    cta: 'Nâng cấp Standard',
+    cta: 'Nâng cấp Scholar',
     featured: true,
     note: 'Khoảng 3.000đ một ngày.',
     features: [
@@ -76,17 +76,17 @@ const tiers: Tier[] = [
   },
   {
     id: 'premium',
-    name: 'Premium',
+    name: 'Laureate',
     price: '150.000đ',
     cadence: '/ tháng',
     outcome: 'Luyện như có gia sư UNICOACH kèm riêng',
-    cta: 'Chọn Premium',
+    cta: 'Chọn Laureate',
     featured: false,
     badge: 'Trả năm 790.000đ — tiết kiệm 56%',
     secondary: { id: 'premium_yearly', label: 'Mua gói năm 790.000đ' },
     note: `Giá khai trương gói năm, áp dụng đến ${LAUNCH_PRICE_UNTIL}. Đăng ký trong thời gian này được giữ nguyên mức giá cho các lần gia hạn sau.`,
     features: [
-      'Mọi tính năng Standard',
+      'Mọi tính năng Scholar',
       'Mẫu bài band 8.0–9.0 theo từng đề',
       'Ưu tiên chấm nhanh',
       'Báo cáo gửi giáo viên / lớp',
@@ -133,7 +133,7 @@ const upcoming: Tier[] = [
     secondary: { id: 'duo_yearly', label: 'Duo trả năm 1.590.000đ' },
     note: 'Đăng nhập Precisely bằng đúng email bạn dùng ở WriteRight để gói tự nhận.',
     features: [
-      'Toàn bộ WriteRight Standard',
+      'Toàn bộ WriteRight Scholar',
       'Toàn bộ Precisely Speak — 90 phút chấm phát âm/tháng',
       'Gia hạn chủ động, không tự trừ tiền',
     ],
@@ -149,7 +149,7 @@ const upcoming: Tier[] = [
     featured: false,
     badge: 'Mua riêng là 369.000đ',
     features: [
-      'Toàn bộ WriteRight Premium',
+      'Toàn bộ WriteRight Laureate',
       'Precisely Speak+ — 180 phút chấm phát âm/tháng',
     ],
     locked: [],

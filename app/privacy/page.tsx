@@ -47,7 +47,7 @@ export default function PrivacyPage() {
               <li>Cung cấp dịch vụ chấm bài IELTS Writing tự động.</li>
               <li>Hiển thị lịch sử chấm bài và tiến bộ trong Dashboard cá nhân.</li>
               <li>Xác minh tư cách thành viên và quản lý giới hạn lượt chấm theo gói.</li>
-              <li>Xử lý thanh toán và kích hoạt gói Standard / Premium.</li>
+              <li>Xử lý thanh toán và kích hoạt gói Scholar / Laureate.</li>
             </ul>
             <p style={{ marginTop: 12 }}>Chúng tôi <strong style={{ color: 'var(--ivory)' }}>không</strong> bán thông tin của bạn cho bên thứ ba. Chúng tôi <strong style={{ color: 'var(--ivory)' }}>không</strong> sử dụng bài luận của bạn để huấn luyện AI.</p>
           </section>

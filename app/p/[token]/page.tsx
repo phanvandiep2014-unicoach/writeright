@@ -132,7 +132,7 @@ export default function PublicProfilePage(){
             <h1 className="text-2xl text-white font-['DM_Serif_Display']">{profile?.full_name||'IELTS Writer'}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border ${profile?.tier==='premium'?'bg-brand-500/15 border-brand-500/50 text-brand-400':'text-navy-400 border-navy-600 bg-navy-800'}`}>
-                {profile?.tier==='premium'?'✦ Premium':profile?.tier==='standard'?'Standard':'Free'}
+                {profile?.tier==='premium'?'✦ Laureate':profile?.tier==='standard'?'Scholar':'Free'}
               </span>
               {avgBand&&<span className="text-xs text-navy-400 font-mono">avg {avgBand} band</span>}
               {maxBand&&<span className="text-xs text-navy-400 font-mono">max {maxBand}</span>}

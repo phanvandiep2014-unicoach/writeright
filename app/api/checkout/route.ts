@@ -29,8 +29,8 @@ type Plan = {
  * Số phút nói của từng gói nằm ở gotcha-web/api/_lib/quota-rules.js.
  */
 const PLANS: Record<string, Plan> = {
-  standard:        { amount: 90000,   label: 'WriteRight Standard', tier: 'standard', speak: null,         cycle: 'monthly' },
-  premium:         { amount: 150000,  label: 'WriteRight Premium',  tier: 'premium',  speak: null,         cycle: 'monthly' },
+  standard:        { amount: 90000,   label: 'WriteRight Scholar', tier: 'standard', speak: null,         cycle: 'monthly' },
+  premium:         { amount: 150000,  label: 'WriteRight Laureate',  tier: 'premium',  speak: null,         cycle: 'monthly' },
   premium_yearly:  { amount: 790000,  label: 'WriteRight nam',      tier: 'premium',  speak: null,         cycle: 'yearly'  },
   precisely_speak: { amount: 129000,  label: 'Precisely Speak',     tier: null,       speak: 'speak',      cycle: 'monthly' },
   precisely_plus:  { amount: 219000,  label: 'Precisely Speak Plus',tier: null,       speak: 'speak_plus', cycle: 'monthly' },

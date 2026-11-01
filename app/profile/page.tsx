@@ -89,8 +89,8 @@ function SkillQuad({ avg }: { avg: { ta: number; lr: number; gra: number; cc: nu
 // ── Plan badge
 const PLAN_META: Record<Plan, { label: string; color: string; bg: string; border: string }> = {
   free:     { label: 'Miễn phí',  color: '#9c8657', bg: 'rgba(156,134,87,0.12)',  border: 'rgba(156,134,87,0.3)'  },
-  standard: { label: 'Standard',  color: '#C8A14B', bg: 'rgba(200,161,75,0.15)',  border: 'rgba(200,161,75,0.4)'  },
-  premium:  { label: 'Premium',   color: '#E7CE8E', bg: 'rgba(231,206,142,0.18)', border: 'rgba(231,206,142,0.5)' },
+  standard: { label: 'Scholar',  color: '#C8A14B', bg: 'rgba(200,161,75,0.15)',  border: 'rgba(200,161,75,0.4)'  },
+  premium:  { label: 'Laureate',   color: '#E7CE8E', bg: 'rgba(231,206,142,0.18)', border: 'rgba(231,206,142,0.5)' },
 };
 
 export default function ProfilePage() {
