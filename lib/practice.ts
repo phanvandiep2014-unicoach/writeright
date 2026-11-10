@@ -162,3 +162,34 @@ export function suggestNext(attempts: Record<string, AttemptSummary>): PracticeI
     (a, b) => (doneKinds[`${a.task}:${a.kind}`] || 0) - (doneKinds[`${b.task}:${b.kind}`] || 0),
   )[0];
 }
+
+/**
+ * "Đề gợi ý tuần này": 3 đề cố định cho cả tuần (giờ Việt Nam, đổi vào thứ Hai) — 1 Task 1 + 2 Task 2
+ * khác dạng nhau — để học viên cùng lớp luyện chung một bộ và giảng viên dễ chữa. Chỉ lấy từ ngân hàng
+ * đề tự biên soạn có sẵn, không cần dữ liệu ngoài. Xác định theo số tuần nên không cần lưu DB.
+ */
+export function weekIndexICT(now: number = Date.now()): number {
+  const ict = now + 7 * 3600_000;
+  // Mốc 1970-01-01 là thứ Năm → thứ Hai đầu tiên cách 4 ngày để tuần bắt đầu từ thứ Hai.
+  return Math.floor((ict - 4 * 86400_000) / (7 * 86400_000));
+}
+
+export function weeklyPicks(now: number = Date.now()): PracticeItem[] {
+  const w = weekIndexICT(now);
+  const at = <T,>(arr: T[], i: number) => arr[((i % arr.length) + arr.length) % arr.length];
+  const t1 = PRACTICE_ITEMS.filter(p => p.task === 1);
+  const t2 = PRACTICE_ITEMS.filter(p => p.task === 2);
+  const t1Kinds = distinct(t1, p => p.kind), t2Kinds = distinct(t2, p => p.kind);
+  const pickKind = (pool: PracticeItem[], kind: string, i: number) => {
+    const same = pool.filter(p => p.kind === kind);
+    return at(same, i);
+  };
+  const out: PracticeItem[] = [];
+  if (t1.length) out.push(pickKind(t1, at(t1Kinds, w), Math.floor(w / Math.max(1, t1Kinds.length))));
+  if (t2.length) {
+    const k1 = at(t2Kinds, w), k2 = at(t2Kinds, w + 2);
+    out.push(pickKind(t2, k1, Math.floor(w / Math.max(1, t2Kinds.length))));
+    if (k2 !== k1) out.push(pickKind(t2, k2, Math.floor(w / Math.max(1, t2Kinds.length)) + 1));
+  }
+  return out;
+}

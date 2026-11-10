@@ -9,7 +9,7 @@
  */
 import assert from 'node:assert';
 import { SKILL_EXERCISES, KIND_META, CRITERION_LABEL, withShuffledOptions } from '../lib/skill-exercises';
-import { PRACTICE_ITEMS, summariseAttempts, applyFilter, DEFAULT_FILTER, suggestNext, findPracticeItem } from '../lib/practice';
+import { PRACTICE_ITEMS, summariseAttempts, applyFilter, DEFAULT_FILTER, suggestNext, findPracticeItem, weeklyPicks, weekIndexICT } from '../lib/practice';
 import { TASK1_BANK, TASK2_BANK } from '../lib/writing-tasks';
 import {
   ictDay, computeStreak, activityDays, criterionAverages, errorProfile, topErrors,
@@ -239,5 +239,17 @@ assert.strictEqual(wordsPerMinute(100, 30), null, 'chưa đủ dữ liệu'); as
 assert.strictEqual(taskKey(1), 1); assert.strictEqual(taskKey(2), 2); assert.strictEqual(taskKey(0), 2);
 assert.strictEqual(TASK_MINUTES[1], 20); assert.strictEqual(TASK_MINUTES[2], 40);
 console.log('  ok   đồng hồ luyện viết: định dạng, ngưỡng cảnh báo, tốc độ viết');
+
+// ── Đề gợi ý tuần: cố định trong tuần, đổi vào thứ Hai (giờ VN), 1 Task 1 + 2 Task 2 khác dạng ──
+{
+  const mon = Date.parse('2026-11-09T00:30:00+07:00'), sun = Date.parse('2026-11-15T23:30:00+07:00'), nextMon = Date.parse('2026-11-16T00:30:00+07:00');
+  const a = weeklyPicks(mon), b = weeklyPicks(sun), c = weeklyPicks(nextMon);
+  assert.deepStrictEqual(a.map(p => p.id), b.map(p => p.id), 'cùng tuần phải cùng bộ đề');
+  assert.notDeepStrictEqual(a.map(p => p.id), c.map(p => p.id), 'sang thứ Hai phải đổi bộ đề');
+  assert.strictEqual(a.filter(p => p.task === 1).length, 1); assert.strictEqual(a.filter(p => p.task === 2).length, 2);
+  assert.notStrictEqual(a.filter(p => p.task === 2)[0].kind, a.filter(p => p.task === 2)[1].kind, 'hai đề Task 2 phải khác dạng');
+  assert.strictEqual(weekIndexICT(mon), weekIndexICT(sun)); assert.strictEqual(weekIndexICT(nextMon), weekIndexICT(mon) + 1);
+}
+console.log('  ok   đề gợi ý tuần: ổn định trong tuần, đổi thứ Hai, đủ dạng');
 
 console.log('\nPractice: mọi kiểm tra đạt.');
