@@ -9,7 +9,7 @@ import { KIND_META } from '@/lib/skill-exercises';
 import { withBase } from '@/lib/base-path';
 import {
   PRACTICE_ITEMS, DEFAULT_FILTER, PracticeFilter, PracticeItem, AttemptSummary,
-  applyFilter, summariseAttempts, distinct, suggestNext, kindLabel, categoryLabel,
+  applyFilter, summariseAttempts, distinct, suggestNext, kindLabel, categoryLabel, weeklyPicks,
 } from '@/lib/practice';
 
 const PAGE_SIZE = 12;
@@ -91,6 +91,8 @@ export default function PracticeClient() {
   const next = useMemo(() => suggestNext(attempts), [attempts]);
 
   const doneCount = Object.keys(attempts).length;
+  const weekly = useMemo(() => weeklyPicks(Date.now()), []);
+  const weeklyDone = weekly.filter(p => attempts[p.id]).length;
 
   return (
     <div className="min-h-screen">
@@ -118,6 +120,25 @@ export default function PracticeClient() {
             Pick a prompt, write your essay and get a four-criteria band score, or do a quick skill drill below — instant marking, no grading credits used.
           </p>
         </div>
+
+        {/* Suggested this week — same three prompts for everyone, new set every Monday (Vietnam time) */}
+        <section className="bg-navy-800 border border-brand-500/40 rounded-2xl p-5">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div className="text-xs font-mono uppercase tracking-wider text-brand-400">Suggested this week · priority practice</div>
+            <span className="ml-auto text-xs text-navy-300">{signedIn ? `${weeklyDone}/${weekly.length} done` : 'New set every Monday'}</span>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {weekly.map(p => (
+              <div key={p.id} className="rounded-xl border border-navy-700 p-3 flex flex-col gap-2">
+                <div className="text-xs font-mono uppercase tracking-wider text-navy-400">Task {p.task} · {kindLabel(p.kind)}</div>
+                <p className="text-white text-sm leading-relaxed line-clamp-3" style={{ fontFamily: 'var(--font-subhead)' }}>{p.title}</p>
+                <Link href={`/evaluate?practice=${encodeURIComponent(p.id)}`} className="mt-auto btn-foil inline-block text-center px-4 py-1.5 rounded-lg text-sm font-semibold">
+                  {attempts[p.id] ? 'Rewrite' : 'Start writing'}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Quick entry points */}
         <div className="grid sm:grid-cols-2 gap-4">
