@@ -2,7 +2,7 @@
 // UNICOACH BMS — biểu đồ SVG nhẹ, tương tác, không cần thư viện
 import { useState } from 'react';
 
-export const GOLD = '#C8A14B', NAVY = '#11183A', EMERALD = '#34d399', RED = '#f87171', AMBER = '#fbbf24', SKY = '#38bdf8';
+export const GOLD = '#C8A14B', EMERALD = '#34d399', RED = '#f87171', AMBER = '#fbbf24', SKY = '#38bdf8';
 
 // Vòng tròn chuyên cần: segments = [{value,color,label}]
 export function Donut({ segments, size = 120, label }: { segments: { value: number; color: string; label: string }[]; size?: number; label?: string }) {

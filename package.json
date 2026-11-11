@@ -10,11 +10,13 @@
     "check:timing": "sucrase-node scripts/check-mock-timing.ts",
     "check:papers": "sucrase-node scripts/check-papers.ts",
     "check:practice": "sucrase-node scripts/check-practice.ts",
-    "verify": "npm run typecheck && npm run check:timing && npm run check:papers && npm run check:practice && npm run check:sso && npm run check:activation && npm run check:winback && npm run check:weekly",
+    "verify": "npm run typecheck && npm run check:timing && npm run check:papers && npm run check:practice && npm run check:sso && npm run check:activation && npm run check:winback && npm run check:weekly && npm run check:nurture && npm run check:onboarding",
     "check:weekly": "sucrase-node scripts/check-weekly-plan.ts",
     "check:sso": "sucrase-node scripts/check-sso.ts",
     "check:activation": "sucrase-node scripts/check-activation.ts",
-    "check:winback": "sucrase-node scripts/check-winback.ts"
+    "check:winback": "sucrase-node scripts/check-winback.ts",
+    "check:nurture": "sucrase-node scripts/test-nurture.ts",
+    "check:onboarding": "sucrase-node scripts/test-onboarding.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.0",
