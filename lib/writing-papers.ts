@@ -84,11 +84,6 @@ export const TEST_PAPERS: TestPaper[] = [
     focus: 'Bản đồ có nhiều khu vực thay đổi cùng lúc; bài luận quan điểm gây tranh cãi về vườn thú.' },
 ];
 
-/** Tra đề theo mã. Trả về null nếu mã không tồn tại (dữ liệu cũ trong CSDL). */
-export function findPaper(id: string): TestPaper | null {
-  return TEST_PAPERS.find(p => p.id === id) ?? null;
-}
-
 /**
  * Lấy hai đề bài thật của một paper. Ném lỗi khi id trỏ vào đề không còn tồn
  * tại — lỗi này phải nổ lúc dev chứ không được im lặng cho học viên vào phòng

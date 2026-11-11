@@ -280,5 +280,3 @@ export function resolvePaper(rawId: unknown): ResolvedPaper | null {
   if (!p || !t1 || !t2) return null;
   return { paper: { id: p.id, level: p.level, focus: p.focus }, t1, t2 };
 }
-
-export const WEEKLY_PAPER_IDS = Object.keys(WEEKLY_PAPERS);

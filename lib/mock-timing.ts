@@ -80,8 +80,6 @@ const SPEC = {
   2: { minWords: 250, targetWords: 280, planMin: 240, planMax: 540, reviewMin: 180, allotted: 40 * 60 },
 } as const;
 
-export const TASK_SPEC = SPEC;
-
 function mins(sec: number): string {
   const m = Math.floor(sec / 60), s = Math.round(sec % 60);
   return s === 0 ? `${m} phút` : `${m} phút ${s} giây`;
