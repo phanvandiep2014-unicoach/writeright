@@ -274,6 +274,14 @@ setLmsRef(ref);
 setTaskType(qs.get('task') === '1' ? 1 : 2);
 setPrompt(qPrompt);
 setEssay(savedPrompt === qPrompt && savedEssay ? savedEssay : '');
+// Task 1: ảnh biểu đồ của đề (chỉ nhận đường dẫn nội bộ /img/hit/... của LMS) → gắn sẵn vào bài để máy chấm nhìn thấy
+const qImg = qs.get('img') || '';
+if (/^\/img\/hit\/[\w\/.-]+\.(png|jpe?g|webp)$/i.test(qImg)) {
+fetch(qImg).then(r => (r.ok ? r.blob() : Promise.reject(new Error('img ' + r.status))))
+.then(b => fileToImg(new File([b], qImg.split('/').pop() || 'chart.jpg', { type: b.type || 'image/jpeg' })))
+.then(im => setImages([im]))
+.catch(e => console.warn('[lms] không tải được ảnh đề', e));
+}
 return;
 }
 const item = findPracticeItem(qs.get('practice'));
