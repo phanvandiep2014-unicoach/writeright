@@ -48,6 +48,12 @@ return monday.toISOString().split('T')[0];
 }
 
 
+// Mã bài LMS: chỉ chữ hoa, số, gạch ngang (vd HIT-W-03). Sai định dạng → bỏ qua.
+export function cleanLmsRef(v: any): string | null {
+  const s = String(v ?? '').trim().toUpperCase();
+  return /^[A-Z0-9][A-Z0-9-]{1,39}$/.test(s) ? s : null;
+}
+
 export function normaliseImages(images: any, imageBase64?: any, imageType?: any): GradeImage[] {
   if (Array.isArray(images)) {
     return images
@@ -135,8 +141,10 @@ export async function runGrading(a: {
   user: { id: string; user_metadata?: any };
   taskType: any; taskPrompt: any; essayText: any;
   imgList: GradeImage[]; lessonId?: any; usingFreeCredit: boolean;
+  lmsRef?: string | null;   // mã bài bên LMS (vd HIT-W-03) — gửi kèm khi đẩy điểm để LMS biết bài nào vừa chấm
 }): Promise<GradeResult> {
   const { supabase, user, taskType, taskPrompt, essayText, imgList, lessonId, usingFreeCredit } = a;
+  const lmsRef = cleanLmsRef(a.lmsRef);
   const hasImages = imgList.length > 0;
   const API_KEY = process.env.ANTHROPIC_API_KEY;
   if (!API_KEY) return { status: 500, body: { error: 'ANTHROPIC_API_KEY not set' } };
@@ -271,6 +279,7 @@ if (lmsCode && evalData?.id) {
     title: `Writing Task ${taskType || 2} — ${String(taskPrompt || 'Đề trong ảnh').slice(0, 90)}`,
     feedback: String(fb).slice(0, 4000),
     detail: {
+      ...(lmsRef ? { ref: lmsRef } : {}),
       task_achievement: result.task_achievement?.band ?? null,
       coherence: result.coherence_cohesion?.band ?? null,
       lexical: result.lexical_resource?.band ?? null,

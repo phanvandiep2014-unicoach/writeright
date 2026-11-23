@@ -60,7 +60,7 @@ export async function processJob(jobId: string): Promise<void> {
     const r = await runGrading({
       supabase: admin, user,
       taskType: p.taskType ?? job.task_type, taskPrompt: p.taskPrompt ?? null, essayText: p.essayText ?? null,
-      imgList, usingFreeCredit,
+      imgList, usingFreeCredit, lmsRef: p.lmsRef ?? null,
     });
 
     if (r.status === 200) {

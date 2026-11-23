@@ -228,6 +228,8 @@ return (
 export default function EvaluatePage() {
 const [taskType, setTaskType] = useState(2);
 const [prompt, setPrompt] = useState('');
+// Bài giao từ LMS (HIT Library): ?lms_ref=HIT-W-03&task=2&prompt=... — điền sẵn đề và gửi kèm mã khi chấm.
+const [lmsRef, setLmsRef] = useState<string | null>(null);
 const [essay, setEssay] = useState('');
 const [images, setImages] = useState<Img[]>([]);
 const [loading, setLoading] = useState(false);
@@ -264,7 +266,25 @@ savedEssay = localStorage.getItem(LS_ESSAY);
 
 // /evaluate?practice=<id> — đến từ trang Luyện tập: điền sẵn đề. Nếu bản nháp đang lưu
 // đúng là của đề này thì giữ lại bài đang viết dở; đề khác thì bắt đầu trang trắng.
-const item = findPracticeItem(new URLSearchParams(window.location.search).get('practice'));
+const qs = new URLSearchParams(window.location.search);
+const ref = (qs.get('lms_ref') || '').trim().toUpperCase();
+const qPrompt = (qs.get('prompt') || '').trim();
+if (/^[A-Z0-9][A-Z0-9-]{1,39}$/.test(ref) && qPrompt) {
+setLmsRef(ref);
+setTaskType(qs.get('task') === '1' ? 1 : 2);
+setPrompt(qPrompt);
+setEssay(savedPrompt === qPrompt && savedEssay ? savedEssay : '');
+// Task 1: ảnh biểu đồ của đề (chỉ nhận đường dẫn nội bộ /img/hit/... của LMS) → gắn sẵn vào bài để máy chấm nhìn thấy
+const qImg = qs.get('img') || '';
+if (/^\/img\/hit\/[\w\/.-]+\.(png|jpe?g|webp)$/i.test(qImg)) {
+fetch(qImg).then(r => (r.ok ? r.blob() : Promise.reject(new Error('img ' + r.status))))
+.then(b => fileToImg(new File([b], qImg.split('/').pop() || 'chart.jpg', { type: b.type || 'image/jpeg' })))
+.then(im => setImages([im]))
+.catch(e => console.warn('[lms] không tải được ảnh đề', e));
+}
+return;
+}
+const item = findPracticeItem(qs.get('practice'));
 if (item) {
 setPracticeItem(item);
 setTaskType(item.task);
@@ -346,7 +366,7 @@ const res = await fetch(withBase('/api/evaluate'), {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
-taskType, taskPrompt: prompt.trim() ? prompt : null,
+taskType, taskPrompt: prompt.trim() ? prompt : null, lmsRef,
 essayText: essay.trim() ? essay : null,
 images: images.length ? images.map(im => ({ data: im.data, media_type: im.type })) : null,
 }),
@@ -384,7 +404,7 @@ const res = await fetch(withBase('/api/evaluate/queue'), {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
-taskType, taskPrompt: prompt.trim() ? prompt : null,
+taskType, taskPrompt: prompt.trim() ? prompt : null, lmsRef,
 essayText: essay.trim() ? essay : null,
 images: images.length ? images.map(im => ({ data: im.data, media_type: im.type })) : null,
 }),
@@ -407,7 +427,7 @@ finally { setLoading(false); }
 };
 
 const reset = () => {
-setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null); setRevision(null); setRevealed(new Set());
+setResult(null); setEssay(''); setPrompt(''); setImages([]); setPracticeItem(null); setLmsRef(null); setRevision(null); setRevealed(new Set());
 setExpandedCriterion(null); setNeedsLogin(false); setActiveErr(null); setShowRewrite(false);
 try { localStorage.removeItem(LS_PROMPT); localStorage.removeItem(LS_ESSAY); } catch {}
 };
@@ -887,6 +907,11 @@ Chia sẻ ↗
 </div>
 </div>
 
+{lmsRef && (
+<div className="mb-4 rounded-xl border border-brand-500/40 bg-brand-500/10 px-4 py-3 text-sm text-navy-200">
+🏆 Bài <b className="text-brand-400">{lmsRef}</b> giao từ UNICOACH LMS — chấm xong, điểm tự ghi về HIT Library. Giữ nguyên đề bài để bài được tính.
+</div>
+)}
 <div className="mb-5">
 <label className="text-sm font-mono tracking-wider uppercase text-brand-400 mb-2 block">Đề bài</label>
 <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} onPaste={handlePaste} placeholder="Dán đề bài IELTS Writing — hoặc dán ảnh chụp đề (Ctrl+V), ví dụ biểu đồ Task 1..."
