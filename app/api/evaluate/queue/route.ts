@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }); }
-  const { taskType, taskPrompt, essayText, images } = body || {};
+  const { taskType, taskPrompt, essayText, images, lmsRef } = body || {};
   const imgList = normaliseImages(images);
   const hasImages = imgList.length > 0;
 
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const title = String(taskPrompt || (hasImages ? 'Đề / bài viết trong ảnh' : 'Bài viết')).replace(/\s+/g, ' ').trim().slice(0, 90);
   const { data: job, error: insErr } = await admin.from('grading_jobs').insert({
     user_id: user.id, task_type: tt, title,
-    payload: { taskType: tt, taskPrompt: taskPrompt || null, essayText: essayText || null, images: hasImages ? imgList : [] },
+    payload: { taskType: tt, taskPrompt: taskPrompt || null, essayText: essayText || null, images: hasImages ? imgList : [], lmsRef: lmsRef || null },
   }).select('id').single();
   if (insErr || !job) {
     console.error('[queue] không tạo được job:', insErr?.message);

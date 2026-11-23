@@ -15,7 +15,7 @@ if (!user) return NextResponse.json({ error: 'Vui lòng đăng nhập để ch�
 let body;
 try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid request body' }, { status: 400 }); }
 
-const { taskType, taskPrompt, essayText, imageBase64, imageType, images, lessonId } = body;
+const { taskType, taskPrompt, essayText, imageBase64, imageType, images, lessonId, lmsRef } = body;
 
 // Normalise attached images: new `images` array (prompt photo, Task 1 chart, handwritten essay...) with legacy single-image fallback
 const imgList = normaliseImages(images, imageBase64, imageType);
@@ -38,7 +38,7 @@ const stream = new ReadableStream({
 async start(controller) {
 const ping = setInterval(() => { try { controller.enqueue(enc.encode(' ')); } catch {} }, 5000);
 try {
-const r = await runGrading({ supabase, user, taskType, taskPrompt, essayText, imgList, lessonId, usingFreeCredit: allow.usingFreeCredit });
+const r = await runGrading({ supabase, user, taskType, taskPrompt, essayText, imgList, lessonId, lmsRef, usingFreeCredit: allow.usingFreeCredit });
 // AI chạm hạn mức chi tiêu: KHÔNG làm mất bài — đưa vào hàng chờ, tự chấm lại sau 30 phút (lib/ai-budget.ts).
 if (r.body?.code === 'AI_BUDGET') {
   try {
@@ -46,7 +46,7 @@ if (r.body?.code === 'AI_BUDGET') {
     await createAdminSupabase().from('grading_jobs').insert({
       user_id: user.id, task_type: tt,
       title: String(taskPrompt || (hasImages ? 'Đề / bài viết trong ảnh' : 'Bài viết')).replace(/\s+/g, ' ').trim().slice(0, 90),
-      payload: { taskType: tt, taskPrompt: taskPrompt || null, essayText: essayText || null, images: hasImages ? imgList : [] },
+      payload: { taskType: tt, taskPrompt: taskPrompt || null, essayText: essayText || null, images: hasImages ? imgList : [], lmsRef: lmsRef || null },
       run_after: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
     });
     r.body = { ...r.body, queued: true };
