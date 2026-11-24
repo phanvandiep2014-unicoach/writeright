@@ -141,25 +141,26 @@ const WEEKLY_PAPERS: Record<string, { focus: string; t1: Task1Item; t2: Task2Ite
     },
   },
   MT07: {
-    focus: "UNICOACH Weekly 7 (29/11/2026): Task 1 Electricity generation by source in one country (% of total); Task 2 problem-solution.",
+    // Phan chốt 23–24/11/2026: Weekly lấy đề từ bộ HIT (đề thi thật). Task 1 = HIT-W1-13 (BC Huỳnh Mẫn Đạt 8/8/2026), Task 2 = HIT-W-10 (BC 188 Cầu Giấy 17/8/2026).
+    focus: "UNICOACH Weekly 7 (29/11/2026): Task 1 percentage of employers in four sectors having difficulty finding three types of staff, 2003 and 2004 (table); Task 2 discussion (young people choosing their future job).",
     t1: {
       id: 'mt07-t1', category: 'weekly', chartType: 'table',
-      title: "Electricity generation by source in one country (% of total)",
-      instruction: "The table below shows the percentage of electricity generated from five sources in one country in 1990, 2005 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+      title: "Percentage of employers having difficulty in finding staff, by sector (2003 and 2004)",
+      instruction: "The table below shows the percentage of employers in various sectors having difficulty in finding staff in 2003 and 2004. Summarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+      unit: '%',
       table: {
-        headers: ["Source", "1990", "2005", "2020"],
+        headers: ["Sector", "Skilled workers 2003", "Skilled workers 2004", "Unskilled workers 2003", "Unskilled workers 2004", "Technical and managerial staff 2003", "Technical and managerial staff 2004"],
         rows: [
-          ["Coal", 52.0, 40.0, 12.0],
-          ["Gas", 14.0, 25.0, 31.0],
-          ["Nuclear", 18.0, 17.0, 15.0],
-          ["Renewables", 6.0, 11.0, 38.0],
-          ["Oil", 10.0, 7.0, 4.0],
+          ["Manufacturing", 45, 51, 26, 28, 8, 6],
+          ["Building", 42, 45, 21, 23, 14, 10],
+          ["Commerce", 47, 41, 22, 19, 2, 0],
+          ["Services", 41, 45, 20, 29, 5, 2],
         ],
       },
     },
     t2: {
-      id: 'mt07-t2', category: 'weekly', type: "problem-solution",
-      prompt: "The amount of waste produced by households and industry is increasing in many countries. What are the causes of this problem, and what can be done to reduce it? Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
+      id: 'mt07-t2', category: 'weekly', type: "discussion",
+      prompt: "Some people say young people should be completely free to choose their future job but others think young people must be more realistic in their choice. Discuss both views and give your own opinion. Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
     },
   },
   MT08: {
