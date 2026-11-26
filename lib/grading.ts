@@ -3,7 +3,7 @@ import { pushResultToLms } from '@/lib/unicoach';
 import { createAdminSupabase } from '@/lib/supabase-admin';
 import { activationPatch } from '@/lib/activation';
 import { MEMBER_LABEL, MEMBER_WRITING_PER_30D, isMemberPlan } from '@/lib/membership';
-import { alertBudgetExhausted, budgetTight, isBudgetError, recordAiUsage } from '@/lib/ai-budget';
+import { alertAuthError, alertBudgetExhausted, budgetTight, isBudgetError, recordAiUsage } from '@/lib/ai-budget';
 // Prompt A1 (dẫn chứng → đối chiếu descriptor → band từng tiêu chí → band tổng) dùng chung với
 // /api/external/mock-grade. Bài chấm bằng prompt này có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
@@ -177,6 +177,7 @@ if (isBudgetError(apiRes.status, responseText)) {
 await alertBudgetExhausted(responseText);
 return { status: 503, body: { error: 'Hệ thống chấm đang tạm dừng vài giờ. Bài của bạn đã được giữ lại và sẽ tự chấm khi mở lại — xem ở mục "Bài chờ chấm".', code: 'AI_BUDGET' } };
 }
+await alertAuthError(apiRes.status, responseText, 'evaluate');
 return { status: 503, body: { error: friendlyApiError(apiRes.status, responseText), code: 'AI_UNAVAILABLE' } };
 }
 

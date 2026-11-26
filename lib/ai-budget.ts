@@ -53,13 +53,13 @@ export async function budgetTight(): Promise<boolean> {
   return v;
 }
 
-async function alertOnce(level: number, subject: string, text: string) {
+async function alertOnce(level: number, subject: string, text: string, period: string = monthKey()) {
   const to = process.env.ADMIN_ALERT_EMAIL || process.env.MAIL_FROM;
   if (!to) { console.error('[ai-budget] chua dat ADMIN_ALERT_EMAIL — khong gui duoc canh bao:', subject); return; }
   try {
     const admin = createAdminSupabase();
     // Chèn trước rồi mới gửi: khoá chính (month, level) chặn gửi trùng giữa nhiều lượt chấm song song.
-    const { error } = await admin.from('ai_budget_alerts').insert({ month: monthKey(), level });
+    const { error } = await admin.from('ai_budget_alerts').insert({ month: period, level });
     if (error) return;   // đã gửi mức này trong tháng
     await sendMail({ to, subject, text, html: `<pre style="font-family:Georgia,serif;font-size:15px;white-space:pre-wrap">${text.replace(/</g, '&lt;')}</pre>` });
   } catch (e: any) { console.error('[ai-budget] gui canh bao loi:', e?.message); }
@@ -95,4 +95,30 @@ export async function alertBudgetExhausted(raw: string) {
     'Bài của học viên KHÔNG bị mất: được xếp vào hàng chờ và tự chấm lại khi hạn mức mở.\n\n' +
     'Cần làm: vào https://console.anthropic.com/settings/limits tăng Monthly spend limit hoặc nạp thêm credit.\n\n' +
     'Thông báo gốc: ' + String(raw || '').slice(0, 400));
+}
+
+/**
+ * Khóa Anthropic bị từ chối (401 hết hạn / sai / bị thu hồi, 403 không có quyền) — 26/11/2026.
+ * Lỗi này làm HỎNG MỌI lượt chấm cho tới khi thay khóa, mà học viên chỉ thấy "Không thể chấm bài lúc này".
+ * Sự cố thật: khóa của project writeright-sub (unicoach.vn/writeright) hết hạn 14/11, 12 ngày không ai biết.
+ * Gửi email cho admin, mỗi ngày tối đa một thư cho mỗi project (khóa chặn trùng: ngày + tên project, level = mã lỗi).
+ */
+export function isAuthError(status: number, raw: string) {
+  return (status === 401 || status === 403) && !isBudgetError(status, raw);
+}
+
+export async function alertAuthError(status: number, raw: string, source: string) {
+  if (!isAuthError(status, raw)) return;
+  const site = (process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || 'writeright') + (process.env.NEXT_PUBLIC_BASE_PATH || '');
+  const day = new Date().toISOString().slice(0, 10);
+  await alertOnce(status, `[WriteRight] KHẨN: khóa Anthropic bị từ chối (${status}) — chấm bài đang hỏng tại ${site}`,
+    `Anthropic từ chối khóa API (mã ${status}) khi chấm bài (${source}) trên ${site}.\n` +
+    'Cho tới khi thay khóa, MỌI lượt chấm trên project này đều lỗi; học viên chỉ thấy "Không thể chấm bài lúc này".\n\n' +
+    'Cần làm:\n' +
+    '1. Vào https://platform.claude.com/settings/keys kiểm tra khóa (hết hạn / bị xóa) — tạo khóa mới KHÔNG đặt ngày hết hạn.\n' +
+    '2. Vercel → project tương ứng → Settings → Environment Variables → sửa ANTHROPIC_API_KEY (Production) → Save.\n' +
+    '3. Deploy lại project đó (biến môi trường chỉ có hiệu lực ở bản deploy mới).\n' +
+    '   Lưu ý: unicoach.vn/writeright chạy trên project writeright-sub, KHÁC project writeright (writeright.unicoach.vn).\n\n' +
+    'Thông báo gốc: ' + String(raw || '').slice(0, 300),
+    `${day}:${site}`);
 }

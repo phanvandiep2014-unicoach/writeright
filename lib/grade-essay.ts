@@ -1,4 +1,4 @@
-import { alertBudgetExhausted, isBudgetError, recordAiUsage } from '@/lib/ai-budget';
+import { alertAuthError, alertBudgetExhausted, isBudgetError, recordAiUsage } from '@/lib/ai-budget';
 // Lõi chấm bài Writing dùng chung cho /api/evaluate (học viên đăng nhập, có ảnh)
 // và /api/external/mock-grade (LMS gọi từ máy chủ trong bài thi thử 4 kỹ năng).
 // Tách ra để hai đường KHÔNG bao giờ chấm bằng hai bộ tiêu chí khác nhau.
@@ -149,6 +149,7 @@ export async function gradeEssayText(o: { taskType: 1 | 2; taskPrompt: string; e
   if (!res.ok) {
     console.error(`[grade-essay] Anthropic ${res.status}:`, raw);
     if (isBudgetError(res.status, raw)) await alertBudgetExhausted(raw);
+    await alertAuthError(res.status, raw, 'mock-grade');
     throw new Error(friendlyApiError(res.status, raw));
   }
   let data: any; try { data = JSON.parse(raw); } catch { throw new Error('Lỗi kết nối AI. Vui lòng thử lại.'); }
@@ -189,7 +190,7 @@ export async function rewriteEssayText(o: { taskType: 1 | 2; taskPrompt: string;
     signal: AbortSignal.timeout(100_000),
   });
   const raw = await res.text();
-  if (!res.ok) { console.error(`[rewrite-essay] Anthropic ${res.status}:`, raw); if (isBudgetError(res.status, raw)) await alertBudgetExhausted(raw); throw new Error(friendlyApiError(res.status, raw)); }
+  if (!res.ok) { console.error(`[rewrite-essay] Anthropic ${res.status}:`, raw); if (isBudgetError(res.status, raw)) await alertBudgetExhausted(raw); await alertAuthError(res.status, raw, 'rewrite'); throw new Error(friendlyApiError(res.status, raw)); }
   const data = JSON.parse(raw);
   await recordAiUsage('rewrite-essay', EVAL_MODEL, data.usage);
   const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
@@ -224,7 +225,7 @@ export async function extrasEssayText(o: { taskType: 1 | 2; taskPrompt: string; 
     signal: AbortSignal.timeout(250_000),
   });
   const raw = await res.text();
-  if (!res.ok) { console.error(`[extras-essay] Anthropic ${res.status}:`, raw); if (isBudgetError(res.status, raw)) await alertBudgetExhausted(raw); throw new Error(friendlyApiError(res.status, raw)); }
+  if (!res.ok) { console.error(`[extras-essay] Anthropic ${res.status}:`, raw); if (isBudgetError(res.status, raw)) await alertBudgetExhausted(raw); await alertAuthError(res.status, raw, 'extras'); throw new Error(friendlyApiError(res.status, raw)); }
   const data = JSON.parse(raw);
   await recordAiUsage('extras-essay', EVAL_MODEL, data.usage);
   const text = data.content?.map((b: any) => b.text || '').join('') ?? '';
