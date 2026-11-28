@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-browser';
 import Link from 'next/link';
 import { HonorBoard } from '@/components/HonorBoard';
 import { withBase } from '@/lib/base-path';
+import { countFreeUsage, freeState } from '@/lib/free-plan';
 
 type Evaluation = {
   id: string;
@@ -120,9 +121,13 @@ export default function ProfilePage() {
       setEvals(evalsRes.data || []);
 
       const p = (entitleRes.data?.plan as Plan) ?? 'free';
-      const used = entitleRes.data?.evals_this_week ?? 0;
       setPlan(p);
-      setFreeLeft(Math.max(0, 1 - used));
+      if (p === 'free') {
+        const { data: pc } = await supabase.from('profiles').select('created_at').eq('id', user.id).maybeSingle();
+        const createdAt = (pc as any)?.created_at ?? user.created_at ?? null;
+        const usage = await countFreeUsage(supabase, user.id, createdAt);
+        setFreeLeft(freeState(createdAt, usage.inWindow, usage.afterWindow).left);
+      }
       setStreak(streakRes.data?.current_streak ?? 0);
       setLoading(false);
     })();
@@ -253,7 +258,7 @@ export default function ProfilePage() {
               {plan === 'free' ? (
                 <div style={{ background: 'rgba(200,161,75,0.08)', border: '1px solid rgba(200,161,75,0.2)', borderRadius: 10, padding: '14px 18px', textAlign: 'center', minWidth: 140 }}>
                   <div style={{ fontFamily: 'var(--font-wordmark)', fontWeight: 900, fontSize: 28, color: 'var(--imperial-gold)', lineHeight: 1 }}>{freeLeft}</div>
-                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9c8657', marginTop: 4, marginBottom: 12 }}>lượt chấm tuần này</div>
+                  <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: '#9c8657', marginTop: 4, marginBottom: 12 }}>lượt chấm miễn phí còn lại</div>
                   <Link href="/pricing" style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, color: '#0A0E24', background: 'var(--imperial-gold)', padding: '6px 14px', borderRadius: 6, textDecoration: 'none', display: 'block', textAlign: 'center' }}>
                     Nâng cấp →
                   </Link>

@@ -2,6 +2,7 @@
  *  Không niêm yết học phí, không cam kết kết quả, không gọi tính năng chưa có. */
 import type { NurtureKind } from '../nurture';
 import type { OnboardKind } from '../onboarding';
+import { FREE_PER_30D, WELCOME_CREDITS, WELCOME_DAYS } from '../free-plan';
 
 export type EmailKind = NurtureKind | OnboardKind;
 const isOnboard = (k: EmailKind) => k.startsWith('onboard_');
@@ -55,6 +56,7 @@ function body(i: NurtureEmailInput): Body {
         subject: 'Bài Writing đầu tiên của bạn đang chờ được chấm',
         paras: [
           'Bạn đã tạo tài khoản WriteRight nhưng chưa nộp bài nào.',
+          `Tài khoản mới có gói chào mừng ${WELCOME_CREDITS} lượt chấm đầy đủ miễn phí trong ${WELCOME_DAYS} ngày đầu: xem điểm từng tiêu chí, lỗi sai trên bài và viết lại để so sánh. Lượt chưa dùng sẽ hết hạn sau ${WELCOME_DAYS} ngày.`,
           'Chỉ cần dán một bài viết (Task 1 hoặc Task 2), WriteRight sẽ chấm theo bốn tiêu chí của IELTS Writing và chỉ ra chỗ cần sửa trước tiên. Bài nháp cũng chấm được.',
         ],
         cta: { label: 'Chấm bài đầu tiên', url: i.practiceUrl },
@@ -65,6 +67,7 @@ function body(i: NurtureEmailInput): Body {
         paras: [
           'Nhiều bạn chần chừ vì nghĩ bài mình chưa đủ tốt để nộp. Thực tế là bài viết còn nhiều lỗi mới là bài cho bạn nhiều thông tin nhất.',
           'Hãy lấy một bài bạn đã viết ở lớp hoặc tự luyện và dán vào WriteRight. Mất khoảng vài phút.',
+          `Gói chào mừng ${WELCOME_CREDITS} lượt chấm đầy đủ của bạn vẫn còn nguyên, nhưng chỉ dùng được trong ${WELCOME_DAYS} ngày đầu kể từ khi tạo tài khoản.`,
         ],
         cta: { label: 'Dán bài và nhận nhận xét', url: i.practiceUrl },
       };
@@ -73,6 +76,7 @@ function body(i: NurtureEmailInput): Body {
         subject: 'Email cuối về WriteRight — bạn cần giúp gì không?',
         paras: [
           'Đây là email nhắc cuối cùng của chúng tôi về việc thử WriteRight.',
+          `Gói chào mừng ${WELCOME_CREDITS} lượt chấm đầy đủ của bạn còn khoảng ${Math.max(1, WELCOME_DAYS - 7)} ngày nữa là hết hạn. Sau đó tài khoản miễn phí còn ${FREE_PER_30D} lượt mỗi 30 ngày và chỉ xem band tổng.`,
           'Nếu bạn muốn có người hướng dẫn trực tiếp thay vì tự luyện, mentor của UNICOACH có thể trao đổi để hiểu mục tiêu và trình độ hiện tại của bạn.',
         ],
         cta: { label: 'Trao đổi với mentor UNICOACH', url: i.ctaUrl },

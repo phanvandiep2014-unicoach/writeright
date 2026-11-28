@@ -162,7 +162,7 @@ export default function PracticeClient() {
                 <span>Completed <strong className="text-white">{doneCount}</strong>/{PRACTICE_ITEMS.length} prompts</span>
                 {!entLoading && (isPaid
                   ? <span>Gradings: <strong className="text-white">unlimited</strong></span>
-                  : <span>Gradings left this week: <strong className="text-white">{freeLeft}</strong></span>)}
+                  : <span>Free gradings left: <strong className="text-white">{freeLeft}</strong></span>)}
                 <Link href="/practice/progress" className="text-brand-400 underline">View progress</Link>
               </>
             ) : (

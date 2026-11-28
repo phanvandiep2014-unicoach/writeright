@@ -7,6 +7,7 @@ import { alertAuthError, alertBudgetExhausted, budgetTight, isBudgetError, recor
 // Prompt A1 (dẫn chứng → đối chiếu descriptor → band từng tiêu chí → band tổng) dùng chung với
 // /api/external/mock-grade. Bài chấm bằng prompt này có feedback.prompt_version='a1'.
 import { SYSTEM_PROMPT, officialOverall } from '@/lib/grade-essay';
+import { FREE_PER_30D, WELCOME_CREDITS, countFreeUsage, freeState } from '@/lib/free-plan';
 
 export const PROMPT_VERSION = 'a1';
 export const FREE_EVALS_PER_WEEK = 1;
@@ -73,7 +74,7 @@ export async function evalAllowance(
   supabase: SupabaseClient, userId: string, pendingJobs = 0, handwritten = false,
 ): Promise<{ ok: true; usingFreeCredit: boolean } | { ok: false; status: number; body: any }> {
   const weekStart = currentWeekStart();
-  const quotaOut = { ok: false as const, status: 403, body: { error: 'Hết lượt miễn phí tuần này.', code: 'QUOTA_EXCEEDED' } };
+  const quotaOut = { ok: false as const, status: 403, body: { error: 'Bạn đang có một bài chờ chấm bằng lượt miễn phí. Vui lòng đợi bài đó xong rồi gửi tiếp.', code: 'QUOTA_EXCEEDED' } };
 
   // C3 — lượt chấm đầy đủ miễn phí do UNICOACH LMS cấp qua cờ writing_free trong token SSO.
   // Còn lượt thì bỏ qua hạn mức tuần. Cột chỉ có sau khi chạy sql/lms-free-credit.sql.
@@ -86,14 +87,26 @@ export async function evalAllowance(
   if (usingFreeCredit) return pendingJobs > 0 ? quotaOut : { ok: true, usingFreeCredit };
 
   const { data: entitlement, error: entErr } = await supabase.from('user_entitlements')
-    .select('plan, weekly_quota, evals_this_week').eq('user_id', userId).single();
-  if (entErr) {
-    const { count } = await supabase.from('evaluations').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).gte('created_at', weekStart + 'T00:00:00Z');
-    if ((count ?? 0) + pendingJobs >= FREE_EVALS_PER_WEEK) return quotaOut;
-  } else {
-    const isPaid = ['standard', 'premium'].includes((entitlement as any)?.plan);
-    if (!isPaid && ((entitlement as any)?.evals_this_week ?? 0) + pendingJobs >= ((entitlement as any)?.weekly_quota ?? FREE_EVALS_PER_WEEK)) return quotaOut;
+    .select('plan').eq('user_id', userId).single();
+  const isPaidPlan = !entErr && ['standard', 'premium'].includes((entitlement as any)?.plan);
+  // Gói miễn phí (lib/free-plan.ts): gói chào mừng 5 lượt đầy đủ / 14 ngày đầu, sau đó 2 lượt / 30 ngày.
+  // View lỗi (entErr) thì cũng xử lý như tài khoản miễn phí — an toàn hơn là cho chấm không giới hạn.
+  if (!isPaidPlan) {
+    const { data: pc } = await supabase.from('profiles').select('created_at').eq('id', userId).maybeSingle();
+    const createdAt = (pc as any)?.created_at ?? null;
+    const usage = await countFreeUsage(supabase, userId, createdAt);
+    const st = freeState(createdAt, usage.inWindow, usage.afterWindow, pendingJobs);
+    if (st.left <= 0) {
+      return { ok: false, status: 403, body: {
+        error: st.welcomeWindowOpen
+          ? `Bạn đã dùng hết ${WELCOME_CREDITS} lượt chấm của gói chào mừng. Nâng cấp Scholar để chấm tiếp và giữ phần phân tích chi tiết.`
+          : `Bạn đã dùng hết ${FREE_PER_30D} lượt chấm miễn phí trong 30 ngày qua. Lượt sẽ mở lại dần theo ngày chấm bài cũ, hoặc nâng cấp Scholar để chấm tiếp ngay.`,
+        code: 'QUOTA_EXCEEDED',
+      } };
+    }
+  }
+  if (!entErr) {
+    const isPaid = isPaidPlan;
     // Ngân sách AI tháng đã dùng từ 90%: dành phần còn lại cho người trả phí + thi thử (lib/ai-budget.ts).
     if (!isPaid && await budgetTight()) {
       return { ok: false, status: 503, body: {
