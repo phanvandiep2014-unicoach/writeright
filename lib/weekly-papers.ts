@@ -164,25 +164,28 @@ const WEEKLY_PAPERS: Record<string, { focus: string; t1: Task1Item; t2: Task2Ite
     },
   },
   MT08: {
-    focus: "UNICOACH Weekly 8 (06/12/2026): Task 1 Average time spent per day on five activities by employed adults in one country (hours); Task 2 opinion.",
+    // Phan chốt 23–24/11/2026: Weekly lấy đề từ bộ HIT (đề thi thật). Task 1 = HIT-W1-12 (IDP Đà Nẵng 11/8/2026), Task 2 = HIT-W-09 (IDP Green Edu Tân Sơn Nhì 16/8/2026).
+    focus: "UNICOACH Weekly 8 (06/12/2026): Task 1 students in six departments at an Australian university in 2009 — % female, % first language not English, % born outside Australia (table); Task 2 opinion (housing shortage in big cities, only government action can solve it).",
     t1: {
       id: 'mt08-t1', category: 'weekly', chartType: 'table',
-      title: "Average time spent per day on five activities by employed adults in one country (hours)",
-      instruction: "The table below shows the average number of hours per day that employed adults in one country spent on five activities in 1985, 2000 and 2020. Summarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+      title: "Students studying in various departments at an Australian university in 2009",
+      instruction: "The table shows information about students studying in six different departments at an Australian university in 2009. Summarise the information by selecting and reporting the main features, and make comparisons where relevant. Write at least 150 words.",
+      unit: '%',
       table: {
-        headers: ["Activity", "1985", "2000", "2020"],
+        headers: ["Department", "% Female", "% first language not English", "% Born outside Australia"],
         rows: [
-          ["Paid work", 6.8, 6.4, 5.9],
-          ["Housework", 2.1, 1.9, 1.6],
-          ["Screen-based leisure", 1.4, 2.0, 3.1],
-          ["Sleep", 7.6, 7.4, 7.1],
-          ["Travel", 0.9, 1.1, 1.0],
+          ["English", 67, 16, 27],
+          ["Physics", 37, 38, 44],
+          ["Chemistry", 29, 32, 47],
+          ["Modern languages", 63, 41, 54],
+          ["History", 58, 10, 18],
+          ["Maths", 42, 36, 43],
         ],
       },
     },
     t2: {
       id: 'mt08-t2', category: 'weekly', type: "opinion",
-      prompt: "Some people think that university students should study only subjects that will be useful in their future careers. To what extent do you agree or disagree? Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
+      prompt: "The shortage of housing in big cities can cause severe social consequences. Only government action can solve this problem. To what extent do you agree or disagree? Give reasons for your answer and include any relevant examples from your own knowledge or experience. Write at least 250 words.",
     },
   },
   MT09: {
