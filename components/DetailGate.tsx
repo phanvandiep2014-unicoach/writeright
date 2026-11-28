@@ -70,7 +70,10 @@ export function DetailGate({
  * evaluations and turns the scarcity into a gentle, recurring upgrade prompt.
  */
 export function QuotaBanner({ onUpgrade }: { onUpgrade: () => void }) {
-  const { isPaid, freeLeft, loading, freeFullCredits, hasFreeFullAccess } = useEntitlement();
+  const {
+    isPaid, freeLeft, loading, freeFullCredits,
+    welcomeLeft, welcomeEndsAt, welcomeWindowOpen, welcomeCredits, freePer30d,
+  } = useEntitlement();
   if (loading || isPaid) return null;
 
   // Học viên mới từ UNICOACH LMS: nói đúng thứ họ đang có, đừng đếm ngược
@@ -91,9 +94,36 @@ export function QuotaBanner({ onUpgrade }: { onUpgrade: () => void }) {
       </div>
     );
   }
-  if (hasFreeFullAccess) return null;
-
   const out = freeLeft === 0;
+  const daysLeft = welcomeEndsAt
+    ? Math.max(1, Math.ceil((new Date(welcomeEndsAt).getTime() - Date.now()) / 86_400_000))
+    : null;
+  const endDate = welcomeEndsAt
+    ? new Date(welcomeEndsAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+    : '';
+
+  let message: ReactNode;
+  if (welcomeLeft > 0) {
+    // Gói chào mừng: nói rõ cả lượt lẫn hạn — hạn là thứ khiến người ta viết bài ngay hôm nay.
+    message = (
+      <>
+        <strong>Gói chào mừng:</strong> còn <strong>{welcomeLeft}/{welcomeCredits} lượt chấm đầy đủ</strong>
+        {daysLeft != null && <> · hết hạn {endDate} (còn {daysLeft} ngày)</>}. Lượt chưa dùng sẽ mất khi hết hạn.
+      </>
+    );
+  } else if (welcomeWindowOpen && out) {
+    message = (
+      <>
+        Bạn đã dùng hết {welcomeCredits} lượt của gói chào mừng. Phần phân tích chi tiết các bài đã chấm
+        còn xem được đến {endDate}; nâng cấp để giữ lại và chấm tiếp.
+      </>
+    );
+  } else if (out) {
+    message = `Bạn đã dùng hết ${freePer30d} lượt chấm miễn phí trong 30 ngày qua.`;
+  } else {
+    message = `Còn ${freeLeft}/${freePer30d} lượt chấm miễn phí trong 30 ngày (xem band tổng + nhận xét ngắn).`;
+  }
+
   return (
     <div
       style={{
@@ -104,16 +134,14 @@ export function QuotaBanner({ onUpgrade }: { onUpgrade: () => void }) {
       }}
     >
       <span style={{ fontFamily: 'var(--font-body)', color: 'var(--sepia-ink)' }}>
-        {out
-          ? 'Bạn đã dùng hết lượt chấm miễn phí tuần này.'
-          : `Còn ${freeLeft} lượt chấm miễn phí tuần này.`}
+        {message}
       </span>
       <button
         className={out ? 'btn-royal' : 'btn-ghost'}
         style={{ padding: '.5rem 1rem', fontSize: '.95rem' }}
         onClick={onUpgrade}
       >
-        {out ? 'Nâng cấp để chấm không giới hạn' : 'Xem gói nâng cấp'}
+        {out ? 'Nâng cấp để chấm tiếp' : 'Xem gói nâng cấp'}
       </button>
     </div>
   );

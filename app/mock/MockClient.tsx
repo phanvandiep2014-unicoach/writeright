@@ -606,20 +606,21 @@ function PaperSummary({ paper, big = false, parts: partsProp }: { paper: TestPap
  * biết sau khi thi xong là một trải nghiệm tệ mà chúng ta tự gây ra.
  */
 function QuotaNotice() {
-  const { isPaid, loading, freeLeft, hasFreeFullAccess } = useEntitlement();
-  if (loading || isPaid || hasFreeFullAccess) return null;
+  const { isPaid, loading, freeLeft, freeFullCredits } = useEntitlement();
+  // Gói chào mừng vẫn bị giới hạn lượt nên vẫn phải báo; chỉ bỏ qua khi có lượt LMS riêng.
+  if (loading || isPaid || freeFullCredits > 0) return null;
 
   const enough = freeLeft >= 2;
   return (
     <div className={`rounded-xl px-5 py-4 border ${enough ? 'border-navy-700 bg-navy-800' : 'border-amber-500/40 bg-amber-500/5'}`}>
       <div className="text-sm text-navy-200 leading-relaxed">
         {enough ? (
-          <>Một bài thi trọn vẹn dùng <strong className="text-white">2 lượt chấm</strong> (mỗi phần một lượt). Tuần này bạn còn {freeLeft} lượt.</>
+          <>Một bài thi trọn vẹn dùng <strong className="text-white">2 lượt chấm</strong> (mỗi phần một lượt). Bạn còn {freeLeft} lượt miễn phí.</>
         ) : freeLeft === 1 ? (
-          <>Tuần này bạn còn <strong className="text-amber-300">1 lượt chấm</strong>, trong khi bài thi trọn vẹn cần 2 — Task 2 sẽ không chấm được.
-            Bạn vẫn thi được và vẫn nhận đủ phần nhận xét thời gian, nhưng để có band Writing tổng thì cần nâng cấp, hoặc luyện lẻ từng phần ở hai tuần khác nhau.</>
+          <>Bạn còn <strong className="text-amber-300">1 lượt chấm miễn phí</strong>, trong khi bài thi trọn vẹn cần 2 — Task 2 sẽ không chấm được.
+            Bạn vẫn thi được và vẫn nhận đủ phần nhận xét thời gian, nhưng để có band Writing tổng thì cần nâng cấp.</>
         ) : (
-          <>Tuần này bạn đã hết lượt chấm miễn phí. Bài thi vẫn tính giờ và vẫn có nhận xét quản lý thời gian, nhưng hai bài viết sẽ chưa được chấm điểm.</>
+          <>Bạn đã hết lượt chấm miễn phí. Bài thi vẫn tính giờ và vẫn có nhận xét quản lý thời gian, nhưng hai bài viết sẽ chưa được chấm điểm.</>
         )}
       </div>
       {!enough && (

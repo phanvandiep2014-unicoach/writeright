@@ -34,7 +34,7 @@ function paragraphs(i: WinbackEmailInput): string[] {
       `Gói WriteRight của bạn đã hết hạn ngày ${i.expiredOn}.`,
       i.progress,
       'Toàn bộ bài đã chấm vẫn còn nguyên. Gia hạn để mở lại điểm 4 tiêu chí, phần sửa lỗi trên bài và biểu đồ tiến bộ, rồi viết tiếp từ chỗ bạn đã dừng.',
-      'Bạn vẫn được chấm miễn phí 1 bài mỗi tuần, kể cả khi không gia hạn.',
+      'Bạn vẫn được chấm miễn phí 2 bài mỗi 30 ngày (xem band tổng), kể cả khi không gia hạn.',
     ];
   }
   return [
@@ -52,7 +52,7 @@ export function winbackText(i: WinbackEmailInput) {
     `Chào${ten},`, '',
     ...paragraphs(i).flatMap((p) => [p, '']),
     `Gia hạn: ${i.pricingUrl}`,
-    `Viết bài miễn phí tuần này: ${i.practiceUrl}`, '',
+    `Viết một bài miễn phí: ${i.practiceUrl}`, '',
     'Chúng tôi không tự động trừ tiền.', '',
     'UNICOACH · WriteRight',
     `Không muốn nhận email kiểu này nữa: ${i.unsubscribeUrl}`,
@@ -83,7 +83,7 @@ export function winbackHtml(i: WinbackEmailInput) {
           <a href="${i.pricingUrl}" style="display:inline-block;padding:13px 26px;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${SAPPHIRE};text-decoration:none;font-weight:bold;">${nutChinh}</a>
         </td></tr>
       </table>
-      <p style="margin:0 0 8px;font-size:14px;"><a href="${i.practiceUrl}" style="color:${SAPPHIRE};">Hoặc viết bài miễn phí tuần này</a></p>
+      <p style="margin:0 0 8px;font-size:14px;"><a href="${i.practiceUrl}" style="color:${SAPPHIRE};">Hoặc viết một bài miễn phí</a></p>
       <p style="margin:12px 0 0;font-size:14px;color:#6B6250;">Chúng tôi không tự động trừ tiền.</p>
     </td></tr>
     <tr><td style="padding:16px 28px 24px;border-top:1px solid #E3D7BC;font-family:Georgia,'Times New Roman',serif;font-size:12px;color:#8A8272;">
